@@ -1,0 +1,11 @@
+# 中間生成物(aggregate.py が作り、build_payload.py が読む)
+agg.json
+
+# 元データは置かない
+*.xlsx
+~$*
+
+__pycache__/
+*.pyc
+.vercel
+.DS_Store

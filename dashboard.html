@@ -1,0 +1,1034 @@
+<title>Barefoot Malaysia 販売実績</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;700&display=swap">
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Tokens — light is the base; dark redefines tokens only.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  color-scheme: light;
+  --bg:#EFF2F0;
+  --surface:#FBFCFB;
+  --surface-2:#E6EAE7;
+  --ink:#0F1F1B;
+  --ink-2:#47564F;
+  --ink-3:#76857D;
+  --rule:#D2D9D4;
+  --rule-strong:#B6C0B9;
+  --accent:#0E5A47;
+  --accent-soft:#DCE9E4;
+  --warn:#8A4B0F;
+  --warn-soft:#F4E7D6;
+  --crit:#A31E17;
+  --crit-soft:#F6E0DE;
+  --s1:#2a78d6;  /* 店舗 POS      */
+  --s2:#eb6834;  /* Shopee        */
+  --s3:#1baf7a;  /* Lazada        */
+  --s4:#eda100;  /* Online 直販   */
+  --s-online:#eb6834;
+  --ghost:#A9B4AE;
+  --shadow:0 1px 2px rgba(15,31,27,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#101413;
+    --surface:#181D1B;
+    --surface-2:#222926;
+    --ink:#EDF1EE;
+    --ink-2:#AEBAB4;
+    --ink-3:#7E8B85;
+    --rule:#2C3532;
+    --rule-strong:#3D4744;
+    --accent:#5FC2A4;
+    --accent-soft:#16302A;
+    --warn:#D9962F;
+    --warn-soft:#2E2415;
+    --crit:#E4736B;
+    --crit-soft:#301A18;
+    --s1:#3987e5;
+    --s2:#d95926;
+    --s3:#199e70;
+    --s4:#c98500;
+    --s-online:#d95926;
+    --ghost:#5B6763;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#101413;
+  --surface:#181D1B;
+  --surface-2:#222926;
+  --ink:#EDF1EE;
+  --ink-2:#AEBAB4;
+  --ink-3:#7E8B85;
+  --rule:#2C3532;
+  --rule-strong:#3D4744;
+  --accent:#5FC2A4;
+  --accent-soft:#16302A;
+  --warn:#D9962F;
+  --warn-soft:#2E2415;
+  --crit:#E4736B;
+  --crit-soft:#301A18;
+  --s1:#3987e5;
+  --s2:#d95926;
+  --s3:#199e70;
+  --s4:#c98500;
+  --s-online:#d95926;
+  --ghost:#5B6763;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;
+  font-size:15px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+
+/* ── Masthead ─────────────────────────────────────────── */
+.mast{border-top:3px solid var(--accent);background:var(--surface);border-bottom:1px solid var(--rule)}
+.mast-in{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:flex-end;justify-content:space-between;padding:26px 0 22px}
+.brand{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);font-weight:600;margin:0 0 6px}
+h1{font-family:"Zen Old Mincho",serif;font-weight:700;font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;letter-spacing:.01em;text-wrap:balance}
+.mast dl{display:flex;gap:26px;margin:0;flex-wrap:wrap}
+.mast dt{font-size:10px;letter-spacing:.14em;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.mast dd{margin:2px 0 0;font-size:14px;font-weight:500}
+
+/* ── Section scaffolding ───────────────────────────────── */
+section{padding:52px 0 8px}
+section + section{border-top:1px solid var(--rule)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.2em;color:var(--accent);font-weight:600;margin:0 0 8px;text-transform:uppercase}
+h2{font-family:"Zen Old Mincho",serif;font-weight:700;font-size:clamp(20px,2.6vw,25px);margin:0 0 6px;letter-spacing:.01em;text-wrap:balance}
+h3{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700;font-size:14px;margin:0 0 10px;letter-spacing:.02em}
+.lede{color:var(--ink-2);margin:0 0 26px;max-width:62ch;font-size:14px}
+.note{color:var(--ink-3);font-size:12.5px;line-height:1.65;margin:12px 0 0;max-width:78ch}
+
+/* ── KPI ledger strip ──────────────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));background:var(--surface);border:1px solid var(--rule);border-radius:3px;overflow:hidden;box-shadow:var(--shadow)}
+.kpi{padding:18px 20px 16px;border-right:1px solid var(--rule)}
+.kpi:last-child{border-right:0}
+.kpi .lab{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;color:var(--ink-3);display:block;margin-bottom:7px}
+.kpi .val{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:clamp(21px,2.6vw,27px);line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:block}
+.kpi .sub{font-size:11.5px;color:var(--ink-2);margin-top:5px;display:block}
+.kpi .val small{font-size:.56em;font-weight:500;color:var(--ink-2);margin-right:2px}
+
+/* ── Split (online / offline) ──────────────────────────── */
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:22px}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px;box-shadow:var(--shadow)}
+.panel.tone-off{border-left:3px solid var(--s1)}
+.panel.tone-on{border-left:3px solid var(--s-online)}
+.panel .ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.panel .ptitle b{font-size:14px;font-weight:700}
+.panel .ptitle .pct{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600}
+.panel .big{font-family:"IBM Plex Mono",monospace;font-size:29px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.panel .big small{font-size:.5em;color:var(--ink-2);font-weight:500;margin-right:3px}
+.metarow{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px solid var(--rule)}
+.metarow div{min-width:66px}
+.metarow .l{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;color:var(--ink-3)}
+.metarow .v{display:block;font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.sharebar{display:flex;height:9px;border-radius:2px;overflow:hidden;background:var(--surface-2);margin:22px 0 8px;gap:2px}
+.sharebar i{display:block}
+.sharelegend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+
+/* ── Charts ────────────────────────────────────────────── */
+.chartbox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px 18px 10px;box-shadow:var(--shadow);margin-bottom:16px}
+.chartbox > figcaption{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between;margin:0 0 14px}
+.chartbox h3{margin:0}
+.scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg{display:block;width:100%;height:auto}
+.grid{stroke:var(--rule);stroke-width:1}
+.axis{stroke:var(--rule-strong);stroke-width:1}
+.ax{fill:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:10.5px}
+.axb{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500}
+.dlab{fill:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600}
+.dlab2{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:10px}
+.f1{fill:var(--s1)} .f2{fill:var(--s2)} .f3{fill:var(--s3)} .f4{fill:var(--s4)}
+.fon{fill:var(--s-online)} .fghost{fill:var(--ghost)}
+.hit{fill:transparent;cursor:pointer}
+.hit:hover ~ .hl, .band.on{fill:var(--surface-2)}
+.wkend{fill:var(--surface-2)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--ghost) 0 2px,transparent 2px 4px);border:1px solid var(--ghost)}
+
+/* ── Tabs ──────────────────────────────────────────────── */
+.tabs{display:flex;gap:2px;background:var(--surface-2);padding:3px;border-radius:3px;width:fit-content;margin-bottom:16px}
+.tabs button{font:500 12.5px/1 "Zen Kaku Gothic New",sans-serif;padding:8px 16px;border:0;border-radius:2px;background:transparent;color:var(--ink-2);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:700}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ── Tables ────────────────────────────────────────────── */
+.tablebox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
+th,td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-3);font-weight:500;background:var(--surface-2);position:sticky;top:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.n,th.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+tfoot td{font-weight:700;background:var(--surface-2);border-top:2px solid var(--rule-strong);font-family:"IBM Plex Mono",monospace}
+tfoot td:first-child{font-family:"Zen Kaku Gothic New",sans-serif}
+td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
+.chip{display:inline-block;padding:1px 7px;border-radius:2px;font-size:10.5px;font-family:"IBM Plex Mono",monospace;font-weight:500;letter-spacing:.03em;border:1px solid transparent}
+.chip.pos{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
+.chip.shopee{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.chip.crit{background:var(--crit-soft);color:var(--crit);border-color:color-mix(in srgb,var(--crit) 30%,transparent)}
+.chip.mute{background:var(--surface-2);color:var(--ink-2);border-color:var(--rule)}
+
+/* ── Callout ───────────────────────────────────────────── */
+.callout{border:1px solid var(--rule);border-left:3px solid var(--crit);background:var(--surface);border-radius:3px;padding:18px 20px;margin:0 0 18px;box-shadow:var(--shadow)}
+.callout.warnflag{border-left-color:var(--warn)}
+.callout h3{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.callout h3::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--crit);flex:none}
+.callout.warnflag h3::before{background:var(--warn)}
+.callout p{margin:0;font-size:13.5px;color:var(--ink-2);max-width:80ch}
+.callout p + p{margin-top:8px}
+.callout b{color:var(--ink)}
+
+/* ── Findings ──────────────────────────────────────────── */
+.finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.find{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px;box-shadow:var(--shadow)}
+.find .tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;background:var(--surface-2);color:var(--ink-2)}
+.find .tag.fact{background:var(--accent-soft);color:var(--accent)}
+.find h3{margin:10px 0 6px;font-size:14px}
+.find p{margin:0;font-size:13px;color:var(--ink-2)}
+
+/* ── Tooltip ───────────────────────────────────────────── */
+#tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--bg);padding:8px 11px;border-radius:3px;font-size:12px;line-height:1.55;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.22);max-width:240px}
+#tip b{font-family:"IBM Plex Mono",monospace;font-weight:600}
+#tip .r{display:flex;justify-content:space-between;gap:14px;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+#tip hr{border:0;border-top:1px solid color-mix(in srgb,var(--bg) 30%,transparent);margin:5px 0}
+
+footer{border-top:1px solid var(--rule);margin-top:44px;padding:26px 0 48px;color:var(--ink-3);font-size:12px}
+footer dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;margin:10px 0 0;max-width:70ch}
+footer dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-2)}
+footer dd{margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){
+  .kpi{border-right:0;border-bottom:1px solid var(--rule)}
+  section{padding-top:38px}
+}
+</style>
+
+<div class="mast">
+  <div class="wrap mast-in">
+    <div>
+      <p class="brand">BAREFOOT INC · MALAYSIA</p>
+      <h1>販売実績ダッシュボード</h1>
+    </div>
+    <dl>
+      <div><dt>対象期間</dt><dd class="num" id="m-period"></dd></div>
+      <div><dt>集計対象</dt><dd class="num" id="m-orders"></dd></div>
+      <div><dt>データ出典</dt><dd id="m-src">Orders エクスポート</dd></div>
+    </dl>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- ══ サマリー ══ -->
+  <section id="s-summary">
+    <p class="eyebrow">Summary</p>
+    <h2>売上サマリー</h2>
+    <p class="lede">入金確認済み(Paid)かつ Completed / Shipped の注文のみを売上実績として集計。キャンセル・返品・未入金は売上から除外し、下部の台帳に別記録として残しています。</p>
+    <div class="kpis" id="kpis"></div>
+    <p class="note" id="summary-note"></p>
+  </section>
+
+  <!-- ══ 期間別 ══ -->
+  <section id="s-period">
+    <p class="eyebrow">Period</p>
+    <h2>期間別の実績</h2>
+    <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
+
+    <div class="tabs" role="tablist" aria-label="期間の粒度">
+      <button role="tab" id="tab-week" aria-selected="true" aria-controls="pane-week">週次</button>
+      <button role="tab" id="tab-month" aria-selected="false" aria-controls="pane-month">月次</button>
+    </div>
+
+    <div id="pane-week" role="tabpanel" aria-labelledby="tab-week">
+      <figure class="chartbox">
+        <figcaption>
+          <h3>週次 売上(店舗 / オンライン積み上げ)と失注</h3>
+          <div class="legend">
+            <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+            <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+            <span><i class="sw hatch"></i>失注(キャンセル+返品)</span>
+          </div>
+        </figcaption>
+        <div class="scroller"><div id="c-week" style="min-width:560px"></div></div>
+      </figure>
+      <div class="tablebox"><table id="t-week"></table></div>
+      <p class="note">第5週は 8/21 時点で5日経過(進行中)。「日平均」は経過日数で割った値です。</p>
+    </div>
+
+    <div id="pane-month" role="tabpanel" aria-labelledby="tab-month" hidden>
+      <figure class="chartbox">
+        <figcaption>
+          <h3>月次 売上(店舗 / オンライン積み上げ)と失注</h3>
+          <div class="legend">
+            <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+            <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+            <span><i class="sw hatch"></i>失注(キャンセル+返品)</span>
+          </div>
+        </figcaption>
+        <div class="scroller"><div id="c-month" style="min-width:420px"></div></div>
+      </figure>
+      <div class="tablebox"><table id="t-month"></table></div>
+      <p class="note">7月は 7/17 開業のため15日間、8月は 8/21 時点で21日経過(進行中)。単純な月合計の比較ではなく「日平均」で見てください。</p>
+    </div>
+  </section>
+
+  <!-- ══ オンライン / オフライン ══ -->
+  <section id="s-split">
+    <p class="eyebrow">Online / Offline</p>
+    <h2>オンラインとオフラインの内訳</h2>
+    <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
+    <div class="split" id="split"></div>
+    <div class="sharebar" id="sharebar"></div>
+    <div class="sharelegend" id="sharelegend"></div>
+    <p class="note" id="split-note"></p>
+  </section>
+
+  <!-- ══ 日次 ══ -->
+  <section id="s-daily">
+    <p class="eyebrow">Daily</p>
+    <h2>日次の売上推移</h2>
+    <p class="lede">開業日から最新データまで、売上ゼロの日も含めた全日表示。網掛けは土日です。</p>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>日次売上(店舗 / オンライン)</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-daily" style="min-width:760px"></div></div>
+    </figure>
+    <p class="note" id="daily-note"></p>
+  </section>
+
+  <!-- ══ チャネル ══ -->
+  <section id="s-channel">
+    <p class="eyebrow">Channel</p>
+    <h2>チャネル別の成約と失注</h2>
+    <p class="lede">売上金額と、同じチャネルで失注(キャンセル・返品)した金額を並べています。オンラインの失注が構造的な問題として見えます。</p>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>チャネル別 売上 / 失注</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--accent)"></i>売上(成約)</span>
+          <span><i class="sw hatch"></i>失注</span>
+        </div>
+      </figcaption>
+      <div id="c-channel"></div>
+    </figure>
+    <div class="tablebox"><table id="t-channel"></table></div>
+  </section>
+
+  <!-- ══ 商品 ══ -->
+  <section id="s-product">
+    <p class="eyebrow">Product</p>
+    <h2>モデル別の売上構成</h2>
+    <p class="lede">商品行の金額ベース(注文単位の値引き・送料は含みません)。店舗とオンラインの内訳を積み上げています。</p>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>モデル別 売上</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div id="c-model"></div>
+    </figure>
+    <div class="tablebox"><table id="t-model"></table></div>
+  </section>
+
+  <!-- ══ サイズ・カラー ══ -->
+  <section id="s-size">
+    <p class="eyebrow">Size &amp; Color</p>
+    <h2>売れたサイズとカラー</h2>
+    <p class="lede">発注・在庫補充の判断材料。数量ベースで集計しています。</p>
+    <div class="split">
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>レディース サイズ(EU)</h3></figcaption>
+        <div id="c-sizew"></div>
+      </figure>
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>メンズ サイズ(EU)</h3></figcaption>
+        <div id="c-sizem"></div>
+      </figure>
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>Marugo 足袋 サイズ(cm)</h3></figcaption>
+        <div id="c-sizet"></div>
+      </figure>
+    </div>
+    <figure class="chartbox">
+      <figcaption><h3>カラー別 販売数量</h3></figcaption>
+      <div class="scroller"><div id="c-color" style="min-width:640px"></div></div>
+    </figure>
+    <p class="note" id="size-note"></p>
+  </section>
+
+  <!-- ══ 店舗運営 ══ -->
+  <section id="s-ops">
+    <p class="eyebrow">Store Operations</p>
+    <h2>店舗の売れる曜日・時間帯・商圏</h2>
+    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみ。地域は請求先の州です。</p>
+    <div class="split">
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>曜日別 売上</h3></figcaption>
+        <div id="c-dow"></div>
+      </figure>
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>店舗の時間帯別 注文件数</h3></figcaption>
+        <div id="c-hour"></div>
+      </figure>
+    </div>
+    <div class="split">
+      <div class="tablebox"><table id="t-state"></table></div>
+      <div class="tablebox"><table id="t-pay"></table></div>
+    </div>
+  </section>
+
+  <!-- ══ 失注・未入金 ══ -->
+  <section id="s-lost">
+    <p class="eyebrow">Unpaid &amp; Lost — 売上実績とは別記録</p>
+    <h2>未入金・失注の台帳</h2>
+    <p class="lede">売上には一切含めていません。回収・再販・在庫戻しの管理用として、注文単位で全件を残しています。</p>
+    <div id="callouts"></div>
+
+    <h3 style="margin:26px 0 10px">未入金(Unpaid)注文 — 全件</h3>
+    <div class="tablebox"><table id="t-unpaid"></table></div>
+    <p class="note">未入金は全て入金前にキャンセル/返品となった注文です。実際の入金は発生しておらず、金額は「取り逃した受注額」として読んでください。</p>
+
+    <h3 style="margin:26px 0 10px">失注(キャンセル+返品)注文 — 全件</h3>
+    <div class="tablebox"><table id="t-lost"></table></div>
+  </section>
+
+  <!-- ══ 全注文 ══ -->
+  <section id="s-ledger">
+    <p class="eyebrow">Ledger</p>
+    <h2>売上明細(全52件)</h2>
+    <p class="lede">売上実績に計上した注文の全件リスト。</p>
+    <div class="tablebox" style="max-height:520px;overflow-y:auto"><table id="t-sales"></table></div>
+  </section>
+
+  <!-- ══ 読み取り ══ -->
+  <section id="s-findings">
+    <p class="eyebrow">Findings</p>
+    <h2>数字から読めること</h2>
+    <p class="lede">「確認済」はデータから直接計算した事実、「推定」はデータから導いた解釈です。</p>
+    <div class="finds" id="finds"></div>
+  </section>
+
+  <!-- ══ 定義 ══ -->
+  <section id="s-def">
+    <p class="eyebrow">Definitions</p>
+    <h2>集計の定義</h2>
+    <div class="tablebox"><table id="t-def"></table></div>
+  </section>
+
+  <footer>
+    <div id="foot-meta"></div>
+  </footer>
+</main>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+"use strict";
+const D = JSON.parse(document.getElementById('payload').textContent);
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+
+/* ── formatting ───────────────────────────────────────── */
+const n0 = n => Math.round(n).toLocaleString('en-US');
+const n1 = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const rm = n => 'RM ' + n0(n);
+const rm2 = n => 'RM ' + n1(n);
+const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '—';
+const jd = s => s.slice(5).replace('-','/');
+const WD = ['月','火','水','木','金','土','日'];
+const wdOf = s => { const [y,m,d]=s.split('-').map(Number); return WD[(new Date(Date.UTC(y,m-1,d)).getUTCDay()+6)%7]; };
+const isWknd = s => { const w = wdOf(s); return w==='土'||w==='日'; };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ── tooltip ──────────────────────────────────────────── */
+const tip = $('#tip');
+function showTip(html, ev){
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY - r.height - 12;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y < 8) y = ev.clientY + 18;
+  tip.style.left = x+'px'; tip.style.top = y+'px';
+}
+const hideTip = () => tip.style.opacity = 0;
+function bindTip(el, html){
+  el.addEventListener('mousemove', e => showTip(html, e));
+  el.addEventListener('mouseleave', hideTip);
+}
+
+/* ── svg helpers ──────────────────────────────────────── */
+function svgEl(tag, attrs){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  return e;
+}
+// bar with rounded ends on the far side only (data-end), baseline stays square
+function barV(x,y,w,h,r){
+  r = Math.min(r, w/2, Math.max(h,0));
+  if (h <= 0.6) return `M${x},${y+h} h${w} v${-h} h${-w} Z`;
+  return `M${x},${y+h} V${y+r} a${r},${r} 0 0 1 ${r},${-r} h${w-2*r} a${r},${r} 0 0 1 ${r},${r} V${y+h} Z`;
+}
+function barH(x,y,w,h,r){
+  r = Math.min(r, h/2, Math.max(w,0));
+  if (w <= 0.6) return `M${x},${y} v${h} h${w} v${-h} Z`;
+  return `M${x},${y} h${w-r} a${r},${r} 0 0 1 ${r},${r} v${h-2*r} a${r},${r} 0 0 1 ${-r},${r} h${-(w-r)} Z`;
+}
+function niceMax(v){
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  const s = [1,1.25,1.5,2,2.5,3,4,5,6,8,10];
+  for (const k of s) if (k*p >= v) return k*p;
+  return 10*p;
+}
+function mkSvg(host, w, h){
+  host.innerHTML = '';
+  const s = svgEl('svg',{viewBox:`0 0 ${w} ${h}`, role:'img'});
+  const defs = svgEl('defs');
+  const pat = svgEl('pattern',{id:'hatch'+host.id, width:6, height:6, patternUnits:'userSpaceOnUse', patternTransform:'rotate(45)'});
+  pat.appendChild(svgEl('rect',{width:6,height:6,fill:'var(--surface)'}));
+  pat.appendChild(svgEl('rect',{width:2.4,height:6,fill:'var(--ghost)'}));
+  defs.appendChild(pat); s.appendChild(defs);
+  host.appendChild(s);
+  return s;
+}
+
+/* ═══ 1. Masthead + KPI ═══════════════════════════════ */
+const K = D.kpi, M = D.meta;
+$('#m-period').textContent = `${M.period[0]} → ${M.period[1]}`;
+$('#m-orders').textContent = `${M.n_orders} 注文 / ${M.lines} 明細行`;
+$('#m-src').textContent = M.source;
+
+const kpiDefs = [
+  ['純売上 (NET SALES)', rm2(K.total.rev), `${K.total.orders} 注文 / ${K.total.units} 点`],
+  ['店舗 OFFLINE', rm(K.offline.rev), `構成比 ${pct(K.offline.rev,K.total.rev)} · ${K.offline.orders} 注文`],
+  ['オンライン ONLINE', rm(K.online.rev), `構成比 ${pct(K.online.rev,K.total.rev)} · ${K.online.orders} 注文`],
+  ['平均客単価 AOV', rm(K.total.rev/K.total.orders), `1点あたり ${rm(K.total.rev/K.total.units)}`],
+  ['日平均売上', rm(K.total.rev/M.days), `${M.days}日間 / 売上のあった日 ${K.active_days}日`],
+  ['失注 LOST', rm(K.lost.rev), `${K.lost.orders} 注文 · うち未入金 ${K.unpaid.orders} 件`]
+];
+$('#kpis').innerHTML = kpiDefs.map(([l,v,s]) =>
+  `<div class="kpi"><span class="lab">${l}</span><span class="val"><small>${v.startsWith('RM')?'RM':''}</small>${esc(v.replace(/^RM\s/,''))}</span><span class="sub">${esc(s)}</span></div>`).join('');
+
+$('#summary-note').textContent =
+  `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は上の純売上に含まれていません。内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
+  + ` 受注ベースの合計(売上+失注)は ${rm2(K.total.rev + K.lost.rev)}、そのうち ${pct(K.lost.rev, K.total.rev + K.lost.rev)} が失注しています。`;
+
+/* ═══ 2. Period charts ════════════════════════════════ */
+function periodChart(hostId, rows, labelFn){
+  const host = document.getElementById(hostId);
+  const W = 900, H = 320, ML = 66, MR = 16, MT = 14, MB = 62;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...rows.map(r => Math.max(r.rev, r.lost))) * 1.08);
+  const y = v => MT + ph - (v/max)*ph;
+  const s = mkSvg(host, W, H);
+  const step = pw/rows.length;
+  const gw = Math.min(96, step*0.62);          // group width
+  const bw = gw*0.56, lw = gw*0.34, gap = gw - bw - lw;
+
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
+    const t = svgEl('text',{x:ML-9,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0 ? '0' : n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
+
+  rows.forEach((r,i) => {
+    const cx = ML + step*i + step/2;
+    const bx = cx - gw/2;
+    const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
+    const g = svgEl('g');
+    // stacked: 店舗 bottom, オンライン top, 2px surface gap between fills
+    if (r.off > 0) g.appendChild(svgEl('path',{d: barV(bx, y(r.off), bw, hOff, hOn>0?0:4), class:'f1'}));
+    if (r.on > 0)  g.appendChild(svgEl('path',{d: barV(bx, y(r.rev), bw, hOn - (r.off>0?2:0), 4), class:'fon'}));
+    if (r.lost > 0) g.appendChild(svgEl('path',{
+      d: barV(bx+bw+gap, y(r.lost), lw, (r.lost/max)*ph, 4),
+      fill:`url(#hatch${hostId})`, stroke:'var(--ghost)', 'stroke-width':1
+    }));
+    // value label above the sales bar
+    const vl = svgEl('text',{x:bx+bw/2, y:y(r.rev)-7, 'text-anchor':'middle', class:'dlab'});
+    vl.textContent = n0(r.rev); g.appendChild(vl);
+    // x labels
+    const l1 = svgEl('text',{x:cx, y:H-MB+20, 'text-anchor':'middle', class:'axb'});
+    l1.textContent = labelFn(r).main; g.appendChild(l1);
+    const l2 = svgEl('text',{x:cx, y:H-MB+36, 'text-anchor':'middle', class:'ax'});
+    l2.textContent = labelFn(r).sub; g.appendChild(l2);
+    if (r.ongoing){
+      const l3 = svgEl('text',{x:cx, y:H-MB+51, 'text-anchor':'middle', class:'ax'});
+      l3.setAttribute('fill','var(--warn)'); l3.textContent = '進行中'; g.appendChild(l3);
+    }
+    const hit = svgEl('rect',{x:ML+step*i, y:MT, width:step, height:ph, class:'hit'});
+    bindTip(hit, `<b>${esc(labelFn(r).main)}</b> ${esc(r.start)}〜${esc(r.end)}
+      <hr><div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
+      <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>
+      <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>
+      <hr><div class="r"><span>失注</span><b>${rm2(r.lost)}</b></div>
+      <div class="r"><span>　件数</span><span>${r.lostn} 件</span></div>`);
+    g.appendChild(hit);
+    s.appendChild(g);
+  });
+}
+periodChart('c-week', D.weekly, r => ({main:r.label, sub:`${jd(r.start)}–${jd(r.end)}`}));
+periodChart('c-month', D.monthly, r => ({main:r.label, sub:`${jd(r.start)}–${jd(r.end)}`}));
+
+/* period tables */
+function periodTable(elId, rows, head){
+  const el = document.getElementById(elId);
+  const tot = rows.reduce((a,r)=>({rev:a.rev+r.rev,off:a.off+r.off,on:a.on+r.on,orders:a.orders+r.orders,
+    units:a.units+r.units,lost:a.lost+r.lost,lostn:a.lostn+r.lostn}),{rev:0,off:0,on:0,orders:0,units:0,lost:0,lostn:0});
+  el.innerHTML =
+   `<thead><tr><th>${head}</th><th>期間</th><th class="n">日数</th><th class="n">売上</th><th class="n">店舗</th>
+      <th class="n">オンライン</th><th class="n">ｵﾝﾗｲﾝ比</th><th class="n">注文</th><th class="n">点数</th>
+      <th class="n">客単価</th><th class="n">日平均</th><th class="n">失注</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
+      <td class="num" style="font-size:12px;color:var(--ink-2)">${jd(r.start)}–${jd(r.end)}</td>
+      <td class="n">${r.elapsed}</td>
+      <td class="n"><b>${n1(r.rev)}</b></td>
+      <td class="n">${n1(r.off)}</td>
+      <td class="n">${n1(r.on)}</td>
+      <td class="n">${pct(r.on,r.rev)}</td>
+      <td class="n">${r.orders}</td>
+      <td class="n">${r.units}</td>
+      <td class="n">${n1(r.aov)}</td>
+      <td class="n">${n1(r.per_day)}</td>
+      <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>合計</td><td></td><td class="n">${rows.reduce((a,r)=>a+r.elapsed,0)}</td>
+      <td class="n">${n1(tot.rev)}</td><td class="n">${n1(tot.off)}</td><td class="n">${n1(tot.on)}</td>
+      <td class="n">${pct(tot.on,tot.rev)}</td><td class="n">${tot.orders}</td><td class="n">${tot.units}</td>
+      <td class="n">${n1(tot.rev/tot.orders)}</td><td class="n">—</td>
+      <td class="n">${n1(tot.lost)}</td></tr></tfoot>`;
+}
+periodTable('t-week', D.weekly, '週');
+periodTable('t-month', D.monthly, '月');
+
+/* tabs */
+const tabW = $('#tab-week'), tabM = $('#tab-month');
+function selTab(which){
+  const w = which === 'week';
+  tabW.setAttribute('aria-selected', w); tabM.setAttribute('aria-selected', !w);
+  $('#pane-week').hidden = !w; $('#pane-month').hidden = w;
+}
+tabW.onclick = () => selTab('week');
+tabM.onclick = () => selTab('month');
+
+/* ═══ 3. Online / Offline split ═══════════════════════ */
+const segs = [
+  {k:'offline', name:'オフライン(店舗)', sub:'Barefoot Malaysia POS · Johor Bahru', cls:'tone-off', color:'var(--s1)', lost:K.lost_offline},
+  {k:'online',  name:'オンライン',       sub:'Shopee · Lazada · 自社直販',          cls:'tone-on',  color:'var(--s-online)', lost:K.lost_online}
+];
+$('#split').innerHTML = segs.map(s => {
+  const b = K[s.k];
+  return `<div class="panel ${s.cls}">
+    <div class="ptitle"><b>${s.name}</b><span class="pct" style="color:${s.color}">${pct(b.rev,K.total.rev)}</span></div>
+    <div class="big"><small>RM</small>${n1(b.rev)}</div>
+    <div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">${s.sub}</div>
+    <div class="metarow">
+      <div><span class="l">注文</span><span class="v">${b.orders}</span></div>
+      <div><span class="l">点数</span><span class="v">${b.units}</span></div>
+      <div><span class="l">客単価</span><span class="v">${n0(b.rev/b.orders)}</span></div>
+      <div><span class="l">1点単価</span><span class="v">${n0(b.rev/b.units)}</span></div>
+      <div><span class="l">失注</span><span class="v" style="color:var(--crit)">${n0(s.lost.rev)}</span></div>
+      <div><span class="l">失注率</span><span class="v" style="color:var(--crit)">${pct(s.lost.orders, s.lost.orders+b.orders)}</span></div>
+    </div></div>`;
+}).join('');
+$('#sharebar').innerHTML =
+  `<i style="width:${K.offline.rev/K.total.rev*100}%;background:var(--s1)"></i>` +
+  `<i style="width:${K.online.rev/K.total.rev*100}%;background:var(--s-online)"></i>`;
+$('#sharelegend').innerHTML = segs.map(s =>
+  `<span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:${s.color}"></i>
+   ${s.name} <b class="num">${pct(K[s.k].rev,K.total.rev)}</b> <span style="color:var(--ink-3)">${rm2(K[s.k].rev)}</span></span>`).join('');
+$('#split-note').textContent =
+  `店舗の客単価は ${rm2(K.offline.rev/K.offline.orders)}、オンラインは ${rm2(K.online.rev/K.online.orders)}。`
+  + ` 店舗は1注文あたり ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンラインは ${(K.online.units/K.online.orders).toFixed(2)}点で、`
+  + ` 店舗では複数点をまとめ買いする客が客単価を押し上げています。`
+  + ` 失注率(件数ベース)は店舗 ${pct(K.lost_offline.orders,K.lost_offline.orders+K.offline.orders)} に対しオンライン ${pct(K.lost_online.orders,K.lost_online.orders+K.online.orders)}。`;
+
+/* ═══ 4. Daily chart ══════════════════════════════════ */
+(function(){
+  const rows = D.daily;
+  const host = $('#c-daily');
+  const W = 1120, H = 300, ML = 60, MR = 12, MT = 14, MB = 52;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...rows.map(r => r.off+r.on))*1.1);
+  const y = v => MT + ph - (v/max)*ph;
+  const s = mkSvg(host, W, H);
+  const step = pw/rows.length, bw = Math.min(20, step*0.66);
+
+  rows.forEach((r,i)=>{ if (isWknd(r.date))
+    s.appendChild(svgEl('rect',{x:ML+step*i, y:MT, width:step, height:ph, class:'wkend'})); });
+
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
+    const t = svgEl('text',{x:ML-9,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
+
+  // week boundary markers
+  D.weekly.forEach(w=>{
+    const i = rows.findIndex(r=>r.date===w.start);
+    if (i>0){
+      s.appendChild(svgEl('line',{x1:ML+step*i,x2:ML+step*i,y1:MT-6,y2:MT+ph,
+        stroke:'var(--rule-strong)','stroke-width':1,'stroke-dasharray':'3 3'}));
+      const t = svgEl('text',{x:ML+step*i+4,y:MT-1,class:'ax'}); t.textContent = w.label; s.appendChild(t);
+    }
+  });
+
+  rows.forEach((r,i)=>{
+    const x = ML + step*i + (step-bw)/2, tot = r.off+r.on;
+    if (r.off>0) s.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,(r.off/max)*ph, r.on>0?0:3), class:'f1'}));
+    if (r.on>0)  s.appendChild(svgEl('path',{d:barV(x,y(tot),bw,(r.on/max)*ph-(r.off>0?2:0),3), class:'fon'}));
+    const lab = svgEl('text',{x:ML+step*i+step/2, y:H-MB+18,'text-anchor':'middle', class:'ax'});
+    lab.textContent = r.date.slice(8); s.appendChild(lab);
+    if (r.date.slice(8)==='01' || i===0){
+      const mo = svgEl('text',{x:ML+step*i+step/2, y:H-MB+34,'text-anchor':'middle', class:'axb'});
+      mo.textContent = r.date.slice(5,7)+'月'; s.appendChild(mo);
+    }
+    const hit = svgEl('rect',{x:ML+step*i, y:MT, width:step, height:ph, class:'hit'});
+    bindTip(hit, `<b>${esc(r.date)}(${wdOf(r.date)})</b><hr>` + (tot>0
+      ? `<div class="r"><span>売上</span><b>${rm2(tot)}</b></div>
+         <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
+         <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+         <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>`
+      : `<div class="r"><span>売上</span><span>なし</span></div>`)
+      + (r.lost>0?`<hr><div class="r"><span>失注</span><b>${rm2(r.lost)}</b></div>`:''));
+    s.appendChild(hit);
+  });
+  const best = rows.reduce((a,r)=> (r.off+r.on) > (a.off+a.on) ? r : a);
+  const zero = rows.filter(r=>r.off+r.on===0).length;
+  $('#daily-note').textContent =
+    `最高日は ${best.date}(${wdOf(best.date)}) の ${rm2(best.off+best.on)}(${best.orders}注文 / ${best.units}点)。`
+    + ` ${M.days}日中 ${zero}日は売上ゼロ。特に 7/31〜8/5 は6日連続で売上がありません(この期間の受注はすべてキャンセル)。`;
+})();
+
+/* ═══ 5. Channel ══════════════════════════════════════ */
+(function(){
+  const rows = D.channels;
+  const host = $('#c-channel');
+  const W = 900, rowH = 62, MT = 8, ML = 128, MR = 120;
+  const H = MT + rows.length*rowH + 26;
+  const pw = W-ML-MR;
+  const max = niceMax(Math.max(...rows.map(r=>Math.max(r.rev,r.lost_rev)))*1.02);
+  const s = mkSvg(host, W, H);
+  const x = v => ML + (v/max)*pw;
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:MT,y2:MT+rows.length*rowH,class:'grid'}));
+    const t = svgEl('text',{x:x(v),y:H-8,'text-anchor':'middle',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:ML,y1:MT,y2:MT+rows.length*rowH,class:'axis'}));
+  rows.forEach((r,i)=>{
+    const yT = MT + i*rowH + 8, bh = 18;
+    const nm = svgEl('text',{x:ML-12,y:yT+13,'text-anchor':'end',class:'axb'}); nm.textContent = r.name;
+    s.appendChild(nm);
+    const sg = svgEl('text',{x:ML-12,y:yT+30,'text-anchor':'end',class:'ax'}); sg.textContent = r.seg;
+    s.appendChild(sg);
+    s.appendChild(svgEl('path',{d:barH(ML,yT,(r.rev/max)*pw,bh,4), fill:'var(--accent)'}));
+    const v1 = svgEl('text',{x:x(r.rev)+8,y:yT+13,class:'dlab'}); v1.textContent = rm(r.rev); s.appendChild(v1);
+    if (r.lost_rev>0){
+      s.appendChild(svgEl('path',{d:barH(ML,yT+bh+4,(r.lost_rev/max)*pw,13,4),
+        fill:`url(#hatch${host.id})`, stroke:'var(--ghost)','stroke-width':1}));
+      const v2 = svgEl('text',{x:x(r.lost_rev)+8,y:yT+bh+15,class:'dlab2'});
+      v2.textContent = '失注 '+rm(r.lost_rev); s.appendChild(v2);
+    }
+    const hit = svgEl('rect',{x:0,y:MT+i*rowH,width:W,height:rowH,class:'hit'});
+    bindTip(hit, `<b>${esc(r.name)}</b><hr>
+      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>構成比</span><span>${pct(r.rev,K.total.rev)}</span></div>
+      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+      <div class="r"><span>客単価</span><span>${rm2(r.rev/r.orders)}</span></div>
+      <hr><div class="r"><span>失注</span><b>${rm2(r.lost_rev)}</b></div>
+      <div class="r"><span>失注件数</span><span>${r.lost_orders} 件</span></div>
+      <div class="r"><span>失注率</span><span>${pct(r.lost_orders,r.lost_orders+r.orders)}</span></div>`);
+    s.appendChild(hit);
+  });
+})();
+
+$('#t-channel').innerHTML = (()=>{
+  const rows = D.channels, T = K.total;
+  return `<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>
+    <th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th>
+    <th class="n">失注額</th><th class="n">失注件数</th><th class="n">失注率</th></tr></thead>
+   <tbody>${rows.map(r=>`<tr>
+     <td><b>${esc(r.name)}</b></td>
+     <td><span class="chip ${r.seg==='オフライン'?'pos':'mute'}">${esc(r.seg)}</span></td>
+     <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,T.rev)}</td>
+     <td class="n">${r.orders}</td><td class="n">${r.units}</td><td class="n">${n1(r.rev/r.orders)}</td>
+     <td class="n" style="color:var(--crit)">${r.lost_rev?n1(r.lost_rev):'—'}</td>
+     <td class="n" style="color:var(--crit)">${r.lost_orders||'—'}</td>
+     <td class="n" style="color:var(--crit)">${r.lost_orders?pct(r.lost_orders,r.lost_orders+r.orders):'—'}</td></tr>`).join('')}</tbody>
+   <tfoot><tr><td>合計</td><td></td><td class="n">${n1(T.rev)}</td><td class="n">100.0%</td>
+     <td class="n">${T.orders}</td><td class="n">${T.units}</td><td class="n">${n1(T.rev/T.orders)}</td>
+     <td class="n">${n1(K.lost.rev)}</td><td class="n">${K.lost.orders}</td>
+     <td class="n">${pct(K.lost.orders,K.lost.orders+T.orders)}</td></tr></tfoot>`;
+})();
+
+/* ═══ 6. Model ════════════════════════════════════════ */
+(function(){
+  const rows = D.models.filter(m=>m.name!=='配送料');
+  const host = $('#c-model');
+  const W = 900, rowH = 34, MT = 8, ML = 176, MR = 132;
+  const H = MT + rows.length*rowH + 26, pw = W-ML-MR;
+  const max = niceMax(Math.max(...rows.map(r=>r.rev))*1.02);
+  const s = mkSvg(host, W, H);
+  const x = v => ML + (v/max)*pw;
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:MT,y2:MT+rows.length*rowH,class:'grid'}));
+    const t = svgEl('text',{x:x(v),y:H-8,'text-anchor':'middle',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:ML,y1:MT,y2:MT+rows.length*rowH,class:'axis'}));
+  rows.forEach((r,i)=>{
+    const yT = MT + i*rowH + 6, bh = 20;
+    const nm = svgEl('text',{x:ML-12,y:yT+10,'text-anchor':'end',class:'axb'}); nm.textContent = r.name;
+    s.appendChild(nm);
+    const br = svgEl('text',{x:ML-12,y:yT+22,'text-anchor':'end',class:'ax'}); br.textContent = r.brand;
+    s.appendChild(br);
+    const wOff = (r.off/max)*pw, wOn = (r.on/max)*pw;
+    if (r.off>0) s.appendChild(svgEl('path',{d:barH(ML,yT,wOff,bh, r.on>0?0:4), class:'f1'}));
+    if (r.on>0)  s.appendChild(svgEl('path',{d:barH(ML+wOff+(r.off>0?2:0),yT,wOn-(r.off>0?2:0),bh,4), class:'fon'}));
+    const v1 = svgEl('text',{x:x(r.rev)+8,y:yT+14,class:'dlab'});
+    v1.textContent = `${rm(r.rev)}  ${r.units}点`; s.appendChild(v1);
+    const hit = svgEl('rect',{x:0,y:MT+i*rowH,width:W,height:rowH,class:'hit'});
+    bindTip(hit, `<b>${esc(r.name)}</b> · ${esc(r.brand)}<hr>
+      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>構成比</span><span>${pct(r.rev, rows.reduce((a,z)=>a+z.rev,0))}</span></div>
+      <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
+      <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+      <div class="r"><span>数量</span><span>${r.units} 点</span></div>
+      <div class="r"><span>平均単価</span><span>${rm2(r.avg)}</span></div>`);
+    s.appendChild(hit);
+  });
+})();
+
+$('#t-model').innerHTML = (()=>{
+  const rows = D.models, tot = rows.reduce((a,r)=>a+r.rev,0), tu = rows.reduce((a,r)=>a+r.units,0);
+  return `<thead><tr><th>モデル</th><th>ブランド</th><th class="n">売上</th><th class="n">構成比</th>
+    <th class="n">数量</th><th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
+   <tbody>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td style="color:var(--ink-2)">${esc(r.brand)}</td>
+     <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,tot)}</td>
+     <td class="n">${r.units}</td><td class="n">${r.avg?n1(r.avg):'—'}</td>
+     <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
+   <tfoot><tr><td>合計</td><td></td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
+     <td class="n">${tu}</td><td class="n">—</td>
+     <td class="n">${n1(rows.reduce((a,r)=>a+r.off,0))}</td>
+     <td class="n">${n1(rows.reduce((a,r)=>a+r.on,0))}</td></tr></tfoot>`;
+})();
+
+/* ═══ 7. Size / Color ═════════════════════════════════ */
+function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
+  const host = document.getElementById(hostId);
+  const W = Wover || 460, H = Wover ? 190 : 210, ML = 30, MR = 10, MT = 20, MB = 40;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = Math.max(1, ...rows.map(valF));
+  const s = mkSvg(host, W, H);
+  const step = pw/rows.length, bw = Math.min(30, step*0.62);
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:MT+ph,y2:MT+ph,class:'axis'}));
+  rows.forEach((r,i)=>{
+    const v = valF(r), h = (v/max)*ph;
+    const x = ML+step*i+(step-bw)/2;
+    s.appendChild(svgEl('path',{d:barV(x,MT+ph-h,bw,h,3), class:cls}));
+    const t = svgEl('text',{x:x+bw/2,y:MT+ph-h-6,'text-anchor':'middle',class:'dlab'});
+    t.textContent = v; s.appendChild(t);
+    const l = svgEl('text',{x:x+bw/2,y:MT+ph+17,'text-anchor':'middle',class:'ax'});
+    l.textContent = keyF(r); s.appendChild(l);
+    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
+    bindTip(hit, `<b>${esc(keyF(r))}</b><hr><div class="r"><span>販売</span><b>${v} ${unit}</b></div>
+      <div class="r"><span>構成比</span><span>${pct(v, rows.reduce((a,z)=>a+valF(z),0))}</span></div>`);
+    s.appendChild(hit);
+  });
+}
+countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
+countChart('c-sizem', D.sizes.men,   r=>r.size, r=>r.n, 'f3', '足');
+countChart('c-sizet', D.sizes.tabi,  r=>r.size, r=>r.n, 'f4', '足');
+countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
+(function(){
+  const w = D.sizes.women, m = D.sizes.men, t = D.sizes.tabi;
+  const topW = [...w].sort((a,b)=>b.n-a.n).slice(0,3);
+  const topM = [...m].sort((a,b)=>b.n-a.n).slice(0,3);
+  const sw = w.reduce((a,r)=>a+r.n,0), sm = m.reduce((a,r)=>a+r.n,0), st = t.reduce((a,r)=>a+r.n,0);
+  const bk = D.colors.find(c=>c.name==='Black');
+  $('#size-note').textContent =
+    `Vibram FiveFingers はレディース ${sw}足 / メンズ ${sm}足、Marugo 足袋(cm表記)が ${st}足。`
+    + ` レディースは EU${topW.map(r=>r.size).join(' · ')} が中心(上位3サイズで ${pct(topW.reduce((a,r)=>a+r.n,0), sw)})、`
+    + ` メンズは EU${topM.map(r=>r.size).join(' · ')} に分散しています。`
+    + ` カラーは Black が ${bk.n}点で全体の ${pct(bk.n, D.colors.reduce((a,c)=>a+c.n,0))}。`;
+})();
+
+/* ═══ 8. Ops ══════════════════════════════════════════ */
+(function(){
+  const rows = D.dow, host = $('#c-dow');
+  const W = 460, H = 210, ML = 44, MR = 10, MT = 20, MB = 40;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...rows.map(r=>r.rev))*1.08);
+  const s = mkSvg(host, W, H);
+  const step = pw/7, bw = Math.min(30, step*0.6);
+  for (let i=0;i<=2;i++){
+    const v = max*i/2, yy = MT+ph-(v/max)*ph;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:yy,y2:yy,class:'grid'}));
+    const t = svgEl('text',{x:ML-8,y:yy+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:MT+ph,y2:MT+ph,class:'axis'}));
+  rows.forEach((r,i)=>{
+    const h=(r.rev/max)*ph, x=ML+step*i+(step-bw)/2;
+    s.appendChild(svgEl('path',{d:barV(x,MT+ph-h,bw,h,3), class:(i>=5?'f3':'f1')}));
+    const l = svgEl('text',{x:x+bw/2,y:MT+ph+17,'text-anchor':'middle',class:'axb'});
+    l.textContent = r.name; s.appendChild(l);
+    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
+    bindTip(hit,`<b>${r.name}曜日</b><hr><div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+      <div class="r"><span>客単価</span><span>${r.orders?rm2(r.rev/r.orders):'—'}</span></div>`);
+    s.appendChild(hit);
+  });
+  const lg = document.createElement('div');
+  lg.className='legend'; lg.style.marginTop='4px';
+  lg.innerHTML = `<span><i class="sw" style="background:var(--s1)"></i>平日</span><span><i class="sw" style="background:var(--s3)"></i>週末</span>`;
+  host.appendChild(lg);
+})();
+countChart('c-hour', D.hours.filter(h=>h.h>=10&&h.h<=21), r=>r.h+'時', r=>r.n, 'f1', '件');
+
+function simpleTable(elId, title, rows, valLabel){
+  const tot = rows.reduce((a,r)=>a+r.rev,0);
+  document.getElementById(elId).innerHTML =
+   `<thead><tr><th>${title}</th><th class="n">売上</th><th class="n">構成比</th><th class="n">注文</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="n">${n1(r.rev)}</td>
+      <td class="n">${pct(r.rev,tot)}</td><td class="n">${r.orders}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>合計</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
+      <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td></tr></tfoot>`;
+}
+simpleTable('t-state','州(請求先)', D.states);
+simpleTable('t-pay','決済方法', D.payments);
+
+/* ═══ 9. Lost / Unpaid ════════════════════════════════ */
+const shopee = D.channels.find(c=>c.name==='Shopee');
+$('#callouts').innerHTML = `
+  <div class="callout">
+    <h3>Shopee の失注が売上を上回っている</h3>
+    <p>Shopee の成約は <b>${shopee.orders}件 / ${rm2(shopee.rev)}</b> に対し、失注は <b>${shopee.lost_orders}件 / ${rm2(shopee.lost_rev)}</b>。
+    件数ベースの失注率は <b>${pct(shopee.lost_orders, shopee.lost_orders+shopee.orders)}</b> で、Shopee 経由の受注は半分以上が売上になっていません。</p>
+    <p>特に <b>7/29〜7/30 の2日間に V-Soul W37 が5件連続でキャンセル(いずれも未入金)</b>。同一SKUへの集中は在庫切れ・価格設定・配送設定など出品側の要因を疑う値です。</p>
+  </div>
+  <div class="callout warnflag">
+    <h3>未入金 ${K.unpaid.orders}件 / ${rm2(K.unpaid.rev)} は全てオンライン</h3>
+    <p>未入金(Unpaid)の注文はすべて Shopee 経由で、かつ全件がキャンセルまたは返品で終わっています。<b>入金は一度も発生していません</b>ので、売上にもキャッシュにも計上されていません。
+    「取り逃した受注額」として下の台帳で追跡してください。</p>
+  </div>`;
+
+$('#t-unpaid').innerHTML =
+ `<thead><tr><th>受注日時</th><th>伝票</th><th>チャネル</th><th>ステータス</th><th>商品</th><th class="n">点数</th><th class="n">受注額</th></tr></thead>
+  <tbody>${D.unpaid_rows.map(r=>`<tr>
+    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
+    <td><span class="chip shopee">${esc(r.channel)}</span></td>
+    <td><span class="chip crit">${esc(r.status)}</span></td>
+    <td><span class="wrapok">${esc(r.items)}</span></td>
+    <td class="n">${r.units}</td><td class="n">${n1(r.total)}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td>合計 ${D.unpaid_rows.length}件</td><td></td><td></td><td></td><td></td>
+    <td class="n">${K.unpaid.units}</td><td class="n">${n1(K.unpaid.rev)}</td></tr></tfoot>`;
+
+$('#t-lost').innerHTML =
+ `<thead><tr><th>受注日時</th><th>伝票</th><th>チャネル</th><th>ステータス</th><th>入金</th><th>商品</th><th class="n">点数</th><th class="n">受注額</th></tr></thead>
+  <tbody>${D.lost_rows.map(r=>`<tr>
+    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
+    <td><span class="chip ${r.channel.startsWith('POS')?'pos':'shopee'}">${esc(r.channel)}</span></td>
+    <td><span class="chip ${r.status==='Returned'?'crit':'mute'}">${esc(r.status)}</span></td>
+    <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
+    <td><span class="wrapok">${esc(r.items)}</span></td>
+    <td class="n">${r.units}</td><td class="n">${n1(r.total)}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td>合計 ${D.lost_rows.length}件</td><td></td><td></td><td></td><td></td><td></td>
+    <td class="n">${K.lost.units}</td><td class="n">${n1(K.lost.rev)}</td></tr></tfoot>`;
+
+/* ═══ 10. Sales ledger ════════════════════════════════ */
+$('#t-sales').innerHTML =
+ `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>チャネル</th><th>商品</th>
+   <th>州</th><th>決済</th><th class="n">点数</th><th class="n">売上</th></tr></thead>
+  <tbody>${D.sales_rows.map(r=>`<tr>
+    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
+    <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?'店舗':'オンライン'}</span></td>
+    <td style="font-size:12px">${esc(r.channel)}</td>
+    <td><span class="wrapok">${esc(r.items)}</span></td>
+    <td style="font-size:12px;color:var(--ink-2)">${esc(r.state)}</td>
+    <td style="font-size:12px;color:var(--ink-2)">${esc(r.pay_method)}</td>
+    <td class="n">${r.units}</td><td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
+  <tfoot><tr><td>合計 ${D.sales_rows.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td>
+    <td class="n">${K.total.units}</td><td class="n">${n1(K.total.rev)}</td></tr></tfoot>`;
+
+/* ═══ 11. Findings ════════════════════════════════════ */
+(function(){
+  const w = D.weekly, w1 = w[0], w5 = w[w.length-1];
+  const vsoul = D.models[0];
+  const items = [
+    ['fact','週商は開業週の2.3倍に伸びている',
+     `日平均で見ると開業週 ${rm2(w1.per_day)} → 第5週 ${rm2(w5.per_day)}(${(w5.per_day/w1.per_day).toFixed(1)}倍)。第2週の ${rm2(w[1].per_day)} が底で、そこから4週連続で増加しています。`],
+    ['fact','売上の8割は店舗、しかし失注の8割はオンライン',
+     `店舗 ${pct(K.offline.rev,K.total.rev)} / オンライン ${pct(K.online.rev,K.total.rev)}。一方で失注額の ${pct(K.lost_online.rev,K.lost.rev)} がオンライン発生です。`],
+    ['fact',`${vsoul.name} 1モデルで売上の${pct(vsoul.rev, D.models.reduce((a,m)=>a+m.rev,0))}`,
+     `${vsoul.units}点で ${rm2(vsoul.rev)}。2位以下(${D.models.slice(1,4).map(m=>m.name).join(' / ')})を大きく引き離しており、実質シングルモデル依存の状態です。`],
+    ['fact','商圏は Johor に集中',
+     `${D.states[0].name} が ${pct(D.states[0].rev,K.total.rev)}(${D.states[0].orders}注文)。Selangor・KL は合わせて ${pct(D.states[1].rev+D.states[3].rev, K.total.rev)} で、オンライン経由の遠隔地需要はまだ小さい規模です。`],
+    ['est','V-Soul W37〜W40 は在庫を厚めに',
+     `販売実績の中心は EU37〜40(レディース)。同時に Shopee でキャンセルが集中したのも W37 でした。売れ筋と欠品疑いのサイズが一致しているため、この帯の在庫確保が最優先と推定されます。`],
+    ['est','Shopee は「出品の設定」を疑う段階',
+     `未入金キャンセルが同一SKUに集中している以上、需要不足ではなく在庫連動・価格・配送設定の不整合の可能性が高いと推定されます。Shopee 管理画面側の在庫数と配送オプションの確認を推奨します。`]
+  ];
+  $('#finds').innerHTML = items.map(([t,h,p])=>
+    `<div class="find"><span class="tag ${t==='fact'?'fact':''}">${t==='fact'?'確認済':'推定'}</span>
+     <h3>${esc(h)}</h3><p>${p}</p></div>`).join('');
+})();
+
+/* ═══ 12. Definitions ═════════════════════════════════ */
+$('#t-def').innerHTML =
+ `<thead><tr><th>項目</th><th>定義</th></tr></thead><tbody>
+  <tr><td><b>売上実績</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Completed または Shipped、かつ payment_status が Paid の注文。金額は注文合計(total = 商品合計 + 送料 − 値引き)。</span></td></tr>
+  <tr><td><b>オフライン(店舗)</b></td><td><span class="wrapok" style="max-width:70ch">marketplace = Barefoot Malaysia POS。Johor Bahru 店頭での販売。</span></td></tr>
+  <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
+  <tr><td><b>失注</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Cancelled または Returned の注文。売上には含めず別集計。</span></td></tr>
+  <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>
+  <tr><td><b>点数</b></td><td><span class="wrapok" style="max-width:70ch">シューズ・ソックスの数量合計。送料などのサービス行は除外。返品行(数量 −1)は差し引いています。</span></td></tr>
+  <tr><td><b>モデル別売上</b></td><td><span class="wrapok" style="max-width:70ch">商品行の金額(product_total)ベース。注文単位の値引き・送料を含まないため、合計は純売上と一致しません。</span></td></tr>
+  <tr><td><b>除外データ</b></td><td><span class="wrapok" style="max-width:70ch">テスト注文2件(INV-4 / INV-5、商品名 test3・test4、各 RM 1.00)は全集計から除外。</span></td></tr>
+ </tbody>`;
+
+$('#foot-meta').innerHTML =
+ `<dl>
+   <div style="display:contents"><dt>データ出典</dt><dd>${esc(M.source)}</dd></div>
+   <div style="display:contents"><dt>対象期間</dt><dd>${M.period[0]} 〜 ${M.period[1]}(${M.days}日間)</dd></div>
+   <div style="display:contents"><dt>元データ</dt><dd>${M.lines} 明細行 / ${M.n_orders_raw} 注文(うちテスト2件を除外し ${M.n_orders} 注文を集計)</dd></div>
+   <div style="display:contents"><dt>通貨</dt><dd>MYR(RM)· 税抜/税込の区分は元データに情報なし</dd></div>
+ </dl>
+ <p style="margin-top:14px">数値は元データの注文合計をそのまま集計したもので、返金処理・手数料・原価は含みません(product_cost は元データでほぼ未入力のため粗利は算出不可)。</p>`;
+
+})();
+</script>
