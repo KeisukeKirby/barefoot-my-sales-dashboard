@@ -99,9 +99,31 @@ body{
 .mast-in{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:flex-end;justify-content:space-between;padding:26px 0 22px}
 .brand{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);font-weight:600;margin:0 0 6px}
 h1{font-family:"Zen Old Mincho",serif;font-weight:700;font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;letter-spacing:.01em;text-wrap:balance}
-.mast dl{display:flex;gap:26px;margin:0;flex-wrap:wrap}
-.mast dt{font-size:10px;letter-spacing:.14em;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
-.mast dd{margin:2px 0 0;font-size:14px;font-weight:500}
+.mast-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.mast-kpi .l{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;color:var(--ink-3)}
+.mast-kpi .v{font-size:clamp(22px,3vw,30px);font-weight:600;line-height:1.15;letter-spacing:-.02em}
+.mast-kpi .s{font-size:11.5px;color:var(--ink-2)}
+
+/* ── Section tabs ─────────────────────────────────────── */
+.tabnav{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(150%) blur(8px);border-bottom:1px solid var(--rule)}
+.tabnav-in{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabnav-in::-webkit-scrollbar{display:none}
+.tabnav button{position:relative;flex:none;border:0;background:transparent;cursor:pointer;
+  font:500 13.5px/1 "Zen Kaku Gothic New",sans-serif;color:var(--ink-2);
+  padding:15px 18px 13px;border-bottom:2px solid transparent;white-space:nowrap}
+.tabnav button:hover{color:var(--ink)}
+.tabnav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.tabnav button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.tabnav button .c{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);margin-left:7px}
+.tabnav button[aria-selected="true"] .c{color:var(--accent)}
+.tabpane[hidden]{display:none}
+.tabpane > section:first-child{border-top:0}
+.metagrid{display:grid;grid-template-columns:max-content 1fr;gap:10px 26px;margin:0;
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px;box-shadow:var(--shadow)}
+.metagrid dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;color:var(--ink-3);padding-top:2px}
+.metagrid dd{margin:0;font-size:13.5px}
+@media (max-width:560px){.metagrid{grid-template-columns:1fr;gap:2px 0}.metagrid dd{margin-bottom:10px}}
 
 /* ── Section scaffolding ───────────────────────────────── */
 section{padding:52px 0 8px}
@@ -222,21 +244,25 @@ footer dd{margin:0}
 <div class="mast">
   <div class="wrap mast-in">
     <div>
-      <p class="brand">BAREFOOT INC · MALAYSIA</p>
+      <p class="brand">Barefootinc Malaysia</p>
       <h1>販売実績ダッシュボード</h1>
     </div>
-    <dl>
-      <div><dt>対象期間</dt><dd class="num" id="m-period"></dd></div>
-      <div><dt>集計対象</dt><dd class="num" id="m-orders"></dd></div>
-      <div><dt>データ出典</dt><dd id="m-src">Orders エクスポート</dd></div>
-    </dl>
+    <div class="mast-kpi">
+      <span class="l">純売上</span>
+      <span class="v num" id="mast-rev">—</span>
+      <span class="s num" id="mast-range">—</span>
+    </div>
   </div>
 </div>
+
+<nav class="tabnav" aria-label="セクション">
+  <div class="wrap tabnav-in" id="tabnav"></div>
+</nav>
 
 <main class="wrap">
 
   <!-- ══ サマリー ══ -->
-  <section id="s-summary">
+  <section id="s-summary" data-pane="overview">
     <p class="eyebrow">Summary</p>
     <h2>売上サマリー</h2>
     <p class="lede">入金確認済み(Paid)かつ Completed / Shipped の注文のみを売上実績として集計。キャンセル・返品・未入金は売上から除外し、下部の台帳に別記録として残しています。</p>
@@ -245,7 +271,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 期間別 ══ -->
-  <section id="s-period">
+  <section id="s-period" data-pane="trend">
     <p class="eyebrow">Period</p>
     <h2>期間別の実績</h2>
     <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
@@ -289,7 +315,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ オンライン / オフライン ══ -->
-  <section id="s-split">
+  <section id="s-split" data-pane="channel">
     <p class="eyebrow">Online / Offline</p>
     <h2>オンラインとオフラインの内訳</h2>
     <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
@@ -300,7 +326,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 日次 ══ -->
-  <section id="s-daily">
+  <section id="s-daily" data-pane="trend">
     <p class="eyebrow">Daily</p>
     <h2>日次の売上推移</h2>
     <p class="lede">開業日から最新データまで、売上ゼロの日も含めた全日表示。網掛けは土日です。</p>
@@ -318,7 +344,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ チャネル ══ -->
-  <section id="s-channel">
+  <section id="s-channel" data-pane="channel">
     <p class="eyebrow">Channel</p>
     <h2>チャネル別の成約と失注</h2>
     <p class="lede">売上金額と、同じチャネルで失注(キャンセル・返品)した金額を並べています。オンラインの失注が構造的な問題として見えます。</p>
@@ -336,7 +362,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 商品 ══ -->
-  <section id="s-product">
+  <section id="s-product" data-pane="product">
     <p class="eyebrow">Product</p>
     <h2>モデル別の売上構成</h2>
     <p class="lede">商品行の金額ベース(注文単位の値引き・送料は含みません)。店舗とオンラインの内訳を積み上げています。</p>
@@ -359,7 +385,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ サイズ・カラー ══ -->
-  <section id="s-size">
+  <section id="s-size" data-pane="product">
     <p class="eyebrow">Size &amp; Color</p>
     <h2>売れたサイズとカラー</h2>
     <p class="lede">発注・在庫補充の判断材料。数量ベースで集計しています。</p>
@@ -385,7 +411,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 店舗運営 ══ -->
-  <section id="s-ops">
+  <section id="s-ops" data-pane="ops">
     <p class="eyebrow">Store Operations</p>
     <h2>店舗の売れる曜日・時間帯・商圏</h2>
     <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみ。地域は請求先の州です。</p>
@@ -406,7 +432,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 失注・未入金 ══ -->
-  <section id="s-lost">
+  <section id="s-lost" data-pane="ledger">
     <p class="eyebrow">Unpaid &amp; Lost — 売上実績とは別記録</p>
     <h2>未入金・失注の台帳</h2>
     <p class="lede">売上には一切含めていません。回収・再販・在庫戻しの管理用として、注文単位で全件を残しています。</p>
@@ -417,11 +443,11 @@ footer dd{margin:0}
     <p class="note">未入金は全て入金前にキャンセル/返品となった注文です。実際の入金は発生しておらず、金額は「取り逃した受注額」として読んでください。</p>
 
     <h3 style="margin:26px 0 10px">失注(キャンセル+返品)注文 — 全件</h3>
-    <div class="tablebox"><table id="t-lost"></table></div>
+    <div class="tablebox" style="max-height:440px;overflow-y:auto"><table id="t-lost"></table></div>
   </section>
 
   <!-- ══ 全注文 ══ -->
-  <section id="s-ledger">
+  <section id="s-ledger" data-pane="ledger">
     <p class="eyebrow">Ledger</p>
     <h2>売上明細(全<span id="ledger-n">—</span>件)</h2>
     <p class="lede">売上実績に計上した注文の全件リスト。</p>
@@ -429,7 +455,7 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 読み取り ══ -->
-  <section id="s-findings">
+  <section id="s-findings" data-pane="overview">
     <p class="eyebrow">Findings</p>
     <h2>数字から読めること</h2>
     <p class="lede">「確認済」はデータから直接計算した事実、「推定」はデータから導いた解釈です。</p>
@@ -437,10 +463,18 @@ footer dd{margin:0}
   </section>
 
   <!-- ══ 定義 ══ -->
-  <section id="s-def">
+  <section id="s-def" data-pane="overview">
     <p class="eyebrow">Definitions</p>
     <h2>集計の定義</h2>
     <div class="tablebox"><table id="t-def"></table></div>
+  </section>
+
+  <!-- ══ データについて(概要タブ末尾) ══ -->
+  <section id="s-meta" data-pane="overview">
+    <p class="eyebrow">Data</p>
+    <h2>このデータについて</h2>
+    <dl class="metagrid" id="metagrid"></dl>
+    <p class="note" id="meta-caveat"></p>
   </section>
 
   <footer>
@@ -524,9 +558,8 @@ function mkSvg(host, w, h){
 
 /* ═══ 1. Masthead + KPI ═══════════════════════════════ */
 const K = D.kpi, M = D.meta;
-$('#m-period').textContent = `${M.period[0]} → ${M.period[1]}`;
-$('#m-orders').textContent = `${M.n_orders} 注文 / ${M.lines} 明細行`;
-$('#m-src').textContent = M.source;
+$('#mast-rev').textContent = 'RM ' + n1(K.total.rev);
+$('#mast-range').textContent = `${M.period[0]} 〜 ${M.period[1]}`;
 
 const kpiDefs = [
   ['純売上 (NET SALES)', rm2(K.total.rev), `${K.total.orders} 注文 / ${K.total.units} 点`],
@@ -1109,14 +1142,83 @@ $('#t-def').innerHTML =
   <tr><td><b>除外データ</b></td><td><span class="wrapok" style="max-width:70ch">テスト注文2件(INV-4 / INV-5、商品名 test3・test4、各 RM 1.00)は全集計から除外。</span></td></tr>
  </tbody>`;
 
+/* ═══ 13. データについて(概要タブ末尾) ══════════════ */
+$('#metagrid').innerHTML =
+ `<dt>対象期間</dt><dd class="num">${M.period[0]} 〜 ${M.period[1]}(${M.days}日間 / 売上のあった日 ${K.active_days}日)</dd>
+  <dt>集計対象</dt><dd class="num">${M.n_orders} 注文 · ${M.lines} 明細行(テスト注文2件を除外)</dd>
+  <dt>データ出典</dt><dd>${esc(M.source)}</dd>
+  <dt>通貨</dt><dd>MYR(RM)· 税抜/税込の区分は元データに情報なし</dd>`;
+$('#meta-caveat').textContent =
+  '数値は元データの注文合計をそのまま集計したもので、返金処理・手数料・原価は含みません'
+  + '(product_cost が元データでほぼ未入力のため粗利は算出できません)。';
 $('#foot-meta').innerHTML =
- `<dl>
-   <div style="display:contents"><dt>データ出典</dt><dd>${esc(M.source)}</dd></div>
-   <div style="display:contents"><dt>対象期間</dt><dd>${M.period[0]} 〜 ${M.period[1]}(${M.days}日間)</dd></div>
-   <div style="display:contents"><dt>元データ</dt><dd>${M.lines} 明細行 / ${M.n_orders_raw} 注文(うちテスト2件を除外し ${M.n_orders} 注文を集計)</dd></div>
-   <div style="display:contents"><dt>通貨</dt><dd>MYR(RM)· 税抜/税込の区分は元データに情報なし</dd></div>
- </dl>
- <p style="margin-top:14px">数値は元データの注文合計をそのまま集計したもので、返金処理・手数料・原価は含みません(product_cost は元データでほぼ未入力のため粗利は算出不可)。</p>`;
+  `<p style="margin:0">Barefootinc Malaysia · 販売実績ダッシュボード · ${M.period[1]} 時点のデータ</p>`;
+
+/* ═══ 14. Section tabs ════════════════════════════════ */
+(function(){
+  const TABS = [
+    ['overview', '概要'],
+    ['trend',    '推移'],
+    ['channel',  'チャネル'],
+    ['product',  '商品'],
+    ['ops',      '店舗運営'],
+    ['ledger',   '台帳'],
+  ];
+  const main = document.querySelector('main');
+  const foot = main.querySelector('footer');
+  const panes = {};
+  TABS.forEach(([id])=>{
+    const d = document.createElement('div');
+    d.className = 'tabpane'; d.id = 'tp-' + id;
+    d.setAttribute('role','tabpanel');
+    d.setAttribute('aria-labelledby','tb-' + id);
+    panes[id] = d;
+    main.insertBefore(d, foot);
+  });
+  // data-pane の順に詰め替える。DOM 上の並びとタブ内の並びは別物にしたいため
+  [...main.querySelectorAll('section[data-pane]')].forEach(sec=>{
+    const p = panes[sec.dataset.pane];
+    if (p) p.appendChild(sec);
+  });
+
+  const nav = $('#tabnav');
+  nav.setAttribute('role','tablist');
+  nav.innerHTML = TABS.map(([id,label])=>{
+    const n = panes[id].querySelectorAll('section').length;
+    return `<button role="tab" id="tb-${id}" aria-controls="tp-${id}" aria-selected="false"
+             data-tab="${id}">${label}<span class="c">${n}</span></button>`;
+  }).join('');
+
+  function select(id, push){
+    if (!panes[id]) id = TABS[0][0];
+    TABS.forEach(([t])=>{
+      const on = t === id;
+      panes[t].hidden = !on;
+      const b = nav.querySelector(`[data-tab="${t}"]`);
+      b.setAttribute('aria-selected', on);
+      b.tabIndex = on ? 0 : -1;
+    });
+    if (push && location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
+    // 見出しが sticky ナビの裏に隠れないよう先頭へ戻す
+    if (push) window.scrollTo({top:0, behavior:'auto'});
+  }
+  nav.addEventListener('click', e=>{
+    const b = e.target.closest('[data-tab]');
+    if (b) select(b.dataset.tab, true);
+  });
+  nav.addEventListener('keydown', e=>{
+    const i = TABS.findIndex(([t])=>nav.querySelector(`[data-tab="${t}"]`).getAttribute('aria-selected')==='true');
+    let j = null;
+    if (e.key === 'ArrowRight') j = (i+1) % TABS.length;
+    if (e.key === 'ArrowLeft')  j = (i-1+TABS.length) % TABS.length;
+    if (j === null) return;
+    e.preventDefault();
+    select(TABS[j][0], true);
+    nav.querySelector(`[data-tab="${TABS[j][0]}"]`).focus();
+  });
+  addEventListener('hashchange', ()=>select(location.hash.slice(1), false));
+  select(location.hash.slice(1) || TABS[0][0], false);
+})();
 
 })();
 </script>
