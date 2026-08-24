@@ -129,30 +129,52 @@ h3{font-family:var(--font-heading);font-size:1.15rem;font-weight:700;margin:0 0 
 .lede{color:var(--text-secondary);font-size:.92rem;margin:0 0 1.8rem;max-width:70ch}
 .note{color:var(--text-muted);font-size:.8rem;line-height:1.65;margin:.9rem 0 0;max-width:82ch}
 
-/* ── Stat cards ───────────────────────────────────────── */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:1.2rem;margin-bottom:1.6rem}
-.kpi{
-  background-color:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
-  padding:1.5rem;box-shadow:0 4px 25px rgba(0,0,0,.2);transition:var(--smooth);
-  display:flex;align-items:center;gap:1.2rem;
-}
-.kpi:hover{transform:translateY(-4px);border-color:rgba(255,107,43,.2);box-shadow:0 12px 35px rgba(0,0,0,.4)}
-.kpi .ico{
-  width:56px;height:56px;border-radius:12px;display:grid;place-items:center;flex:none;
-  box-shadow:0 4px 15px rgba(0,0,0,.25);
-}
-.kpi .ico svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;
-  stroke-linecap:round;stroke-linejoin:round}
+/* ── Hero + compact stat strip ────────────────────────── */
 .orange-bg{background-color:rgba(255,107,43,.15);color:var(--accent-orange)}
 .blue-bg{background-color:rgba(0,229,255,.15);color:var(--accent-blue)}
 .lime-bg{background-color:rgba(198,255,0,.15);color:var(--accent-lime)}
-.kpi .info{display:flex;flex-direction:column;min-width:0}
-.kpi .lab{font-family:var(--font-heading);font-size:.8rem;font-weight:600;
-  text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary)}
-.kpi .val{font-family:var(--font-heading);font-size:2rem;font-weight:700;line-height:1.15;
-  margin:.15rem 0;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.kpi .val small{font-size:.5em;font-weight:500;color:var(--text-secondary);margin-right:.15em}
-.kpi .sub{font-size:.78rem;color:var(--text-muted);font-weight:500}
+
+.hero{
+  background:linear-gradient(135deg,rgba(22,22,29,.95),rgba(34,26,24,.95));
+  border:1px solid var(--border-color);border-left:4px solid var(--accent-orange);
+  border-radius:var(--radius);padding:1.6rem 1.8rem;margin-bottom:1rem;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;
+}
+.hero .l{font-family:var(--font-heading);font-size:.8rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--text-secondary)}
+.hero .v{font-family:var(--font-heading);font-size:clamp(2.4rem,5vw,3.4rem);font-weight:700;
+  line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:block;margin-top:.2rem}
+.hero .v small{font-size:.36em;font-weight:500;color:var(--text-secondary);margin-right:.25em}
+.hero .meta{text-align:right;font-size:.82rem;color:var(--text-muted);line-height:1.7}
+.hero .meta b{color:var(--text-primary);font-family:var(--font-heading);font-size:1rem;
+  font-variant-numeric:tabular-nums}
+
+.statstrip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  background-color:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+  overflow:hidden;box-shadow:0 4px 25px rgba(0,0,0,.2);margin-bottom:1.6rem;
+}
+.statstrip .st{padding:1rem 1.2rem;border-right:1px solid var(--border-color)}
+.statstrip .st:last-child{border-right:0}
+.statstrip .st .l{display:block;font-family:var(--font-heading);font-size:.7rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary)}
+.statstrip .st .v{display:block;font-family:var(--font-heading);font-size:1.4rem;font-weight:700;
+  line-height:1.2;margin-top:.12rem;font-variant-numeric:tabular-nums}
+.statstrip .st .s{display:block;font-size:.72rem;color:var(--text-muted)}
+.statstrip .st.crit .v{color:var(--crit)}
+@media (max-width:640px){.statstrip .st{border-right:0;border-bottom:1px solid var(--border-color)}}
+
+/* ── Filter row ───────────────────────────────────────── */
+.filterrow{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.9rem;
+  font-family:var(--font-heading);font-size:.85rem;color:var(--text-secondary)}
+.filterrow select{
+  background-color:var(--bg-card);border:1px solid var(--border-color);color:var(--text-primary);
+  font-family:var(--font-heading);font-weight:500;font-size:.88rem;padding:.5rem 1rem;
+  border-radius:10px;cursor:pointer;outline:none;transition:var(--smooth);
+}
+.filterrow select:hover,.filterrow select:focus{border-color:var(--accent-orange);
+  box-shadow:0 0 0 2px var(--border-glow)}
+.filterrow .count{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--text-muted)}
 
 /* ── Cards / panels ───────────────────────────────────── */
 .panel,.chartbox,.tablebox,.callout,.find,.metagrid{
@@ -328,7 +350,8 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="eyebrow">Summary</p>
     <h2>売上サマリー</h2>
     <p class="lede">入金確認済み(Paid)かつ Completed / Shipped の注文のみを売上実績として集計。キャンセル・返品・未入金は売上から除外し、下部の台帳に別記録として残しています。</p>
-    <div class="kpis" id="kpis"></div>
+    <div class="hero" id="hero"></div>
+    <div class="statstrip" id="statstrip"></div>
     <p class="note" id="summary-note"></p>
 
     <figure class="chartbox">
@@ -368,7 +391,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 期間別 ══ -->
-  <section id="s-period" data-pane="trend">
+  <section id="s-period" data-pane="overview">
     <p class="eyebrow">Period</p>
     <h2>期間別の実績</h2>
     <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
@@ -390,7 +413,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ オンライン / オフライン ══ -->
-  <section id="s-split" data-pane="channel">
+  <section id="s-split" data-pane="store">
     <p class="eyebrow">Online / Offline</p>
     <h2>オンラインとオフラインの内訳</h2>
     <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
@@ -413,7 +436,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 日次 ══ -->
-  <section id="s-daily" data-pane="trend">
+  <section id="s-daily" data-pane="overview">
     <p class="eyebrow">Daily</p>
     <h2>日次の実績</h2>
     <p class="lede">売上のあった日のみ。件数・伝票数・明細行数まで数値で確認できます。</p>
@@ -422,7 +445,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ チャネル ══ -->
-  <section id="s-channel" data-pane="channel">
+  <section id="s-channel" data-pane="store">
     <p class="eyebrow">Channel</p>
     <h2>チャネル別の成約と失注</h2>
     <p class="lede">売上金額と、同じチャネルで失注(キャンセル・返品)した金額を並べています。オンラインの失注が構造的な問題として見えます。</p>
@@ -436,6 +459,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       </figcaption>
       <div id="c-channel"></div>
     </figure>
+    <div id="callouts" style="margin-top:1.4rem"></div>
     <div class="tablebox"><table id="t-channel"></table></div>
   </section>
 
@@ -489,7 +513,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 店舗運営 ══ -->
-  <section id="s-ops" data-pane="ops">
+  <section id="s-ops" data-pane="store">
     <p class="eyebrow">Store Operations</p>
     <h2>店舗の売れる曜日・時間帯・商圏</h2>
     <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみ。地域は請求先の州です。</p>
@@ -509,31 +533,32 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     </div>
   </section>
 
-  <!-- ══ 失注・未入金 ══ -->
-  <section id="s-lost" data-pane="ledger">
-    <p class="eyebrow">Unpaid &amp; Lost — 売上実績とは別記録</p>
-    <h2>未入金・失注の台帳</h2>
-    <p class="lede">売上には一切含めていません。回収・再販・在庫戻しの管理用として、注文単位で全件を残しています。</p>
-    <div id="callouts"></div>
-
-    <h3 style="margin:26px 0 10px">未入金(Unpaid)注文 — 全件</h3>
-    <div class="tablebox"><table id="t-unpaid"></table></div>
-    <p class="note">未入金は全て入金前にキャンセル/返品となった注文です。実際の入金は発生しておらず、金額は「取り逃した受注額」として読んでください。</p>
-
-    <h3 style="margin:26px 0 10px">失注(キャンセル+返品)注文 — 全件</h3>
-    <div class="tablebox" style="max-height:440px;overflow-y:auto"><table id="t-lost"></table></div>
-  </section>
 
   <!-- ══ 全注文 ══ -->
-  <section id="s-ledger" data-pane="ledger">
+  <section id="s-ledger" data-pane="notes">
     <p class="eyebrow">Ledger</p>
-    <h2>売上明細(全<span id="ledger-n">—</span>件)</h2>
-    <p class="lede">売上実績に計上した注文の全件リスト。</p>
-    <div class="tablebox" style="max-height:520px;overflow-y:auto"><table id="t-sales"></table></div>
+    <h2>注文明細</h2>
+    <p class="lede">売上に計上した注文と、キャンセル・返品・未入金を1つの表にまとめています。プルダウンで絞り込めます。</p>
+    <div class="filterrow">
+      <label for="f-kind">表示</label>
+      <select id="f-kind">
+        <option value="sales" selected>売上のみ</option>
+        <option value="all">すべて</option>
+        <option value="lost">失注(キャンセル+返品)</option>
+        <option value="cancelled">キャンセルのみ</option>
+        <option value="returned">返品のみ</option>
+        <option value="unpaid">未入金のみ</option>
+      </select>
+      <label for="f-ch">チャネル</label>
+      <select id="f-ch"><option value="">すべて</option></select>
+      <span class="count" id="f-count"></span>
+    </div>
+    <div class="tablebox" style="max-height:600px;overflow-y:auto"><table id="t-sales"></table></div>
+    <p class="note" id="ledger-note"></p>
   </section>
 
   <!-- ══ 読み取り ══ -->
-  <section id="s-findings" data-pane="insights">
+  <section id="s-findings" data-pane="notes">
     <p class="eyebrow">Findings</p>
     <h2>数字から読めること</h2>
     <p class="lede">「確認済」はデータから直接計算した事実、「推定」はデータから導いた解釈です。</p>
@@ -541,14 +566,14 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 定義 ══ -->
-  <section id="s-def" data-pane="insights">
+  <section id="s-def" data-pane="notes">
     <p class="eyebrow">Definitions</p>
     <h2>集計の定義</h2>
     <div class="tablebox"><table id="t-def"></table></div>
   </section>
 
   <!-- ══ データについて(概要タブ末尾) ══ -->
-  <section id="s-meta" data-pane="overview">
+  <section id="s-meta" data-pane="notes">
     <p class="eyebrow">Data</p>
     <h2>このデータについて</h2>
     <dl class="metagrid" id="metagrid"></dl>
@@ -655,23 +680,26 @@ const IC = {
 };
 const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 
-const kpiDefs = [
-  ['純売上 NET SALES', rm2(K.total.rev), `${K.total.orders} 注文 / ${K.total.units} 点`, 'cash', 'orange-bg'],
-  ['店舗 OFFLINE',     rm(K.offline.rev), `構成比 ${pct(K.offline.rev,K.total.rev)} · ${K.offline.orders} 注文`, 'store', 'orange-bg'],
-  ['オンライン ONLINE', rm(K.online.rev),  `構成比 ${pct(K.online.rev,K.total.rev)} · ${K.online.orders} 注文`, 'globe', 'blue-bg'],
-  ['平均客単価 AOV',    rm(K.total.rev/K.total.orders), `1点あたり ${rm(K.total.rev/K.total.units)}`, 'tag', 'lime-bg'],
-  ['日平均売上 PER DAY', rm(K.total.rev/M.days), `${M.days}日間 / 売上のあった日 ${K.active_days}日`, 'calendar', 'lime-bg'],
-  ['失注 LOST',        rm(K.lost.rev),    `${K.lost.orders} 注文 · うち未入金 ${K.unpaid.orders} 件`, 'alert', 'blue-bg']
+$('#hero').innerHTML =
+  `<div>
+     <span class="l">純売上 NET SALES</span>
+     <span class="v"><small>RM</small>${n1(K.total.rev)}</span>
+   </div>
+   <div class="meta">
+     ${M.period[0].replace(/-/g,'.')} – ${M.period[1].replace(/-/g,'.')}(${M.days}日間)<br>
+     <b>${K.total.orders}</b> 注文 · <b>${K.total.units}</b> 点 · 売上のあった日 <b>${K.active_days}</b> 日
+   </div>`;
+
+const strip = [
+  ['店舗',       rm(K.offline.rev), pct(K.offline.rev,K.total.rev) + ' · ' + K.offline.orders + '注文', ''],
+  ['オンライン',  rm(K.online.rev),  pct(K.online.rev,K.total.rev)  + ' · ' + K.online.orders  + '注文', ''],
+  ['客単価',     rm(K.total.rev/K.total.orders), '1点 ' + rm(K.total.rev/K.total.units), ''],
+  ['日平均',     rm(K.total.rev/M.days), M.days + '日で割った値', ''],
+  ['失注',       rm(K.lost.rev),    K.lost.orders + '件 · 未入金 ' + K.unpaid.orders + '件', 'crit'],
 ];
-$('#kpis').innerHTML = kpiDefs.map(([l,v,s,ico,cls]) =>
-  `<div class="kpi">
-     <div class="ico ${cls}">${svgIco(ico)}</div>
-     <div class="info">
-       <span class="lab">${esc(l)}</span>
-       <span class="val"><small>RM</small>${esc(v.replace(/^RM\s/,''))}</span>
-       <span class="sub">${esc(s)}</span>
-     </div>
-   </div>`).join('');
+$('#statstrip').innerHTML = strip.map(([l,v,s,cls])=>
+  `<div class="st ${cls}"><span class="l">${esc(l)}</span><span class="v">${esc(v)}</span>
+   <span class="s">${esc(s)}</span></div>`).join('');
 
 $('#summary-note').textContent =
   `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は上の純売上に含まれていません。内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
@@ -1303,44 +1331,57 @@ const shopee = D.channels.find(c=>c.name==='Shopee');
     </div>`;
 })();
 
-$('#t-unpaid').innerHTML =
- `<thead><tr><th>受注日時</th><th>伝票</th><th>チャネル</th><th>ステータス</th><th>商品</th><th class="n">点数</th><th class="n">受注額</th></tr></thead>
-  <tbody>${D.unpaid_rows.map(r=>`<tr>
-    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
-    <td><span class="chip shopee">${esc(r.channel)}</span></td>
-    <td><span class="chip crit">${esc(r.status)}</span></td>
-    <td><span class="wrapok">${esc(r.items)}</span></td>
-    <td class="n">${r.units}</td><td class="n">${n1(r.total)}</td></tr>`).join('')}</tbody>
-  <tfoot><tr><td>合計 ${D.unpaid_rows.length}件</td><td></td><td></td><td></td><td></td>
-    <td class="n">${K.unpaid.units}</td><td class="n">${n1(K.unpaid.rev)}</td></tr></tfoot>`;
+/* ═══ 10. 注文明細(絞り込み付き) ═════════════════════ */
+(function(){
+  const rows = D.all_rows;
+  const FILTERS = {
+    sales:     r => r.bucket === 'sales',
+    all:       () => true,
+    lost:      r => r.bucket === 'cancelled' || r.bucket === 'returned',
+    cancelled: r => r.bucket === 'cancelled',
+    returned:  r => r.bucket === 'returned',
+    unpaid:    r => r.pay === 'Unpaid',
+  };
+  const selKind = $('#f-kind'), selCh = $('#f-ch'), count = $('#f-count');
+  [...new Set(rows.map(r=>r.channel))].forEach(c=>{
+    const o = document.createElement('option'); o.value = c; o.textContent = c; selCh.appendChild(o);
+  });
 
-$('#t-lost').innerHTML =
- `<thead><tr><th>受注日時</th><th>伝票</th><th>チャネル</th><th>ステータス</th><th>入金</th><th>商品</th><th class="n">点数</th><th class="n">受注額</th></tr></thead>
-  <tbody>${D.lost_rows.map(r=>`<tr>
-    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
-    <td><span class="chip ${r.channel.startsWith('POS')?'pos':'shopee'}">${esc(r.channel)}</span></td>
-    <td><span class="chip ${r.status==='Returned'?'crit':'mute'}">${esc(r.status)}</span></td>
-    <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
-    <td><span class="wrapok">${esc(r.items)}</span></td>
-    <td class="n">${r.units}</td><td class="n">${n1(r.total)}</td></tr>`).join('')}</tbody>
-  <tfoot><tr><td>合計 ${D.lost_rows.length}件</td><td></td><td></td><td></td><td></td><td></td>
-    <td class="n">${K.lost.units}</td><td class="n">${n1(K.lost.rev)}</td></tr></tfoot>`;
+  function render(){
+    const f = FILTERS[selKind.value] || FILTERS.all;
+    const ch = selCh.value;
+    const list = rows.filter(r => f(r) && (!ch || r.channel === ch));
+    const S = k => list.reduce((a,r)=>a+r[k],0);
+    count.textContent = `${list.length} 件 / 全 ${rows.length} 件`;
+    $('#t-sales').innerHTML =
+     `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>状態</th><th>入金</th><th>チャネル</th>
+       <th>商品</th><th>州</th><th>決済</th><th class="n">明細</th><th class="n">点数</th><th class="n">金額</th></tr></thead>
+      <tbody>${list.map(r=>`<tr>
+        <td class="num" style="font-size:12px">${esc(r.dt)}</td>
+        <td class="num" style="font-size:12px">${esc(r.invoice)}</td>
+        <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?'店舗':'ｵﾝﾗｲﾝ'}</span></td>
+        <td><span class="chip ${r.bucket==='sales'?'mute':'crit'}">${esc(r.kind)}</span></td>
+        <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
+        <td style="font-size:12px">${esc(r.channel)}</td>
+        <td><span class="wrapok">${esc(r.items)}</span></td>
+        <td style="font-size:12px;color:var(--text-secondary)">${esc(r.state)}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${esc(r.pay_method)}</td>
+        <td class="n">${r.lines}</td>
+        <td class="n">${r.units}</td>
+        <td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>合計 ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td class="n">${S('lines')}</td><td class="n">${S('units')}</td><td class="n">${n1(S('total'))}</td></tr></tfoot>`;
+  }
+  selKind.addEventListener('change', render);
+  selCh.addEventListener('change', render);
+  render();
 
-/* ═══ 10. Sales ledger ════════════════════════════════ */
-$('#ledger-n').textContent = D.sales_rows.length;
-$('#t-sales').innerHTML =
- `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>チャネル</th><th>商品</th>
-   <th>州</th><th>決済</th><th class="n">点数</th><th class="n">売上</th></tr></thead>
-  <tbody>${D.sales_rows.map(r=>`<tr>
-    <td class="num" style="font-size:12px">${esc(r.dt)}</td><td class="num" style="font-size:12px">${esc(r.invoice)}</td>
-    <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?'店舗':'オンライン'}</span></td>
-    <td style="font-size:12px">${esc(r.channel)}</td>
-    <td><span class="wrapok">${esc(r.items)}</span></td>
-    <td style="font-size:12px;color:var(--text-secondary)">${esc(r.state)}</td>
-    <td style="font-size:12px;color:var(--text-secondary)">${esc(r.pay_method)}</td>
-    <td class="n">${r.units}</td><td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
-  <tfoot><tr><td>合計 ${D.sales_rows.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td class="n">${K.total.units}</td><td class="n">${n1(K.total.rev)}</td></tr></tfoot>`;
+  const up = rows.filter(r=>r.pay==='Unpaid');
+  $('#ledger-note').textContent =
+    `未入金は ${up.length}件 / ${rm2(up.reduce((a,r)=>a+r.total,0))}。すべて `
+    + `${[...new Set(up.map(r=>r.channel))].join(' / ')} 経由で、全件がキャンセルまたは返品で終わっています(入金実績なし)。`
+    + ` 上のプルダウンで「未入金のみ」を選ぶと一覧できます。`;
+})();
 
 /* ═══ 11. Findings ════════════════════════════════════ */
 (function(){
@@ -1418,13 +1459,10 @@ $('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].
 /* ═══ 14. Section tabs ════════════════════════════════ */
 (function(){
   const TABS = [
-    ['overview', '概要',     'chart'],
-    ['trend',    '推移',     'trend'],
-    ['channel',  'チャネル', 'share'],
-    ['product',  '商品',     'box'],
-    ['ops',      '店舗運営', 'store'],
-    ['ledger',   '台帳',     'book'],
-    ['insights', '読み取り', 'bulb'],
+    ['overview', '概要',   'chart'],
+    ['store',    '店舗',   'store'],
+    ['product',  '商品',   'box'],
+    ['notes',    '備考',   'book'],
   ];
   const main = document.querySelector('main');
   const foot = main.querySelector('footer');

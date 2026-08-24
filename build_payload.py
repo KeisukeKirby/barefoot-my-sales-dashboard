@@ -222,6 +222,15 @@ sales_rows = [dict(dt=o['dt'], invoice=o['invoice'], channel=o['channel'], seg=o
                    pay_method=o['pay_method'], items=items_str(o, skip_fee=True))
               for o in sorted(sales, key=lambda x: x['dt'])]
 
+# 明細は1本にまとめ、画面側でプルダウン絞り込みする
+KIND = {'sales': u'売上', 'cancelled': u'キャンセル', 'returned': u'返品'}
+all_rows = [dict(dt=o['dt'], invoice=o['invoice'] or u'—', channel=o['channel'], seg=o['seg'],
+                 status=o['status'], pay=o['pay'], kind=KIND.get(o['bucket'], o['bucket']),
+                 bucket=o['bucket'], total=R2(o['total']), units=o['units'], state=o['state'],
+                 lines=o['n_lines'], pay_method=o['pay_method'],
+                 items=items_str(o, skip_fee=True))
+            for o in sorted(O, key=lambda x: x['dt'])]
+
 off = [o for o in sales if isoff(o)]
 on = [o for o in sales if not isoff(o)]
 loff = [o for o in lost if o['channel'] == CH_POS]
@@ -238,7 +247,7 @@ P = dict(
     daily=daily, weekly=weekly, monthly=monthly, channels=chan, models=models, sizes=sizes, colors=colors,
     states=states, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
-    unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows,
+    unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows, all_rows=all_rows,
 )
 open('payload.json', 'w', encoding='utf-8').write(json.dumps(P, ensure_ascii=False, separators=(',', ':')))
 print('payload.json written', len(json.dumps(P, ensure_ascii=False)), 'chars')
