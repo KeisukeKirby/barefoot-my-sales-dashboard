@@ -1,265 +1,327 @@
 <title>Barefoot Malaysia 販売実績</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 
 <style>
 /* ─────────────────────────────────────────────────────────────
-   Tokens — light is the base; dark redefines tokens only.
+   Barefootinc Malaysia — VFF Report 系のダークUIに合わせた実装。
+   単一テーマ(ダーク固定)。ホストの明暗に関わらず同じ見た目にするため、
+   背景・文字色は全て明示的に塗る。
    ───────────────────────────────────────────────────────────── */
 :root{
-  color-scheme: light;
-  --bg:#EFF2F0;
-  --surface:#FBFCFB;
-  --surface-2:#E6EAE7;
-  --ink:#0F1F1B;
-  --ink-2:#47564F;
-  --ink-3:#76857D;
-  --rule:#D2D9D4;
-  --rule-strong:#B6C0B9;
-  --accent:#0E5A47;
-  --accent-soft:#DCE9E4;
-  --warn:#8A4B0F;
-  --warn-soft:#F4E7D6;
-  --crit:#A31E17;
-  --crit-soft:#F6E0DE;
-  --s1:#2a78d6;  /* 店舗 POS      */
-  --s2:#eb6834;  /* Shopee        */
-  --s3:#1baf7a;  /* Lazada        */
-  --s4:#eda100;  /* Online 直販   */
-  --s-online:#eb6834;
-  --ghost:#A9B4AE;
-  --shadow:0 1px 2px rgba(15,31,27,.05);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme: dark;
-    --bg:#101413;
-    --surface:#181D1B;
-    --surface-2:#222926;
-    --ink:#EDF1EE;
-    --ink-2:#AEBAB4;
-    --ink-3:#7E8B85;
-    --rule:#2C3532;
-    --rule-strong:#3D4744;
-    --accent:#5FC2A4;
-    --accent-soft:#16302A;
-    --warn:#D9962F;
-    --warn-soft:#2E2415;
-    --crit:#E4736B;
-    --crit-soft:#301A18;
-    --s1:#3987e5;
-    --s2:#d95926;
-    --s3:#199e70;
-    --s4:#c98500;
-    --s-online:#d95926;
-    --ghost:#5B6763;
-    --shadow:0 1px 2px rgba(0,0,0,.3);
-  }
-}
-:root[data-theme="dark"]{
   color-scheme: dark;
-  --bg:#101413;
-  --surface:#181D1B;
-  --surface-2:#222926;
-  --ink:#EDF1EE;
-  --ink-2:#AEBAB4;
-  --ink-3:#7E8B85;
-  --rule:#2C3532;
-  --rule-strong:#3D4744;
-  --accent:#5FC2A4;
-  --accent-soft:#16302A;
-  --warn:#D9962F;
-  --warn-soft:#2E2415;
-  --crit:#E4736B;
-  --crit-soft:#301A18;
-  --s1:#3987e5;
-  --s2:#d95926;
-  --s3:#199e70;
-  --s4:#c98500;
-  --s-online:#d95926;
-  --ghost:#5B6763;
-  --shadow:0 1px 2px rgba(0,0,0,.3);
+  --bg-dark:#0a0a0c;
+  --bg-sidebar:#111115;
+  --bg-card:#16161d;
+  --bg-card-hover:#1e1e26;
+
+  --accent-orange:#ff6b2b;
+  --accent-blue:#00e5ff;
+  --accent-lime:#c6ff00;
+
+  --text-primary:#f5f5f7;
+  --text-secondary:#9696a8;
+  --text-muted:#5e5e6e;
+
+  --border-color:rgba(255,255,255,.07);
+  --border-glow:rgba(255,107,43,.25);
+
+  /* チャート用は同じ色相を明度バンド内に落とした検証済みの値 */
+  --s1:#e0561c;  /* 店舗 POS      */
+  --s2:#0d9fbd;  /* Shopee        */
+  --s3:#8a9e00;  /* Lazada        */
+  --s4:#c05a9e;  /* Online 直販   */
+  --s-online:#0d9fbd;
+  --ghost:#4a4a58;
+
+  --crit:#ff5a4d;
+  --warn:#ffb020;
+
+  --font-heading:'Oswald','Zen Kaku Gothic New','Hiragino Sans',sans-serif;
+  --font-body:'Inter','Zen Kaku Gothic New','Hiragino Sans',sans-serif;
+  --sidebar-width:260px;
+  --radius:16px;
+  --smooth:all .35s cubic-bezier(.4,0,.2,1);
 }
 
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;
-  font-size:15px; line-height:1.7;
-  -webkit-font-smoothing:antialiased;
+  margin:0;background-color:var(--bg-dark);color:var(--text-primary);
+  font-family:var(--font-body);line-height:1.6;font-size:15px;
+  display:flex;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
 }
-.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
-/* ── Masthead ─────────────────────────────────────────── */
-.mast{border-top:3px solid var(--accent);background:var(--surface);border-bottom:1px solid var(--rule)}
-.mast-in{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:flex-end;justify-content:space-between;padding:26px 0 22px}
-.brand{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.18em;color:var(--accent);font-weight:600;margin:0 0 6px}
-h1{font-family:"Zen Old Mincho",serif;font-weight:700;font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;letter-spacing:.01em;text-wrap:balance}
-.mast-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-.mast-kpi .l{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;color:var(--ink-3)}
-.mast-kpi .v{font-size:clamp(22px,3vw,30px);font-weight:600;line-height:1.15;letter-spacing:-.02em}
-.mast-kpi .s{font-size:11.5px;color:var(--ink-2)}
+/* ── Sidebar ──────────────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar-width);background-color:var(--bg-sidebar);
+  border-right:1px solid var(--border-color);padding:2rem 1.5rem;
+  display:flex;flex-direction:column;gap:1.6rem;
+  position:fixed;top:0;bottom:0;left:0;z-index:100;overflow-y:auto;transition:var(--smooth);
+}
+.sidebar-brand{display:flex;flex-direction:column;gap:.9rem}
+.brand-mark{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent-orange),#ff9a5b);
+  font-family:var(--font-heading);font-weight:700;font-size:1.1rem;color:#12080a;
+  box-shadow:0 4px 18px rgba(255,107,43,.35);
+}
+.brand-text{
+  font-family:var(--font-heading);font-weight:700;font-size:1.05rem;
+  letter-spacing:.03em;color:var(--text-primary);line-height:1.25;
+}
+.brand-sub{font-size:.72rem;color:var(--text-muted);letter-spacing:.04em;margin-top:-.5rem}
 
-/* ── Section tabs ─────────────────────────────────────── */
-.tabnav{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);
-  backdrop-filter:saturate(150%) blur(8px);border-bottom:1px solid var(--rule)}
-.tabnav-in{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
-.tabnav-in::-webkit-scrollbar{display:none}
-.tabnav button{position:relative;flex:none;border:0;background:transparent;cursor:pointer;
-  font:500 13.5px/1 "Zen Kaku Gothic New",sans-serif;color:var(--ink-2);
-  padding:15px 18px 13px;border-bottom:2px solid transparent;white-space:nowrap}
-.tabnav button:hover{color:var(--ink)}
-.tabnav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
-.tabnav button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
-.tabnav button .c{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);margin-left:7px}
-.tabnav button[aria-selected="true"] .c{color:var(--accent)}
+.side-kpi{
+  background:linear-gradient(135deg,rgba(22,22,29,.9),rgba(30,30,40,.9));
+  border:1px solid var(--border-color);border-left:3px solid var(--accent-orange);
+  border-radius:12px;padding:.9rem 1rem;
+}
+.side-kpi .l{
+  display:block;font-family:var(--font-heading);font-size:.7rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--text-secondary);
+}
+.side-kpi .v{
+  display:block;font-family:var(--font-heading);font-size:1.55rem;font-weight:700;
+  line-height:1.2;margin:.15rem 0;letter-spacing:-.01em;
+}
+.side-kpi .s{display:block;font-size:.72rem;color:var(--text-muted)}
+
+.nav-menu{display:flex;flex-direction:column;gap:.35rem}
+.nav-item{
+  background:transparent;border:none;color:var(--text-secondary);
+  font-family:var(--font-heading);font-size:.95rem;font-weight:500;
+  padding:.9rem 1.1rem;border-radius:12px;cursor:pointer;
+  display:flex;align-items:center;gap:1rem;width:100%;text-align:left;transition:var(--smooth);
+}
+.nav-item svg{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-item:hover{color:var(--text-primary);background-color:var(--bg-card-hover)}
+.nav-item[aria-selected="true"]{
+  color:#fff;background-color:var(--accent-orange);font-weight:600;
+  box-shadow:0 4px 20px rgba(255,107,43,.35);
+}
+.nav-item:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
+.nav-item .c{margin-left:auto;font-size:.72rem;opacity:.7;font-weight:400}
+.side-foot{margin-top:auto;font-size:.7rem;color:var(--text-muted);line-height:1.5}
+
+/* ── Main ─────────────────────────────────────────────── */
+main{
+  flex-grow:1;margin-left:var(--sidebar-width);padding:2.6rem 3rem 3rem;
+  max-width:calc(100vw - var(--sidebar-width));transition:var(--smooth);
+}
 .tabpane[hidden]{display:none}
-.tabpane > section:first-child{border-top:0}
-.metagrid{display:grid;grid-template-columns:max-content 1fr;gap:10px 26px;margin:0;
-  background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px;box-shadow:var(--shadow)}
-.metagrid dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;color:var(--ink-3);padding-top:2px}
-.metagrid dd{margin:0;font-size:13.5px}
-@media (max-width:560px){.metagrid{grid-template-columns:1fr;gap:2px 0}.metagrid dd{margin-bottom:10px}}
-
-/* ── Section scaffolding ───────────────────────────────── */
-section{padding:52px 0 8px}
-section + section{border-top:1px solid var(--rule)}
-.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.2em;color:var(--accent);font-weight:600;margin:0 0 8px;text-transform:uppercase}
-h2{font-family:"Zen Old Mincho",serif;font-weight:700;font-size:clamp(20px,2.6vw,25px);margin:0 0 6px;letter-spacing:.01em;text-wrap:balance}
-h3{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700;font-size:14px;margin:0 0 10px;letter-spacing:.02em}
-.lede{color:var(--ink-2);margin:0 0 26px;max-width:62ch;font-size:14px}
-.note{color:var(--ink-3);font-size:12.5px;line-height:1.65;margin:12px 0 0;max-width:78ch}
-
-/* ── KPI ledger strip ──────────────────────────────────── */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));background:var(--surface);border:1px solid var(--rule);border-radius:3px;overflow:hidden;box-shadow:var(--shadow)}
-.kpi{padding:18px 20px 16px;border-right:1px solid var(--rule)}
-.kpi:last-child{border-right:0}
-.kpi .lab{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;color:var(--ink-3);display:block;margin-bottom:7px}
-.kpi .val{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:clamp(21px,2.6vw,27px);line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:block}
-.kpi .sub{font-size:11.5px;color:var(--ink-2);margin-top:5px;display:block}
-.kpi .val small{font-size:.56em;font-weight:500;color:var(--ink-2);margin-right:2px}
-
-/* ── Split (online / offline) ──────────────────────────── */
-.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:22px}
-.panel{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:20px;box-shadow:var(--shadow)}
-.panel.tone-off{border-left:3px solid var(--s1)}
-.panel.tone-on{border-left:3px solid var(--s-online)}
-.panel .ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
-.panel .ptitle b{font-size:14px;font-weight:700}
-.panel .ptitle .pct{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600}
-.panel .big{font-family:"IBM Plex Mono",monospace;font-size:29px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
-.panel .big small{font-size:.5em;color:var(--ink-2);font-weight:500;margin-right:3px}
-.metarow{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px solid var(--rule)}
-.metarow div{min-width:66px}
-.metarow .l{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;color:var(--ink-3)}
-.metarow .v{display:block;font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
-.sharebar{display:flex;height:9px;border-radius:2px;overflow:hidden;background:var(--surface-2);margin:22px 0 8px;gap:2px}
-.sharebar i{display:block}
-.sharelegend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
-
-/* ── Charts ────────────────────────────────────────────── */
-.chartbox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px 18px 10px;box-shadow:var(--shadow);margin-bottom:16px}
-.chartbox > figcaption{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between;margin:0 0 14px}
-.chartbox h3{margin:0}
-.scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
-svg{display:block;width:100%;height:auto}
-.grid{stroke:var(--rule);stroke-width:1}
-.axis{stroke:var(--rule-strong);stroke-width:1}
-.ax{fill:var(--ink-3);font-family:"IBM Plex Mono",monospace;font-size:10.5px}
-.axb{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500}
-.dlab{fill:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600}
-.dlab2{fill:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:10px}
-.f1{fill:var(--s1)} .f2{fill:var(--s2)} .f3{fill:var(--s3)} .f4{fill:var(--s4)}
-.fon{fill:var(--s-online)} .fghost{fill:var(--ghost)}
-.hit{fill:transparent;cursor:pointer}
-.hit:hover ~ .hl, .band.on{fill:var(--surface-2)}
-.wkend{fill:var(--surface-2)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);align-items:center}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.sw{width:11px;height:11px;border-radius:2px;display:inline-block}
-.sw.hatch{background:repeating-linear-gradient(45deg,var(--ghost) 0 2px,transparent 2px 4px);border:1px solid var(--ghost)}
-
-/* ── Tabs ──────────────────────────────────────────────── */
-.tabs{display:flex;gap:2px;background:var(--surface-2);padding:3px;border-radius:3px;width:fit-content;margin-bottom:16px}
-.tabs button{font:500 12.5px/1 "Zen Kaku Gothic New",sans-serif;padding:8px 16px;border:0;border-radius:2px;background:transparent;color:var(--ink-2);cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:700}
-.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-
-/* ── Tables ────────────────────────────────────────────── */
-.tablebox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
-th,td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
-thead th{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-3);font-weight:500;background:var(--surface-2);position:sticky;top:0}
-tbody tr:last-child td{border-bottom:0}
-tbody tr:hover{background:var(--surface-2)}
-td.n,th.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
-tfoot td{font-weight:700;background:var(--surface-2);border-top:2px solid var(--rule-strong);font-family:"IBM Plex Mono",monospace}
-tfoot td:first-child{font-family:"Zen Kaku Gothic New",sans-serif}
-td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
-.chip{display:inline-block;padding:1px 7px;border-radius:2px;font-size:10.5px;font-family:"IBM Plex Mono",monospace;font-weight:500;letter-spacing:.03em;border:1px solid transparent}
-.chip.pos{background:var(--accent-soft);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 30%,transparent)}
-.chip.shopee{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
-.chip.crit{background:var(--crit-soft);color:var(--crit);border-color:color-mix(in srgb,var(--crit) 30%,transparent)}
-.chip.mute{background:var(--surface-2);color:var(--ink-2);border-color:var(--rule)}
-
-/* ── Callout ───────────────────────────────────────────── */
-.callout{border:1px solid var(--rule);border-left:3px solid var(--crit);background:var(--surface);border-radius:3px;padding:18px 20px;margin:0 0 18px;box-shadow:var(--shadow)}
-.callout.warnflag{border-left-color:var(--warn)}
-.callout h3{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.callout h3::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--crit);flex:none}
-.callout.warnflag h3::before{background:var(--warn)}
-.callout p{margin:0;font-size:13.5px;color:var(--ink-2);max-width:80ch}
-.callout p + p{margin-top:8px}
-.callout b{color:var(--ink)}
-
-/* ── Findings ──────────────────────────────────────────── */
-.finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-.find{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px;box-shadow:var(--shadow)}
-.find .tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;background:var(--surface-2);color:var(--ink-2)}
-.find .tag.fact{background:var(--accent-soft);color:var(--accent)}
-.find h3{margin:10px 0 6px;font-size:14px}
-.find p{margin:0;font-size:13px;color:var(--ink-2)}
-
-/* ── Tooltip ───────────────────────────────────────────── */
-#tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--ink);color:var(--bg);padding:8px 11px;border-radius:3px;font-size:12px;line-height:1.55;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.22);max-width:240px}
-#tip b{font-family:"IBM Plex Mono",monospace;font-weight:600}
-#tip .r{display:flex;justify-content:space-between;gap:14px;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
-#tip hr{border:0;border-top:1px solid color-mix(in srgb,var(--bg) 30%,transparent);margin:5px 0}
-
-footer{border-top:1px solid var(--rule);margin-top:44px;padding:26px 0 48px;color:var(--ink-3);font-size:12px}
-footer dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;margin:10px 0 0;max-width:70ch}
-footer dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-2)}
-footer dd{margin:0}
+.tabpane{animation:fadeIn .45s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@media (max-width:640px){
-  .kpi{border-right:0;border-bottom:1px solid var(--rule)}
-  section{padding-top:38px}
+
+section{padding:0 0 2.6rem}
+.eyebrow{
+  display:inline-block;font-family:var(--font-heading);font-size:.75rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.15em;color:var(--accent-orange);margin:0 0 .4rem;
 }
+h1{font-family:var(--font-heading);font-size:2rem;font-weight:700;margin:0}
+h2{font-family:var(--font-heading);font-size:2.2rem;font-weight:700;letter-spacing:-.01em;
+   margin:0 0 .3rem;line-height:1.2;text-wrap:balance}
+h3{font-family:var(--font-heading);font-size:1.15rem;font-weight:700;margin:0 0 .8rem;
+   color:var(--text-primary)}
+.lede{color:var(--text-secondary);font-size:.92rem;margin:0 0 1.8rem;max-width:70ch}
+.note{color:var(--text-muted);font-size:.8rem;line-height:1.65;margin:.9rem 0 0;max-width:82ch}
+
+/* ── Stat cards ───────────────────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:1.2rem;margin-bottom:1.6rem}
+.kpi{
+  background-color:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+  padding:1.5rem;box-shadow:0 4px 25px rgba(0,0,0,.2);transition:var(--smooth);
+  display:flex;align-items:center;gap:1.2rem;
+}
+.kpi:hover{transform:translateY(-4px);border-color:rgba(255,107,43,.2);box-shadow:0 12px 35px rgba(0,0,0,.4)}
+.kpi .ico{
+  width:56px;height:56px;border-radius:12px;display:grid;place-items:center;flex:none;
+  box-shadow:0 4px 15px rgba(0,0,0,.25);
+}
+.kpi .ico svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.orange-bg{background-color:rgba(255,107,43,.15);color:var(--accent-orange)}
+.blue-bg{background-color:rgba(0,229,255,.15);color:var(--accent-blue)}
+.lime-bg{background-color:rgba(198,255,0,.15);color:var(--accent-lime)}
+.kpi .info{display:flex;flex-direction:column;min-width:0}
+.kpi .lab{font-family:var(--font-heading);font-size:.8rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary)}
+.kpi .val{font-family:var(--font-heading);font-size:2rem;font-weight:700;line-height:1.15;
+  margin:.15rem 0;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .val small{font-size:.5em;font-weight:500;color:var(--text-secondary);margin-right:.15em}
+.kpi .sub{font-size:.78rem;color:var(--text-muted);font-weight:500}
+
+/* ── Cards / panels ───────────────────────────────────── */
+.panel,.chartbox,.tablebox,.callout,.find,.metagrid{
+  background-color:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius);box-shadow:0 4px 25px rgba(0,0,0,.2);transition:var(--smooth);
+}
+.panel:hover,.chartbox:hover,.find:hover{
+  border-color:rgba(255,107,43,.2);box-shadow:0 12px 35px rgba(0,0,0,.4);
+}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem;margin-bottom:1.4rem}
+.panel{padding:1.6rem}
+.panel.tone-off{border-left:4px solid var(--s1)}
+.panel.tone-on{border-left:4px solid var(--s-online)}
+.panel .ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:.7rem;margin-bottom:.9rem}
+.panel .ptitle b{font-family:var(--font-heading);font-size:1.05rem;font-weight:700}
+.panel .ptitle .pct{font-family:var(--font-heading);font-size:1.4rem;font-weight:700}
+.panel .big{font-family:var(--font-heading);font-size:2.1rem;font-weight:700;line-height:1.15;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.panel .big small{font-size:.45em;color:var(--text-secondary);font-weight:500;margin-right:.2em}
+.metarow{display:flex;gap:1.4rem;flex-wrap:wrap;margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--border-color)}
+.metarow div{min-width:64px}
+.metarow .l{display:block;font-family:var(--font-heading);font-size:.68rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--text-muted)}
+.metarow .v{display:block;font-family:var(--font-heading);font-size:1.05rem;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.sharebar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--bg-card-hover);
+  margin:1.4rem 0 .7rem;gap:2px}
+.sharebar i{display:block}
+.sharelegend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.82rem;color:var(--text-secondary)}
+
+/* ── Charts ───────────────────────────────────────────── */
+.chartbox{padding:1.6rem 1.6rem .9rem;margin-bottom:1.2rem}
+.chartbox > figcaption{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;align-items:baseline;
+  justify-content:space-between;margin:0 0 1.2rem}
+.chartbox h3{margin:0}
+.scroller{overflow-x:auto}
+svg{display:block;width:100%;height:auto}
+.grid{stroke:var(--border-color);stroke-width:1}
+.axis{stroke:rgba(255,255,255,.14);stroke-width:1}
+.ax{fill:var(--text-muted);font-family:var(--font-body);font-size:10.5px;font-variant-numeric:tabular-nums}
+.axb{fill:var(--text-secondary);font-family:var(--font-heading);font-size:11.5px;font-weight:500}
+.dlab{fill:var(--text-primary);font-family:var(--font-heading);font-size:11.5px;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.dlab2{fill:var(--text-muted);font-family:var(--font-body);font-size:10px;font-variant-numeric:tabular-nums}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.f4{fill:var(--s4)}
+.fon{fill:var(--s-online)}.fghost{fill:var(--ghost)}
+.hit{fill:transparent;cursor:pointer}
+.wkend{fill:rgba(255,255,255,.028)}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.8rem;color:var(--text-secondary);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--ghost) 0 2px,transparent 2px 4px);
+  border:1px solid var(--ghost)}
+
+/* ── Sub tabs (週次/月次) ─────────────────────────────── */
+.tabs{display:flex;gap:.4rem;margin-bottom:1.2rem}
+.tabs button{
+  font-family:var(--font-heading);font-weight:500;font-size:.9rem;padding:.6rem 1.2rem;
+  border:1px solid var(--border-color);border-radius:10px;background:var(--bg-card);
+  color:var(--text-secondary);cursor:pointer;transition:var(--smooth);
+}
+.tabs button:hover{color:var(--text-primary);border-color:rgba(255,107,43,.3)}
+.tabs button[aria-selected="true"]{background:var(--accent-orange);color:#fff;font-weight:600;
+  border-color:transparent;box-shadow:0 2px 12px rgba(255,107,43,.3)}
+.tabs button:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
+
+/* ── Tables ───────────────────────────────────────────── */
+.tablebox{overflow-x:auto;margin-bottom:.4rem}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:520px;text-align:left}
+th,td{padding:.8rem 1.2rem;border-bottom:1px solid var(--border-color);white-space:nowrap}
+thead th{font-family:var(--font-heading);font-weight:700;text-transform:uppercase;font-size:.72rem;
+  letter-spacing:.05em;color:var(--text-secondary);background-color:rgba(255,255,255,.02);
+  position:sticky;top:0;z-index:1}
+tbody tr{transition:background-color .2s}
+tbody tr:hover{background-color:rgba(255,255,255,.025)}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tfoot td{font-family:var(--font-heading);font-weight:700;background-color:rgba(255,255,255,.03);
+  border-top:1px solid rgba(255,255,255,.12);font-variant-numeric:tabular-nums}
+td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
+.chip{display:inline-block;padding:.15rem .55rem;border-radius:6px;font-size:.7rem;
+  font-family:var(--font-heading);font-weight:600;letter-spacing:.03em;border:1px solid transparent}
+.chip.pos{background:rgba(255,107,43,.15);color:var(--accent-orange);border-color:rgba(255,107,43,.3)}
+.chip.shopee{background:rgba(0,229,255,.13);color:var(--accent-blue);border-color:rgba(0,229,255,.28)}
+.chip.crit{background:rgba(255,90,77,.15);color:var(--crit);border-color:rgba(255,90,77,.3)}
+.chip.mute{background:rgba(255,255,255,.05);color:var(--text-secondary);border-color:var(--border-color)}
+
+/* ── Callouts ─────────────────────────────────────────── */
+.callout{
+  background:linear-gradient(135deg,rgba(22,22,29,.9),rgba(30,30,40,.9));
+  border-left:4px solid var(--crit);padding:1.5rem 1.6rem;margin:0 0 1.2rem;
+}
+.callout.warnflag{border-left-color:var(--warn)}
+.callout h3{display:flex;align-items:center;gap:.55rem;margin-bottom:.5rem;font-size:1.25rem}
+.callout h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--crit);flex:none}
+.callout.warnflag h3::before{background:var(--warn)}
+.callout p{margin:0;font-size:.88rem;color:var(--text-secondary);max-width:88ch}
+.callout p + p{margin-top:.6rem}
+.callout b{color:var(--text-primary)}
+
+/* ── Findings ─────────────────────────────────────────── */
+.finds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem}
+.find{padding:1.4rem 1.5rem}
+.find .tag{font-family:var(--font-heading);font-size:.68rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;padding:.2rem .55rem;border-radius:6px;
+  background:rgba(255,255,255,.05);color:var(--text-secondary)}
+.find .tag.fact{background:rgba(198,255,0,.13);color:var(--accent-lime)}
+.find h3{margin:.7rem 0 .4rem;font-size:1.05rem}
+.find p{margin:0;font-size:.85rem;color:var(--text-secondary)}
+
+/* ── Meta grid ────────────────────────────────────────── */
+.metagrid{display:grid;grid-template-columns:max-content 1fr;gap:.7rem 1.8rem;margin:0;padding:1.6rem}
+.metagrid dt{font-family:var(--font-heading);font-size:.75rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--text-secondary);padding-top:.1rem}
+.metagrid dd{margin:0;font-size:.86rem;color:var(--text-primary)}
+
+/* ── Tooltip ──────────────────────────────────────────── */
+#tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:#050507;border:1px solid rgba(255,255,255,.12);color:var(--text-primary);
+  padding:.6rem .8rem;border-radius:10px;font-size:.78rem;line-height:1.55;z-index:200;
+  box-shadow:0 12px 40px rgba(0,0,0,.6);max-width:250px}
+#tip b{font-weight:700;font-variant-numeric:tabular-nums}
+#tip .r{display:flex;justify-content:space-between;gap:1rem;font-variant-numeric:tabular-nums}
+#tip hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:.35rem 0}
+
+footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem 0 0;
+  color:var(--text-muted);font-size:.78rem}
+
+/* ── Mobile ───────────────────────────────────────────── */
+.menu-btn{display:none}
+@media (max-width:900px){
+  body{display:block}
+  .sidebar{transform:translateX(-100%);width:min(84vw,300px)}
+  .sidebar.open{transform:none;box-shadow:0 0 60px rgba(0,0,0,.7)}
+  main{margin-left:0;max-width:100vw;padding:4.6rem 1.2rem 2rem}
+  .menu-btn{
+    display:grid;place-items:center;position:fixed;top:.9rem;left:.9rem;z-index:150;
+    width:44px;height:44px;border-radius:12px;border:1px solid var(--border-color);
+    background:var(--bg-sidebar);color:var(--text-primary);cursor:pointer;
+  }
+  .menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  h2{font-size:1.7rem}
+}
+
 </style>
 
-<div class="mast">
-  <div class="wrap mast-in">
-    <div>
-      <p class="brand">Barefootinc Malaysia</p>
-      <h1>販売実績ダッシュボード</h1>
-    </div>
-    <div class="mast-kpi">
-      <span class="l">純売上</span>
-      <span class="v num" id="mast-rev">—</span>
-      <span class="s num" id="mast-range">—</span>
-    </div>
+<button class="menu-btn" id="menu-btn" aria-label="メニュー" aria-expanded="false">
+  <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">B</div>
+    <span class="brand-text">Barefootinc Malaysia</span>
+    <span class="brand-sub">Sales Report 2026</span>
   </div>
-</div>
 
-<nav class="tabnav" aria-label="セクション">
-  <div class="wrap tabnav-in" id="tabnav"></div>
-</nav>
+  <div class="side-kpi">
+    <span class="l">Net Sales</span>
+    <span class="v num" id="mast-rev">—</span>
+    <span class="s num" id="mast-range">—</span>
+  </div>
 
-<main class="wrap">
+  <nav class="nav-menu" id="tabnav" aria-label="セクション"></nav>
+
+  <div class="side-foot" id="side-foot"></div>
+</aside>
+
+<main>
 
   <!-- ══ サマリー ══ -->
   <section id="s-summary" data-pane="overview">
@@ -549,7 +611,7 @@ function mkSvg(host, w, h){
   const s = svgEl('svg',{viewBox:`0 0 ${w} ${h}`, role:'img'});
   const defs = svgEl('defs');
   const pat = svgEl('pattern',{id:'hatch'+host.id, width:6, height:6, patternUnits:'userSpaceOnUse', patternTransform:'rotate(45)'});
-  pat.appendChild(svgEl('rect',{width:6,height:6,fill:'var(--surface)'}));
+  pat.appendChild(svgEl('rect',{width:6,height:6,fill:'var(--bg-card)'}));
   pat.appendChild(svgEl('rect',{width:2.4,height:6,fill:'var(--ghost)'}));
   defs.appendChild(pat); s.appendChild(defs);
   host.appendChild(s);
@@ -561,16 +623,38 @@ const K = D.kpi, M = D.meta;
 $('#mast-rev').textContent = 'RM ' + n1(K.total.rev);
 $('#mast-range').textContent = `${M.period[0]} 〜 ${M.period[1]}`;
 
+const IC = {
+  cash:'<path d="M3 6h18v12H3z"/><circle cx="12" cy="12" r="2.6"/><path d="M7 12h.01M17 12h.01"/>',
+  store:'<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/>',
+  tag:'<path d="M20.6 13.4L12 22l-9-9V3h10z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  alert:'<path d="M12 3l9.5 17H2.5z"/><path d="M12 10v4M12 17h.01"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  share:'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.6 10.7l6.8-3.4M8.6 13.3l6.8 3.4"/>',
+  box:'<path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+  book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h7"/>'
+};
+const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
+
 const kpiDefs = [
-  ['純売上 (NET SALES)', rm2(K.total.rev), `${K.total.orders} 注文 / ${K.total.units} 点`],
-  ['店舗 OFFLINE', rm(K.offline.rev), `構成比 ${pct(K.offline.rev,K.total.rev)} · ${K.offline.orders} 注文`],
-  ['オンライン ONLINE', rm(K.online.rev), `構成比 ${pct(K.online.rev,K.total.rev)} · ${K.online.orders} 注文`],
-  ['平均客単価 AOV', rm(K.total.rev/K.total.orders), `1点あたり ${rm(K.total.rev/K.total.units)}`],
-  ['日平均売上', rm(K.total.rev/M.days), `${M.days}日間 / 売上のあった日 ${K.active_days}日`],
-  ['失注 LOST', rm(K.lost.rev), `${K.lost.orders} 注文 · うち未入金 ${K.unpaid.orders} 件`]
+  ['純売上 NET SALES', rm2(K.total.rev), `${K.total.orders} 注文 / ${K.total.units} 点`, 'cash', 'orange-bg'],
+  ['店舗 OFFLINE',     rm(K.offline.rev), `構成比 ${pct(K.offline.rev,K.total.rev)} · ${K.offline.orders} 注文`, 'store', 'orange-bg'],
+  ['オンライン ONLINE', rm(K.online.rev),  `構成比 ${pct(K.online.rev,K.total.rev)} · ${K.online.orders} 注文`, 'globe', 'blue-bg'],
+  ['平均客単価 AOV',    rm(K.total.rev/K.total.orders), `1点あたり ${rm(K.total.rev/K.total.units)}`, 'tag', 'lime-bg'],
+  ['日平均売上 PER DAY', rm(K.total.rev/M.days), `${M.days}日間 / 売上のあった日 ${K.active_days}日`, 'calendar', 'lime-bg'],
+  ['失注 LOST',        rm(K.lost.rev),    `${K.lost.orders} 注文 · うち未入金 ${K.unpaid.orders} 件`, 'alert', 'blue-bg']
 ];
-$('#kpis').innerHTML = kpiDefs.map(([l,v,s]) =>
-  `<div class="kpi"><span class="lab">${l}</span><span class="val"><small>${v.startsWith('RM')?'RM':''}</small>${esc(v.replace(/^RM\s/,''))}</span><span class="sub">${esc(s)}</span></div>`).join('');
+$('#kpis').innerHTML = kpiDefs.map(([l,v,s,ico,cls]) =>
+  `<div class="kpi">
+     <div class="ico ${cls}">${svgIco(ico)}</div>
+     <div class="info">
+       <span class="lab">${esc(l)}</span>
+       <span class="val"><small>RM</small>${esc(v.replace(/^RM\s/,''))}</span>
+       <span class="sub">${esc(s)}</span>
+     </div>
+   </div>`).join('');
 
 $('#summary-note').textContent =
   `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は上の純売上に含まれていません。内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
@@ -648,7 +732,7 @@ function periodTable(elId, rows, head){
       <th class="n">客単価</th><th class="n">日平均</th><th class="n">失注</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
-      <td class="num" style="font-size:12px;color:var(--ink-2)">${jd(r.start)}–${jd(r.end)}</td>
+      <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n">${r.elapsed}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${n1(r.off)}</td>
@@ -688,7 +772,7 @@ $('#split').innerHTML = segs.map(s => {
   return `<div class="panel ${s.cls}">
     <div class="ptitle"><b>${s.name}</b><span class="pct" style="color:${s.color}">${pct(b.rev,K.total.rev)}</span></div>
     <div class="big"><small>RM</small>${n1(b.rev)}</div>
-    <div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">${s.sub}</div>
+    <div style="font-size:11.5px;color:var(--text-muted);margin-top:4px">${s.sub}</div>
     <div class="metarow">
       <div><span class="l">注文</span><span class="v">${b.orders}</span></div>
       <div><span class="l">点数</span><span class="v">${b.units}</span></div>
@@ -703,7 +787,7 @@ $('#sharebar').innerHTML =
   `<i style="width:${K.online.rev/K.total.rev*100}%;background:var(--s-online)"></i>`;
 $('#sharelegend').innerHTML = segs.map(s =>
   `<span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:${s.color}"></i>
-   ${s.name} <b class="num">${pct(K[s.k].rev,K.total.rev)}</b> <span style="color:var(--ink-3)">${rm2(K[s.k].rev)}</span></span>`).join('');
+   ${s.name} <b class="num">${pct(K[s.k].rev,K.total.rev)}</b> <span style="color:var(--text-muted)">${rm2(K[s.k].rev)}</span></span>`).join('');
 $('#split-note').textContent =
   `店舗の客単価は ${rm2(K.offline.rev/K.offline.orders)}、オンラインは ${rm2(K.online.rev/K.online.orders)}。`
   + ` 店舗は1注文あたり ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンラインは ${(K.online.units/K.online.orders).toFixed(2)}点で、`
@@ -737,7 +821,7 @@ $('#split-note').textContent =
     const i = rows.findIndex(r=>r.date===w.start);
     if (i>0){
       s.appendChild(svgEl('line',{x1:ML+step*i,x2:ML+step*i,y1:MT-6,y2:MT+ph,
-        stroke:'var(--rule-strong)','stroke-width':1,'stroke-dasharray':'3 3'}));
+        stroke:'rgba(255,255,255,.18)','stroke-width':1,'stroke-dasharray':'3 3'}));
       const t = svgEl('text',{x:ML+step*i+4,y:MT-1,class:'ax'}); t.textContent = w.label; s.appendChild(t);
     }
   });
@@ -857,7 +941,7 @@ $('#t-channel').innerHTML = (()=>{
     `<span style="display:inline-flex;align-items:center;gap:7px">
        <i class="sw" style="background:${SW[i%SW.length]}"></i>
        ${esc(r.name)} <b class="num">${pct(r.rev,tot)}</b>
-       <span style="color:var(--ink-3)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
+       <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
      </span>`).join('');
   rows.forEach((r,i)=>{
     const el = $('#brandlegend').children[i];
@@ -912,7 +996,7 @@ $('#t-model').innerHTML = (()=>{
   const rows = D.models, tot = rows.reduce((a,r)=>a+r.rev,0), tu = rows.reduce((a,r)=>a+r.units,0);
   return `<thead><tr><th>モデル</th><th>ブランド</th><th class="n">売上</th><th class="n">構成比</th>
     <th class="n">数量</th><th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
-   <tbody>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td style="color:var(--ink-2)">${esc(r.brand)}</td>
+   <tbody>${rows.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td style="color:var(--text-secondary)">${esc(r.brand)}</td>
      <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,tot)}</td>
      <td class="n">${r.units}</td><td class="n">${r.avg?n1(r.avg):'—'}</td>
      <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
@@ -1078,8 +1162,8 @@ $('#t-sales').innerHTML =
     <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?'店舗':'オンライン'}</span></td>
     <td style="font-size:12px">${esc(r.channel)}</td>
     <td><span class="wrapok">${esc(r.items)}</span></td>
-    <td style="font-size:12px;color:var(--ink-2)">${esc(r.state)}</td>
-    <td style="font-size:12px;color:var(--ink-2)">${esc(r.pay_method)}</td>
+    <td style="font-size:12px;color:var(--text-secondary)">${esc(r.state)}</td>
+    <td style="font-size:12px;color:var(--text-secondary)">${esc(r.pay_method)}</td>
     <td class="n">${r.units}</td><td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
   <tfoot><tr><td>合計 ${D.sales_rows.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td>
     <td class="n">${K.total.units}</td><td class="n">${n1(K.total.rev)}</td></tr></tfoot>`;
@@ -1153,16 +1237,17 @@ $('#meta-caveat').textContent =
   + '(product_cost が元データでほぼ未入力のため粗利は算出できません)。';
 $('#foot-meta').innerHTML =
   `<p style="margin:0">Barefootinc Malaysia · 販売実績ダッシュボード · ${M.period[1]} 時点のデータ</p>`;
+$('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].replace(/-/g,'.')}<br>${M.n_orders} orders · ${M.lines} lines`;
 
 /* ═══ 14. Section tabs ════════════════════════════════ */
 (function(){
   const TABS = [
-    ['overview', '概要'],
-    ['trend',    '推移'],
-    ['channel',  'チャネル'],
-    ['product',  '商品'],
-    ['ops',      '店舗運営'],
-    ['ledger',   '台帳'],
+    ['overview', '概要',     'chart'],
+    ['trend',    '推移',     'trend'],
+    ['channel',  'チャネル', 'share'],
+    ['product',  '商品',     'box'],
+    ['ops',      '店舗運営', 'store'],
+    ['ledger',   '台帳',     'book'],
   ];
   const main = document.querySelector('main');
   const foot = main.querySelector('footer');
@@ -1183,11 +1268,17 @@ $('#foot-meta').innerHTML =
 
   const nav = $('#tabnav');
   nav.setAttribute('role','tablist');
-  nav.innerHTML = TABS.map(([id,label])=>{
+  nav.innerHTML = TABS.map(([id,label,ico])=>{
     const n = panes[id].querySelectorAll('section').length;
-    return `<button role="tab" id="tb-${id}" aria-controls="tp-${id}" aria-selected="false"
-             data-tab="${id}">${label}<span class="c">${n}</span></button>`;
+    return `<button class="nav-item" role="tab" id="tb-${id}" aria-controls="tp-${id}"
+             aria-selected="false" data-tab="${id}">${svgIco(ico)}<span>${label}</span><span class="c">${n}</span></button>`;
   }).join('');
+
+  const sidebar = $('#sidebar'), menuBtn = $('#menu-btn');
+  menuBtn.addEventListener('click', ()=>{
+    const open = sidebar.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', open);
+  });
 
   function select(id, push){
     if (!panes[id]) id = TABS[0][0];
@@ -1199,8 +1290,11 @@ $('#foot-meta').innerHTML =
       b.tabIndex = on ? 0 : -1;
     });
     if (push && location.hash.slice(1) !== id) history.replaceState(null,'','#'+id);
-    // 見出しが sticky ナビの裏に隠れないよう先頭へ戻す
-    if (push) window.scrollTo({top:0, behavior:'auto'});
+    if (push){
+      window.scrollTo({top:0, behavior:'auto'});
+      sidebar.classList.remove('open');           // モバイルでは選んだら閉じる
+      menuBtn.setAttribute('aria-expanded', false);
+    }
   }
   nav.addEventListener('click', e=>{
     const b = e.target.closest('[data-tab]');
