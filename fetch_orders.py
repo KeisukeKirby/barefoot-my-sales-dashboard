@@ -33,11 +33,14 @@ def load_token():
              '環境変数に設定してください。')
 
 
-def call(path, params, token):
+def call(path, params, token, method='GET', body=None):
     url = BASE.rstrip('/') + '/' + path.lstrip('/')
-    if params:
+    if params and method == 'GET':
         url += '?' + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers={
+    payload = None
+    if method != 'GET':
+        payload = json.dumps(body if body is not None else (params or {})).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, method=method, headers={
         'Access-Token': token,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -50,13 +53,24 @@ def call(path, params, token):
         return e.code, dict(e.headers), e.read().decode('utf-8', 'replace')
 
 
+def mask(text, token):
+    """出力にトークンが混ざっても外に出さない。probe の結果を貼れるようにするため。"""
+    return text.replace(token, '***TOKEN***') if token else text
+
+
 def probe(token):
     """トークンでどのパスが通るか総当たりで確認する。"""
     print('base:', BASE)
-    for path in ('orders', 'order', 'order/list', 'orders/list', 'sales_orders'):
-        st, hdr, body = call(path, {'page': 1}, token)
+    # 405 の応答が Supported methods を教えてくれるので、メソッドも総当たりする
+    attempts = [
+        ('GET', 'orders'), ('GET', 'orders/list'),
+        ('POST', 'order'), ('PUT', 'order/list'), ('POST', 'order/list'),
+        ('GET', 'me'), ('GET', 'shop'), ('GET', 'store'),
+    ]
+    for method, path in attempts:
+        st, hdr, body = call(path, {'page': 1}, token, method=method)
         rl = hdr.get('X-RateLimit-Remaining', '-')
-        print(f'  GET /{path:14} -> {st}  rate-remaining={rl}  {body[:160]!r}')
+        print(f'  {method:5} /{path:12} -> {st}  rate={rl}  {mask(body[:200], token)!r}')
 
 
 def fetch_all(path, token, extra, page_param, per_page_param, per_page):
