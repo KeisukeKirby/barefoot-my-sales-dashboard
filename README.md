@@ -65,7 +65,38 @@ WEEKS = [
 
 `product_cost` が元データでほぼ未入力のため、**粗利は算出していない**。
 
+## API 連携(保留中)
+
+xlsx の手動エクスポートをやめて注文を直接取得するため、SiteGiant Open API を調査した。
+**Administrator 権限の承認が必要なため 2026-08-24 時点では保留。** 再開時のために調査結果を残す。
+
+- ベースURL — `https://opensgapi.sitegiant.co/api/v1`
+- 認証 — `Access-Token` ヘッダ
+- ルート(疎通確認で判明) — `GET /orders`、`GET /orders/list`、`POST /order`、`PUT /order/list`
+- Webhook — 注文イベントを HTTP POST で受信可(HMAC署名、3回リトライ、要 HTTPS)
+
+**認証情報は2系統ある。混同しないこと。**
+
+| 入口 | 認証情報 | 用途 |
+|---|---|---|
+| 店舗管理画面 Settings → API | Secret Key + Store Email | AutoCount / Biztory など会計ソフト連携 |
+| opensgapi.sitegiant.co(開発者アカウント) | Access-Token | Open API |
+
+店舗側の Secret Key で Open API を叩くと全ルートが `403 "Access denied due to invalid token"` を返す。
+開発者アカウントの登録(`/register`)と、店舗の Administrator による承認が要る。
+
+再開するときは `.env` に `SITEGIANT_TOKEN=<Access-Token>` を入れて疎通確認する。
+
+```bash
+python fetch_orders.py --probe
+```
+
+`GET /orders` が `200` を返したら、レスポンス形状に合わせて `aggregate.py` を繋ぎ込む。
+`fetch_orders.py` はページングとパラメータ名の差し替えに対応済み。
+
 ## 注意
 
 このダッシュボードは注文単位の売上明細を含む。リポジトリとデプロイ先の公開設定は
 社内で共有できる範囲に合わせて設定すること。
+
+`.env` は `.gitignore` 済みでコミットされない。トークン類をコードに直書きしないこと。
