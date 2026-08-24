@@ -9,3 +9,9 @@ __pycache__/
 *.pyc
 .vercel
 .DS_Store
+
+# APIトークン。絶対にコミットしない
+.env
+.env.*
+orders.json
+raw_response.json
