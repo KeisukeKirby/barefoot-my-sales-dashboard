@@ -338,6 +338,18 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2>期間別の実績</h2>
     <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
 
+    <figure class="chartbox">
+      <figcaption>
+        <h3>月ごとの週別売上</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-monthweek" style="min-width:640px"></div></div>
+      <figcaption style="margin:6px 0 0"><p class="note" id="monthweek-note" style="margin:0"></p></figcaption>
+    </figure>
+
     <div class="tabs" role="tablist" aria-label="期間の粒度">
       <button role="tab" id="tab-week" aria-selected="true" aria-controls="pane-week">週次</button>
       <button role="tab" id="tab-month" aria-selected="false" aria-controls="pane-month">月次</button>
@@ -382,6 +394,29 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2>オンラインとオフラインの内訳</h2>
     <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
     <div class="split" id="split"></div>
+
+    <figure class="chartbox">
+      <figcaption>
+        <h3>店舗 / オンライン 売上比較</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
+    </figure>
+
+    <figure class="chartbox">
+      <figcaption>
+        <h3>週ごとの 店舗 / オンライン</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-segweek" style="min-width:620px"></div></div>
+    </figure>
+
     <div class="sharebar" id="sharebar"></div>
     <div class="sharelegend" id="sharelegend"></div>
     <p class="note" id="split-note"></p>
@@ -517,7 +552,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 読み取り ══ -->
-  <section id="s-findings" data-pane="overview">
+  <section id="s-findings" data-pane="insights">
     <p class="eyebrow">Findings</p>
     <h2>数字から読めること</h2>
     <p class="lede">「確認済」はデータから直接計算した事実、「推定」はデータから導いた解釈です。</p>
@@ -634,7 +669,8 @@ const IC = {
   trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   share:'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.6 10.7l6.8-3.4M8.6 13.3l6.8 3.4"/>',
   box:'<path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
-  book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h7"/>'
+  book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h7"/>',
+  bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6h5.4c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>'
 };
 const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 
@@ -793,6 +829,175 @@ $('#split-note').textContent =
   + ` 店舗は1注文あたり ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンラインは ${(K.online.units/K.online.orders).toFixed(2)}点で、`
   + ` 店舗では複数点をまとめ買いする客が客単価を押し上げています。`
   + ` 失注率(件数ベース)は店舗 ${pct(K.lost_offline.orders,K.lost_offline.orders+K.offline.orders)} に対しオンライン ${pct(K.lost_online.orders,K.lost_online.orders+K.online.orders)}。`;
+
+/* ═══ 3b. 店舗 / オンライン 棒グラフ ═══════════════════ */
+(function(){
+  const rows = [
+    {name:'店舗(POS)', sub:'Barefoot Malaysia POS', b:K.offline, cls:'f1'},
+    {name:'オンライン',  sub:'Shopee · Lazada · 直販', b:K.online,  cls:'fon'},
+  ];
+  const host = $('#c-segbar');
+  const W = 900, H = 300, ML = 74, MR = 20, MT = 22, MB = 62;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...rows.map(r=>r.b.rev))*1.14);
+  const y = v => MT + ph - (v/max)*ph;
+  const s = mkSvg(host, W, H);
+  const step = pw/rows.length, bw = Math.min(150, step*0.44);
+
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
+    const t = svgEl('text',{x:ML-10,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
+
+  rows.forEach((r,i)=>{
+    const cx = ML + step*i + step/2, x = cx - bw/2;
+    s.appendChild(svgEl('path',{d:barV(x,y(r.b.rev),bw,(r.b.rev/max)*ph,5), class:r.cls}));
+    const v1 = svgEl('text',{x:cx,y:y(r.b.rev)-24,'text-anchor':'middle',class:'dlab'});
+    v1.setAttribute('style','font-size:19px'); v1.textContent = rm(r.b.rev); s.appendChild(v1);
+    const v2 = svgEl('text',{x:cx,y:y(r.b.rev)-8,'text-anchor':'middle',class:'dlab2'});
+    v2.textContent = `${pct(r.b.rev,K.total.rev)} · ${r.b.orders}注文 · ${r.b.units}点`; s.appendChild(v2);
+    const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
+    l1.setAttribute('style','font-size:14px'); l1.textContent = r.name; s.appendChild(l1);
+    const l2 = svgEl('text',{x:cx,y:H-MB+39,'text-anchor':'middle',class:'ax'});
+    l2.textContent = r.sub; s.appendChild(l2);
+    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
+    bindTip(hit, `<b>${esc(r.name)}</b><hr>
+      <div class="r"><span>売上</span><b>${rm2(r.b.rev)}</b></div>
+      <div class="r"><span>構成比</span><span>${pct(r.b.rev,K.total.rev)}</span></div>
+      <div class="r"><span>注文 / 点数</span><span>${r.b.orders} / ${r.b.units}</span></div>
+      <div class="r"><span>客単価</span><span>${rm2(r.b.rev/r.b.orders)}</span></div>`);
+    s.appendChild(hit);
+  });
+})();
+
+/* ═══ 3c. 週ごとの 店舗 / オンライン(グループ棒)═══════ */
+(function(){
+  const rows = D.weekly;
+  const host = $('#c-segweek');
+  const W = 960, H = 320, ML = 66, MR = 16, MT = 18, MB = 66;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...rows.map(r=>Math.max(r.off,r.on)))*1.12);
+  const y = v => MT + ph - (v/max)*ph;
+  const s = mkSvg(host, W, H);
+  const step = pw/rows.length, gw = Math.min(110, step*0.62), bw = (gw-6)/2;
+
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
+    const t = svgEl('text',{x:ML-9,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
+
+  rows.forEach((r,i)=>{
+    const cx = ML + step*i + step/2, gx = cx - gw/2;
+    [[r.off,'f1',0],[r.on,'fon',bw+6]].forEach(([v,cls,dx])=>{
+      if (v > 0) s.appendChild(svgEl('path',{d:barV(gx+dx,y(v),bw,(v/max)*ph,4), class:cls}));
+      const t = svgEl('text',{x:gx+dx+bw/2, y:y(v)-6,'text-anchor':'middle',class:'dlab2'});
+      t.textContent = v>0 ? n0(v) : '0'; s.appendChild(t);
+    });
+    const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
+    l1.textContent = r.label; s.appendChild(l1);
+    const l2 = svgEl('text',{x:cx,y:H-MB+38,'text-anchor':'middle',class:'ax'});
+    l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
+    const l3 = svgEl('text',{x:cx,y:H-MB+54,'text-anchor':'middle',class:'ax'});
+    l3.setAttribute('style','fill:var(--text-secondary)');
+    l3.textContent = `ｵﾝﾗｲﾝ ${pct(r.on,r.rev)}`; s.appendChild(l3);
+    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
+    bindTip(hit, `<b>${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
+      <div class="r"><span>店舗</span><b>${rm2(r.off)}</b></div>
+      <div class="r"><span>オンライン</span><b>${rm2(r.on)}</b></div>
+      <div class="r"><span>オンライン比</span><span>${pct(r.on,r.rev)}</span></div>
+      <div class="r"><span>合計</span><span>${rm2(r.rev)}</span></div>`);
+    s.appendChild(hit);
+  });
+})();
+
+/* ═══ 3d. 月ごとの週別売上 ════════════════════════════ */
+(function(){
+  // 週は開始日の属する月に寄せる(W2 は 7/27〜8/2 で月をまたぐ)
+  const groups = [];
+  D.weekly.forEach(w=>{
+    const key = w.start.slice(0,7);
+    let g = groups.find(g=>g.key===key);
+    if (!g) groups.push(g = {key, label:`${+key.slice(5,7)}月`, weeks:[]});
+    g.weeks.push(w);
+  });
+  const host = $('#c-monthweek');
+  const all = groups.flatMap(g=>g.weeks);
+  const W = 980, H = 340, ML = 66, MR = 16, MT = 18, MB = 84;
+  const pw = W-ML-MR, ph = H-MT-MB;
+  const max = niceMax(Math.max(...all.map(r=>r.rev))*1.12);
+  const y = v => MT + ph - (v/max)*ph;
+  const s = mkSvg(host, W, H);
+
+  const GAP = 34;                                     // 月グループ間の余白
+  const unit = (pw - GAP*(groups.length-1)) / all.length;
+  for (let i=0;i<=4;i++){
+    const v = max*i/4;
+    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
+    const t = svgEl('text',{x:ML-9,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
+    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
+  }
+  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
+
+  let x = ML;
+  groups.forEach((g,gi)=>{
+    const gStart = x, bw = Math.min(84, unit*0.6);
+    g.weeks.forEach(r=>{
+      const cx = x + unit/2, bx = cx - bw/2;
+      const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
+      if (r.off>0) s.appendChild(svgEl('path',{d:barV(bx,y(r.off),bw,hOff, r.on>0?0:4), class:'f1'}));
+      if (r.on>0)  s.appendChild(svgEl('path',{d:barV(bx,y(r.rev),bw,hOn-(r.off>0?2:0),4), class:'fon'}));
+      const v1 = svgEl('text',{x:cx,y:y(r.rev)-7,'text-anchor':'middle',class:'dlab'});
+      v1.textContent = n0(r.rev); s.appendChild(v1);
+      const l1 = svgEl('text',{x:cx,y:H-MB+21,'text-anchor':'middle',class:'axb'});
+      l1.textContent = r.label; s.appendChild(l1);
+      const l2 = svgEl('text',{x:cx,y:H-MB+36,'text-anchor':'middle',class:'ax'});
+      l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
+      const hit = svgEl('rect',{x:x,y:MT,width:unit,height:ph,class:'hit'});
+      bindTip(hit, `<b>${esc(g.label)} · ${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
+        <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+        <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
+        <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+        <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+        <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>`);
+      s.appendChild(hit);
+      x += unit;
+    });
+    // 月ラベルと下線でグループを明示
+    const gEnd = x, mid = (gStart+gEnd)/2;
+    s.appendChild(svgEl('line',{x1:gStart+4,x2:gEnd-4,y1:H-MB+48,y2:H-MB+48,
+      stroke:'var(--accent-orange)','stroke-width':2}));
+    const ml = svgEl('text',{x:mid,y:H-MB+68,'text-anchor':'middle',class:'axb'});
+    ml.setAttribute('style','font-size:15px;fill:var(--accent-orange)');
+    const sum = g.weeks.reduce((a,r)=>a+r.rev,0);
+    ml.textContent = `${g.label}  ${rm(sum)}`; s.appendChild(ml);
+    if (gi < groups.length-1){
+      s.appendChild(svgEl('line',{x1:x+GAP/2,x2:x+GAP/2,y1:MT,y2:MT+ph,
+        stroke:'var(--border-color)','stroke-width':1,'stroke-dasharray':'4 4'}));
+      x += GAP;
+    }
+  });
+  // 月をまたぐ週があっても、実際に差額が出るとは限らない。数えてから書く。
+  const cross = D.weekly.filter(w=>w.start.slice(0,7)!==w.end.slice(0,7));
+  const diffs = groups.map(g=>{
+    const m = D.monthly.find(m=>m.id===g.key);
+    const sum = g.weeks.reduce((a,r)=>a+r.rev,0);
+    return m ? {label:g.label, d:Math.round((sum-m.rev)*100)/100} : null;
+  }).filter(x=>x && Math.abs(x.d) >= 0.01);
+  let note = '週は開始日の属する月に集計しています。';
+  if (cross.length){
+    note += `${cross.map(w=>`${w.label}(${jd(w.start)}–${jd(w.end)})`).join(' / ')} は月をまたぎます。`;
+    note += diffs.length
+      ? `そのため月次テーブルとは ${diffs.map(x=>`${x.label} ${x.d>0?'+':''}${rm2(x.d)}`).join(' / ')} ずれます。`
+      : 'ただし該当する日に売上が無いため、合計は月次テーブルと一致しています。';
+  }
+  $('#monthweek-note').textContent = note;
+})();
 
 /* ═══ 4. Daily chart ══════════════════════════════════ */
 (function(){
@@ -1248,6 +1453,7 @@ $('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].
     ['product',  '商品',     'box'],
     ['ops',      '店舗運営', 'store'],
     ['ledger',   '台帳',     'book'],
+    ['insights', '読み取り', 'bulb'],
   ];
   const main = document.querySelector('main');
   const foot = main.querySelector('footer');
