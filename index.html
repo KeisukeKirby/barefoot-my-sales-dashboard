@@ -340,6 +340,11 @@ footer dd{margin:0}
     <p class="eyebrow">Product</p>
     <h2>モデル別の売上構成</h2>
     <p class="lede">商品行の金額ベース(注文単位の値引き・送料は含みません)。店舗とオンラインの内訳を積み上げています。</p>
+
+    <h3 style="margin-bottom:6px">ブランド(シリーズ)別の構成</h3>
+    <div class="sharebar" id="brandbar" style="margin-top:10px"></div>
+    <div class="sharelegend" id="brandlegend" style="margin-bottom:26px"></div>
+
     <figure class="chartbox">
       <figcaption>
         <h3>モデル別 売上</h3>
@@ -800,6 +805,35 @@ $('#t-channel').innerHTML = (()=>{
      <td class="n">${T.orders}</td><td class="n">${T.units}</td><td class="n">${n1(T.rev/T.orders)}</td>
      <td class="n">${n1(K.lost.rev)}</td><td class="n">${K.lost.orders}</td>
      <td class="n">${pct(K.lost.orders,K.lost.orders+T.orders)}</td></tr></tfoot>`;
+})();
+
+/* ═══ 6a. Brand (series) rollup ═══════════════════════ */
+(function(){
+  const B = {};
+  D.models.forEach(m=>{
+    if (m.name === '配送料') return;              // 送料はシリーズではないので除く
+    const b = B[m.brand] = B[m.brand] || {rev:0, units:0, models:[]};
+    b.rev += m.rev; b.units += m.units; b.models.push(m.name);
+  });
+  const rows = Object.entries(B).map(([name,v])=>({name, ...v})).sort((a,b)=>b.rev-a.rev);
+  const tot = rows.reduce((a,r)=>a+r.rev,0);
+  const SW = ['var(--s1)','var(--s3)','var(--s4)','var(--ghost)'];
+  $('#brandbar').innerHTML = rows.map((r,i)=>
+    `<i style="width:${r.rev/tot*100}%;background:${SW[i%SW.length]}"></i>`).join('');
+  $('#brandlegend').innerHTML = rows.map((r,i)=>
+    `<span style="display:inline-flex;align-items:center;gap:7px">
+       <i class="sw" style="background:${SW[i%SW.length]}"></i>
+       ${esc(r.name)} <b class="num">${pct(r.rev,tot)}</b>
+       <span style="color:var(--ink-3)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
+     </span>`).join('');
+  rows.forEach((r,i)=>{
+    const el = $('#brandlegend').children[i];
+    if (el) bindTip(el, `<b>${esc(r.name)}</b><hr>
+      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>構成比</span><span>${pct(r.rev,tot)}</span></div>
+      <div class="r"><span>数量</span><span>${r.units} 点</span></div>
+      <hr><div style="font-size:11px">${esc(r.models.join(' / '))}</div>`);
+  });
 })();
 
 /* ═══ 6. Model ════════════════════════════════════════ */
