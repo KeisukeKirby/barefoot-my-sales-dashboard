@@ -418,7 +418,7 @@ footer dd{margin:0}
   <!-- ══ 全注文 ══ -->
   <section id="s-ledger">
     <p class="eyebrow">Ledger</p>
-    <h2>売上明細(全52件)</h2>
+    <h2>売上明細(全<span id="ledger-n">—</span>件)</h2>
     <p class="lede">売上実績に計上した注文の全件リスト。</p>
     <div class="tablebox" style="max-height:520px;overflow-y:auto"><table id="t-sales"></table></div>
   </section>
@@ -726,9 +726,17 @@ $('#split-note').textContent =
   });
   const best = rows.reduce((a,r)=> (r.off+r.on) > (a.off+a.on) ? r : a);
   const zero = rows.filter(r=>r.off+r.on===0).length;
+  // 売上ゼロが最も長く続いた区間を探す(手で書くと更新のたびに嘘になるため)
+  let run = 0, bestRun = 0, bestEnd = -1;
+  rows.forEach((r,i)=>{
+    if (r.off+r.on===0){ run++; if (run>bestRun){ bestRun=run; bestEnd=i; } } else run = 0;
+  });
+  const gap = bestRun >= 2
+    ? ` 最長は ${jd(rows[bestEnd-bestRun+1].date)}〜${jd(rows[bestEnd].date)} の ${bestRun}日連続。`
+    : '';
   $('#daily-note').textContent =
     `最高日は ${best.date}(${wdOf(best.date)}) の ${rm2(best.off+best.on)}(${best.orders}注文 / ${best.units}点)。`
-    + ` ${M.days}日中 ${zero}日は売上ゼロ。特に 7/31〜8/5 は6日連続で売上がありません(この期間の受注はすべてキャンセル)。`;
+    + ` ${M.days}日中 ${zero}日は売上ゼロ。${gap}`;
 })();
 
 /* ═══ 5. Channel ══════════════════════════════════════ */
@@ -934,18 +942,41 @@ simpleTable('t-pay','決済方法', D.payments);
 
 /* ═══ 9. Lost / Unpaid ════════════════════════════════ */
 const shopee = D.channels.find(c=>c.name==='Shopee');
-$('#callouts').innerHTML = `
-  <div class="callout">
-    <h3>Shopee の失注が売上を上回っている</h3>
-    <p>Shopee の成約は <b>${shopee.orders}件 / ${rm2(shopee.rev)}</b> に対し、失注は <b>${shopee.lost_orders}件 / ${rm2(shopee.lost_rev)}</b>。
-    件数ベースの失注率は <b>${pct(shopee.lost_orders, shopee.lost_orders+shopee.orders)}</b> で、Shopee 経由の受注は半分以上が売上になっていません。</p>
-    <p>特に <b>7/29〜7/30 の2日間に V-Soul W37 が5件連続でキャンセル(いずれも未入金)</b>。同一SKUへの集中は在庫切れ・価格設定・配送設定など出品側の要因を疑う値です。</p>
-  </div>
-  <div class="callout warnflag">
-    <h3>未入金 ${K.unpaid.orders}件 / ${rm2(K.unpaid.rev)} は全てオンライン</h3>
-    <p>未入金(Unpaid)の注文はすべて Shopee 経由で、かつ全件がキャンセルまたは返品で終わっています。<b>入金は一度も発生していません</b>ので、売上にもキャッシュにも計上されていません。
-    「取り逃した受注額」として下の台帳で追跡してください。</p>
-  </div>`;
+(function(){
+  const lostRate = shopee.lost_orders/(shopee.lost_orders+shopee.orders);
+  // 失注に最も多く出てくる品目とその発生期間を数える(手書きだと更新のたびに古くなる)
+  const tally = {};
+  D.lost_rows.forEach(r => r.items.split(' / ').forEach(it=>{
+    (tally[it] = tally[it] || {n:0, dates:[]}).n++;
+    tally[it].dates.push(r.dt.slice(0,10));
+  }));
+  const top = Object.entries(tally).sort((a,b)=>b[1].n-a[1].n)[0];
+  let concentrated = '';
+  if (top && top[1].n >= 3){
+    const ds = top[1].dates.sort();
+    const span = ds[0]===ds[ds.length-1] ? jd(ds[0]) : `${jd(ds[0])}〜${jd(ds[ds.length-1])}`;
+    concentrated = `<p>失注品目で最も多いのは <b>${esc(top[0])} が ${top[1].n}件(${span})</b>。
+      同一SKUへの集中は在庫切れ・価格設定・配送設定など出品側の要因を疑う値です。</p>`;
+  }
+  // 未入金が本当に全てオンラインか、全件が失注で終わっているかを確認してから断定する
+  const upRows = D.unpaid_rows;
+  const allOnline = upRows.every(r => !r.channel.startsWith('POS'));
+  const chans = [...new Set(upRows.map(r=>r.channel))].join(' / ');
+
+  $('#callouts').innerHTML = `
+    <div class="callout">
+      <h3>${shopee.lost_rev > shopee.rev ? 'Shopee の失注が売上を上回っている' : 'Shopee の失注率が突出している'}</h3>
+      <p>Shopee の成約は <b>${shopee.orders}件 / ${rm2(shopee.rev)}</b> に対し、失注は <b>${shopee.lost_orders}件 / ${rm2(shopee.lost_rev)}</b>。
+      件数ベースの失注率は <b>${pct(shopee.lost_orders, shopee.lost_orders+shopee.orders)}</b> で、
+      Shopee 経由の受注は${lostRate > 0.5 ? '半分以上が売上になっていません' : '相当数が売上になっていません'}。</p>
+      ${concentrated}
+    </div>
+    <div class="callout warnflag">
+      <h3>未入金 ${K.unpaid.orders}件 / ${rm2(K.unpaid.rev)}${allOnline ? ' は全てオンライン' : ''}</h3>
+      <p>未入金(Unpaid)の注文は${allOnline ? `すべて${chans==='Shopee'?' Shopee ':`${esc(chans)} の`}経由で、かつ` : ''}全件がキャンセルまたは返品で終わっています。<b>入金は一度も発生していません</b>ので、売上にもキャッシュにも計上されていません。
+      「取り逃した受注額」として下の台帳で追跡してください。</p>
+    </div>`;
+})();
 
 $('#t-unpaid').innerHTML =
  `<thead><tr><th>受注日時</th><th>伝票</th><th>チャネル</th><th>ステータス</th><th>商品</th><th class="n">点数</th><th class="n">受注額</th></tr></thead>
@@ -971,6 +1002,7 @@ $('#t-lost').innerHTML =
     <td class="n">${K.lost.units}</td><td class="n">${n1(K.lost.rev)}</td></tr></tfoot>`;
 
 /* ═══ 10. Sales ledger ════════════════════════════════ */
+$('#ledger-n').textContent = D.sales_rows.length;
 $('#t-sales').innerHTML =
  `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>チャネル</th><th>商品</th>
    <th>州</th><th>決済</th><th class="n">点数</th><th class="n">売上</th></tr></thead>
@@ -989,17 +1021,39 @@ $('#t-sales').innerHTML =
 (function(){
   const w = D.weekly, w1 = w[0], w5 = w[w.length-1];
   const vsoul = D.models[0];
+  const growth = w5.per_day / w1.per_day;
+  // 底を打った週から何週連続で増えているか数える
+  let lowIdx = 0;
+  w.forEach((r,i)=>{ if (r.per_day < w[lowIdx].per_day) lowIdx = i; });
+  let streak = 0;
+  for (let i=lowIdx+1; i<w.length; i++){ if (w[i].per_day > w[i-1].per_day) streak++; else break; }
+  // 売れ筋レディースサイズ上位3と、失注に最も多く出るサイズ
+  const wsz = [...D.sizes.women].sort((a,b)=>b.n-a.n).slice(0,3);
+  const topSizes = wsz.map(s=>s.size).sort();
+  const topShare = wsz.reduce((a,s)=>a+s.n,0);
+  const womenTotal = D.sizes.women.reduce((a,s)=>a+s.n,0);
+  const szTally = {};
+  D.lost_rows.forEach(r => r.items.split(' / ').forEach(it=>{
+    const m = it.match(/\b([WM]\d{2}|\d+(?:\.\d+)?cm)$/);
+    if (m) szTally[m[1]] = (szTally[m[1]]||0)+1;
+  }));
+  const lostTop = Object.entries(szTally).sort((a,b)=>b[1]-a[1])[0];
+  const lostSize = lostTop && lostTop[1] >= 2 ? `${lostTop[0]}(${lostTop[1]}件)` : null;
   const items = [
-    ['fact','週商は開業週の2.3倍に伸びている',
-     `日平均で見ると開業週 ${rm2(w1.per_day)} → 第5週 ${rm2(w5.per_day)}(${(w5.per_day/w1.per_day).toFixed(1)}倍)。第2週の ${rm2(w[1].per_day)} が底で、そこから4週連続で増加しています。`],
-    ['fact','売上の8割は店舗、しかし失注の8割はオンライン',
+    ['fact',`日商は開業週の${growth.toFixed(1)}倍に伸びている`,
+     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(w5.label)} ${rm2(w5.per_day)}(${growth.toFixed(1)}倍)。`
+     + `${esc(w[lowIdx].label)}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`],
+    ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗、しかし失注の${(K.lost_online.rev/K.lost.rev*10).toFixed(0)}割はオンライン`,
      `店舗 ${pct(K.offline.rev,K.total.rev)} / オンライン ${pct(K.online.rev,K.total.rev)}。一方で失注額の ${pct(K.lost_online.rev,K.lost.rev)} がオンライン発生です。`],
     ['fact',`${vsoul.name} 1モデルで売上の${pct(vsoul.rev, D.models.reduce((a,m)=>a+m.rev,0))}`,
      `${vsoul.units}点で ${rm2(vsoul.rev)}。2位以下(${D.models.slice(1,4).map(m=>m.name).join(' / ')})を大きく引き離しており、実質シングルモデル依存の状態です。`],
-    ['fact','商圏は Johor に集中',
-     `${D.states[0].name} が ${pct(D.states[0].rev,K.total.rev)}(${D.states[0].orders}注文)。Selangor・KL は合わせて ${pct(D.states[1].rev+D.states[3].rev, K.total.rev)} で、オンライン経由の遠隔地需要はまだ小さい規模です。`],
-    ['est','V-Soul W37〜W40 は在庫を厚めに',
-     `販売実績の中心は EU37〜40(レディース)。同時に Shopee でキャンセルが集中したのも W37 でした。売れ筋と欠品疑いのサイズが一致しているため、この帯の在庫確保が最優先と推定されます。`],
+    ['fact',`商圏は ${esc(D.states[0].name)} に集中`,
+     `${esc(D.states[0].name)} が ${pct(D.states[0].rev,K.total.rev)}(${D.states[0].orders}注文)。`
+     + `残り ${D.states.length-1} 地域を合わせても ${pct(K.total.rev-D.states[0].rev, K.total.rev)} で、オンライン経由の遠隔地需要はまだ小さい規模です。`],
+    ['est',`${vsoul.name} EU${topSizes[0]}〜${topSizes[topSizes.length-1]} は在庫を厚めに`,
+     `販売実績の中心は EU${topSizes.join(' · ')}(レディース、上位3サイズで ${pct(topShare, womenTotal)})。`
+     + (lostSize ? `同時に失注が集中したのも ${esc(lostSize)} でした。売れ筋と欠品疑いのサイズが一致しているため、この帯の在庫確保が最優先と推定されます。`
+                 : `この帯を切らさないことが最優先と推定されます。`)],
     ['est','Shopee は「出品の設定」を疑う段階',
      `未入金キャンセルが同一SKUに集中している以上、需要不足ではなく在庫連動・価格・配送設定の不整合の可能性が高いと推定されます。Shopee 管理画面側の在庫数と配送オプションの確認を推奨します。`]
   ];

@@ -25,15 +25,18 @@ MODEL = [
     ('VFF0002', 'V-Run',      'Vibram FiveFingers', 'shoes'),
     ('VFF0008', 'V-Soul',     'Vibram FiveFingers', 'shoes'),
     ('VFF0009', 'KSO EVO',    'Vibram FiveFingers', 'shoes'),
+    ('VFF0023', 'V-Alpha',    'Vibram FiveFingers', 'shoes'),
     ('VFF0024', 'Trailope',   'Vibram FiveFingers', 'shoes'),
     ('VFF0026', 'Spidrwalk',  'Vibram FiveFingers', 'shoes'),
+    ('MTB0001', 'tabiRela',   'Marugo Tabi',        'shoes'),
     ('MTB0002', 'Hitoe+',     'Marugo Tabi',        'shoes'),
     ('Marugo Tab', 'tabiRela','Marugo Tabi',        'shoes'),
     ('BFJ0001', 'Barefootinc.Jp Socks', 'Socks',    'socks'),
     ('QLN0002', 'Oleno Ultimate',       'Socks',    'socks'),
 ]
 COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lime','TT/BK':'Total Black',
-             'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','ZB/WT':'Zebra White'}
+             'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',
+             'ZB/WT':'Zebra White','LM':'Lemon'}
 
 def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
@@ -136,3 +139,19 @@ print()
 rev = sum(o['total'] for o in sales); un = sum(o['units'] for o in sales)
 print(f'純売上 RM {rev:,.2f} / 注文 {len(sales)} / AOV RM {rev/len(sales):,.2f} / 販売数 {un} / 単価 RM {rev/un:,.2f}')
 print(f'キャンセル率(件数) {len(canc)/(len(O)-len(test))*100:.1f}%  返品率 {len(retn)/(len(O)-len(test))*100:.1f}%')
+
+# 未登録SKUは cat='other' に落ち、数量にカウントされない。黙って消えると
+# 「点数が合わない」形でしか気づけないので、ここで必ず目に入るようにする。
+unknown = {}
+for o in O:
+    for it in o['items']:
+        if it['cat'] == 'other':
+            unknown.setdefault(it['sku'] or '(SKUなし)', it['pname'])
+if unknown:
+    print()
+    print('!' * 72)
+    print(f'未登録のSKUが {len(unknown)} 件あります。数量に計上されていません。')
+    print('aggregate.py の MODEL に追加してから再実行してください。')
+    for sku, name in sorted(unknown.items()):
+        print(f'  {sku:24} {name[:70]}')
+    print('!' * 72)
