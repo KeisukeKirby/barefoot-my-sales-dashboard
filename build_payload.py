@@ -46,9 +46,20 @@ for o in sales:
 dlost = collections.Counter()
 for o in lost:
     dlost[o['date']] += o['total']
+dline = collections.Counter()
+dinv = collections.Counter()
+dlostn = collections.Counter()
+for o in sales:
+    dline[o['date']] += o['n_lines']
+    if o['invoice'].strip():
+        dinv[o['date']] += 1
+for o in lost:
+    dlostn[o['date']] += 1
 daily = [dict(date=d, off=R2(dsale[d]['off']), on=R2(dsale[d]['on']),
-              orders=dsale[d]['o_off'] + dsale[d]['o_on'], units=dsale[d]['units'],
-              lost=R2(dlost.get(d, 0))) for d in alldates]
+              orders=dsale[d]['o_off'] + dsale[d]['o_on'],
+              off_orders=dsale[d]['o_off'], on_orders=dsale[d]['o_on'],
+              units=dsale[d]['units'], lines=dline.get(d, 0), invoices=dinv.get(d, 0),
+              lost=R2(dlost.get(d, 0)), lostn=dlostn.get(d, 0)) for d in alldates]
 
 
 # --- 期間定義: 開業週は 7/17(金)〜7/26(日)、以降は月曜起点の週次 ---------------
@@ -66,12 +77,20 @@ MONTHS = [
 LAST = d1.isoformat()
 
 
+def invnum(o):
+    try:
+        return int(o['invoice'].split('-')[1])
+    except (IndexError, ValueError):
+        return None
+
+
 def period_stats(a, b):
     s = [o for o in sales if a <= o['date'] <= b]
     l = [o for o in lost if a <= o['date'] <= b]
     u = [o for o in unpaid if a <= o['date'] <= b]
     so = [o for o in s if isoff(o)]
     sn = [o for o in s if not isoff(o)]
+    nums = [n for n in (invnum(o) for o in s) if n is not None]
     da = datetime.date(*map(int, a.split('-')))
     db = datetime.date(*map(int, b.split('-')))
     dbe = min(db, d1)
@@ -83,6 +102,12 @@ def period_stats(a, b):
         off=R2(sum(o['total'] for o in so)), on=R2(sum(o['total'] for o in sn)),
         rev=R2(sum(o['total'] for o in s)), orders=len(s), units=sum(o['units'] for o in s),
         off_orders=len(so), on_orders=len(sn),
+        invoices=len(nums),                       # 伝票が発行された注文数
+        no_invoice=len(s) - len(nums),            # 伝票番号なし(マーケットプレイス経由)
+        inv_from=('INV-%d' % min(nums)) if nums else '—',
+        inv_to=('INV-%d' % max(nums)) if nums else '—',
+        lines=sum(o['n_lines'] for o in s),       # 明細行数
+        unit_price=R2(sum(o['total'] for o in s) / sum(o['units'] for o in s)) if sum(o['units'] for o in s) else 0,
         aov=R2(sum(o['total'] for o in s) / len(s)) if s else 0,
         per_day=R2(sum(o['total'] for o in s) / elapsed) if elapsed else 0,
         active_days=act,
@@ -100,7 +125,9 @@ for c in CHORDER:
     s = [o for o in sales if o['channel'] == c]
     l = [o for o in lost if o['channel'] == c]
     chan.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else u'オンライン'),
-                     lost_orders=len(l), lost_rev=R2(sum(o['total'] for o in l)), **block(s)))
+                     lost_orders=len(l), lost_rev=R2(sum(o['total'] for o in l)),
+                     invoices=sum(1 for o in s if o['invoice'].strip()),
+                     lines=sum(o['n_lines'] for o in s), **block(s)))
 
 mm = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0, prices=[]))
 for o in sales:

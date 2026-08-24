@@ -330,13 +330,17 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="lede">入金確認済み(Paid)かつ Completed / Shipped の注文のみを売上実績として集計。キャンセル・返品・未入金は売上から除外し、下部の台帳に別記録として残しています。</p>
     <div class="kpis" id="kpis"></div>
     <p class="note" id="summary-note"></p>
-  </section>
 
-  <!-- ══ 期間別 ══ -->
-  <section id="s-period" data-pane="trend">
-    <p class="eyebrow">Period</p>
-    <h2>期間別の実績</h2>
-    <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>店舗 / オンライン 売上比較</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
+    </figure>
 
     <figure class="chartbox">
       <figcaption>
@@ -350,39 +354,36 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       <figcaption style="margin:6px 0 0"><p class="note" id="monthweek-note" style="margin:0"></p></figcaption>
     </figure>
 
+    <figure class="chartbox">
+      <figcaption>
+        <h3>日次売上(店舗 / オンライン)</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-daily" style="min-width:760px"></div></div>
+    </figure>
+    <p class="note" id="daily-chart-note"></p>
+  </section>
+
+  <!-- ══ 期間別 ══ -->
+  <section id="s-period" data-pane="trend">
+    <p class="eyebrow">Period</p>
+    <h2>期間別の実績</h2>
+    <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
+
     <div class="tabs" role="tablist" aria-label="期間の粒度">
       <button role="tab" id="tab-week" aria-selected="true" aria-controls="pane-week">週次</button>
       <button role="tab" id="tab-month" aria-selected="false" aria-controls="pane-month">月次</button>
     </div>
 
     <div id="pane-week" role="tabpanel" aria-labelledby="tab-week">
-      <figure class="chartbox">
-        <figcaption>
-          <h3>週次 売上(店舗 / オンライン積み上げ)と失注</h3>
-          <div class="legend">
-            <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-            <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-            <span><i class="sw hatch"></i>失注(キャンセル+返品)</span>
-          </div>
-        </figcaption>
-        <div class="scroller"><div id="c-week" style="min-width:560px"></div></div>
-      </figure>
       <div class="tablebox"><table id="t-week"></table></div>
       <p class="note">第5週は 8/21 時点で5日経過(進行中)。「日平均」は経過日数で割った値です。</p>
     </div>
 
     <div id="pane-month" role="tabpanel" aria-labelledby="tab-month" hidden>
-      <figure class="chartbox">
-        <figcaption>
-          <h3>月次 売上(店舗 / オンライン積み上げ)と失注</h3>
-          <div class="legend">
-            <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-            <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-            <span><i class="sw hatch"></i>失注(キャンセル+返品)</span>
-          </div>
-        </figcaption>
-        <div class="scroller"><div id="c-month" style="min-width:420px"></div></div>
-      </figure>
       <div class="tablebox"><table id="t-month"></table></div>
       <p class="note">7月は 7/17 開業のため15日間、8月は 8/21 時点で21日経過(進行中)。単純な月合計の比較ではなく「日平均」で見てください。</p>
     </div>
@@ -394,17 +395,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2>オンラインとオフラインの内訳</h2>
     <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
     <div class="split" id="split"></div>
-
-    <figure class="chartbox">
-      <figcaption>
-        <h3>店舗 / オンライン 売上比較</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-        </div>
-      </figcaption>
-      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
-    </figure>
 
     <figure class="chartbox">
       <figcaption>
@@ -425,18 +415,9 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <!-- ══ 日次 ══ -->
   <section id="s-daily" data-pane="trend">
     <p class="eyebrow">Daily</p>
-    <h2>日次の売上推移</h2>
-    <p class="lede">開業日から最新データまで、売上ゼロの日も含めた全日表示。網掛けは土日です。</p>
-    <figure class="chartbox">
-      <figcaption>
-        <h3>日次売上(店舗 / オンライン)</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-        </div>
-      </figcaption>
-      <div class="scroller"><div id="c-daily" style="min-width:760px"></div></div>
-    </figure>
+    <h2>日次の実績</h2>
+    <p class="lede">売上のあった日のみ。件数・伝票数・明細行数まで数値で確認できます。</p>
+    <div class="tablebox" style="max-height:560px;overflow-y:auto"><table id="t-daily"></table></div>
     <p class="note" id="daily-note"></p>
   </section>
 
@@ -560,7 +541,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 定義 ══ -->
-  <section id="s-def" data-pane="overview">
+  <section id="s-def" data-pane="insights">
     <p class="eyebrow">Definitions</p>
     <h2>集計の定義</h2>
     <div class="tablebox"><table id="t-def"></table></div>
@@ -696,94 +677,45 @@ $('#summary-note').textContent =
   `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は上の純売上に含まれていません。内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
   + ` 受注ベースの合計(売上+失注)は ${rm2(K.total.rev + K.lost.rev)}、そのうち ${pct(K.lost.rev, K.total.rev + K.lost.rev)} が失注しています。`;
 
-/* ═══ 2. Period charts ════════════════════════════════ */
-function periodChart(hostId, rows, labelFn){
-  const host = document.getElementById(hostId);
-  const W = 900, H = 320, ML = 66, MR = 16, MT = 14, MB = 62;
-  const pw = W-ML-MR, ph = H-MT-MB;
-  const max = niceMax(Math.max(...rows.map(r => Math.max(r.rev, r.lost))) * 1.08);
-  const y = v => MT + ph - (v/max)*ph;
-  const s = mkSvg(host, W, H);
-  const step = pw/rows.length;
-  const gw = Math.min(96, step*0.62);          // group width
-  const bw = gw*0.56, lw = gw*0.34, gap = gw - bw - lw;
-
-  for (let i=0;i<=4;i++){
-    const v = max*i/4;
-    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
-    const t = svgEl('text',{x:ML-9,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
-    t.textContent = i===0 ? '0' : n0(v/1000)+'k'; s.appendChild(t);
-  }
-  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
-
-  rows.forEach((r,i) => {
-    const cx = ML + step*i + step/2;
-    const bx = cx - gw/2;
-    const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
-    const g = svgEl('g');
-    // stacked: 店舗 bottom, オンライン top, 2px surface gap between fills
-    if (r.off > 0) g.appendChild(svgEl('path',{d: barV(bx, y(r.off), bw, hOff, hOn>0?0:4), class:'f1'}));
-    if (r.on > 0)  g.appendChild(svgEl('path',{d: barV(bx, y(r.rev), bw, hOn - (r.off>0?2:0), 4), class:'fon'}));
-    if (r.lost > 0) g.appendChild(svgEl('path',{
-      d: barV(bx+bw+gap, y(r.lost), lw, (r.lost/max)*ph, 4),
-      fill:`url(#hatch${hostId})`, stroke:'var(--ghost)', 'stroke-width':1
-    }));
-    // value label above the sales bar
-    const vl = svgEl('text',{x:bx+bw/2, y:y(r.rev)-7, 'text-anchor':'middle', class:'dlab'});
-    vl.textContent = n0(r.rev); g.appendChild(vl);
-    // x labels
-    const l1 = svgEl('text',{x:cx, y:H-MB+20, 'text-anchor':'middle', class:'axb'});
-    l1.textContent = labelFn(r).main; g.appendChild(l1);
-    const l2 = svgEl('text',{x:cx, y:H-MB+36, 'text-anchor':'middle', class:'ax'});
-    l2.textContent = labelFn(r).sub; g.appendChild(l2);
-    if (r.ongoing){
-      const l3 = svgEl('text',{x:cx, y:H-MB+51, 'text-anchor':'middle', class:'ax'});
-      l3.setAttribute('fill','var(--warn)'); l3.textContent = '進行中'; g.appendChild(l3);
-    }
-    const hit = svgEl('rect',{x:ML+step*i, y:MT, width:step, height:ph, class:'hit'});
-    bindTip(hit, `<b>${esc(labelFn(r).main)}</b> ${esc(r.start)}〜${esc(r.end)}
-      <hr><div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
-      <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
-      <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
-      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
-      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>
-      <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>
-      <hr><div class="r"><span>失注</span><b>${rm2(r.lost)}</b></div>
-      <div class="r"><span>　件数</span><span>${r.lostn} 件</span></div>`);
-    g.appendChild(hit);
-    s.appendChild(g);
-  });
-}
-periodChart('c-week', D.weekly, r => ({main:r.label, sub:`${jd(r.start)}–${jd(r.end)}`}));
-periodChart('c-month', D.monthly, r => ({main:r.label, sub:`${jd(r.start)}–${jd(r.end)}`}));
-
-/* period tables */
+/* ═══ 2. Period tables ═══════════════════════════════ */
 function periodTable(elId, rows, head){
   const el = document.getElementById(elId);
-  const tot = rows.reduce((a,r)=>({rev:a.rev+r.rev,off:a.off+r.off,on:a.on+r.on,orders:a.orders+r.orders,
-    units:a.units+r.units,lost:a.lost+r.lost,lostn:a.lostn+r.lostn}),{rev:0,off:0,on:0,orders:0,units:0,lost:0,lostn:0});
+  const sum = k => rows.reduce((a,r)=>a+r[k],0);
   el.innerHTML =
-   `<thead><tr><th>${head}</th><th>期間</th><th class="n">日数</th><th class="n">売上</th><th class="n">店舗</th>
-      <th class="n">オンライン</th><th class="n">ｵﾝﾗｲﾝ比</th><th class="n">注文</th><th class="n">点数</th>
-      <th class="n">客単価</th><th class="n">日平均</th><th class="n">失注</th></tr></thead>
+   `<thead><tr>
+      <th>${head}</th><th>期間</th><th class="n">日数</th><th class="n">稼働日</th>
+      <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th><th class="n">ｵﾝﾗｲﾝ比</th>
+      <th class="n">注文数</th><th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th>
+      <th class="n">客単価</th><th class="n">1点単価</th><th class="n">日平均</th>
+      <th class="n">失注件数</th><th class="n">失注額</th><th>伝票レンジ</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n">${r.elapsed}</td>
+      <td class="n">${r.active_days}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${n1(r.off)}</td>
       <td class="n">${n1(r.on)}</td>
       <td class="n">${pct(r.on,r.rev)}</td>
-      <td class="n">${r.orders}</td>
+      <td class="n"><b>${r.orders}</b></td>
+      <td class="n">${r.invoices}${r.no_invoice?`<span style="color:var(--text-muted)"> +${r.no_invoice}</span>`:''}</td>
+      <td class="n">${r.lines}</td>
       <td class="n">${r.units}</td>
       <td class="n">${n1(r.aov)}</td>
+      <td class="n">${n1(r.unit_price)}</td>
       <td class="n">${n1(r.per_day)}</td>
-      <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>合計</td><td></td><td class="n">${rows.reduce((a,r)=>a+r.elapsed,0)}</td>
-      <td class="n">${n1(tot.rev)}</td><td class="n">${n1(tot.off)}</td><td class="n">${n1(tot.on)}</td>
-      <td class="n">${pct(tot.on,tot.rev)}</td><td class="n">${tot.orders}</td><td class="n">${tot.units}</td>
-      <td class="n">${n1(tot.rev/tot.orders)}</td><td class="n">—</td>
-      <td class="n">${n1(tot.lost)}</td></tr></tfoot>`;
+      <td class="n" style="color:var(--crit)">${r.lostn||'—'}</td>
+      <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td>
+      <td class="num" style="font-size:11.5px;color:var(--text-muted)">${esc(r.inv_from)}–${esc(r.inv_to)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>合計</td><td></td>
+      <td class="n">${sum('elapsed')}</td><td class="n">${sum('active_days')}</td>
+      <td class="n">${n1(sum('rev'))}</td><td class="n">${n1(sum('off'))}</td><td class="n">${n1(sum('on'))}</td>
+      <td class="n">${pct(sum('on'),sum('rev'))}</td>
+      <td class="n">${sum('orders')}</td><td class="n">${sum('invoices')}</td>
+      <td class="n">${sum('lines')}</td><td class="n">${sum('units')}</td>
+      <td class="n">${n1(sum('rev')/sum('orders'))}</td><td class="n">${n1(sum('rev')/sum('units'))}</td>
+      <td class="n">—</td>
+      <td class="n">${sum('lostn')}</td><td class="n">${n1(sum('lost'))}</td><td></td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, '週');
 periodTable('t-month', D.monthly, '月');
@@ -1051,6 +983,8 @@ $('#split-note').textContent =
       + (r.lost>0?`<hr><div class="r"><span>失注</span><b>${rm2(r.lost)}</b></div>`:''));
     s.appendChild(hit);
   });
+  $('#daily-chart-note').textContent =
+    `網掛けは土日。破線は週の区切りです。${M.days}日中 ${rows.filter(r=>r.off+r.on>0).length}日に売上があります。`;
   const best = rows.reduce((a,r)=> (r.off+r.on) > (a.off+a.on) ? r : a);
   const zero = rows.filter(r=>r.off+r.on===0).length;
   // 売上ゼロが最も長く続いた区間を探す(手で書くと更新のたびに嘘になるため)
@@ -1064,6 +998,41 @@ $('#split-note').textContent =
   $('#daily-note').textContent =
     `最高日は ${best.date}(${wdOf(best.date)}) の ${rm2(best.off+best.on)}(${best.orders}注文 / ${best.units}点)。`
     + ` ${M.days}日中 ${zero}日は売上ゼロ。${gap}`;
+})();
+
+/* ═══ 4b. 日次テーブル(数値) ═════════════════════════ */
+(function(){
+  const rows = D.daily.filter(r=>r.off+r.on>0 || r.lost>0);
+  const S = k => rows.reduce((a,r)=>a+r[k],0);
+  $('#t-daily').innerHTML =
+   `<thead><tr><th>日付</th><th>曜日</th><th class="n">売上</th><th class="n">店舗</th>
+     <th class="n">オンライン</th><th class="n">注文数</th><th class="n">店舗件数</th><th class="n">ｵﾝﾗｲﾝ件数</th>
+     <th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th><th class="n">客単価</th>
+     <th class="n">失注件数</th><th class="n">失注額</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const tot = r.off + r.on, wk = wdOf(r.date), we = wk==='土'||wk==='日';
+      return `<tr>
+        <td class="num">${esc(r.date)}</td>
+        <td${we?' style="color:var(--accent-blue)"':''}>${wk}</td>
+        <td class="n"><b>${tot?n1(tot):'—'}</b></td>
+        <td class="n">${r.off?n1(r.off):'—'}</td>
+        <td class="n">${r.on?n1(r.on):'—'}</td>
+        <td class="n"><b>${r.orders||'—'}</b></td>
+        <td class="n">${r.off_orders||'—'}</td>
+        <td class="n">${r.on_orders||'—'}</td>
+        <td class="n">${r.invoices||'—'}</td>
+        <td class="n">${r.lines||'—'}</td>
+        <td class="n">${r.units||'—'}</td>
+        <td class="n">${r.orders?n1(tot/r.orders):'—'}</td>
+        <td class="n" style="color:var(--crit)">${r.lostn||'—'}</td>
+        <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td></tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr><td>合計 ${rows.length}日</td><td></td>
+      <td class="n">${n1(S('off')+S('on'))}</td><td class="n">${n1(S('off'))}</td><td class="n">${n1(S('on'))}</td>
+      <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
+      <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${S('units')}</td>
+      <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td>
+      <td class="n">${S('lostn')}</td><td class="n">${n1(S('lost'))}</td></tr></tfoot>`;
 })();
 
 /* ═══ 5. Channel ══════════════════════════════════════ */
@@ -1426,6 +1395,8 @@ $('#t-def').innerHTML =
   <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
   <tr><td><b>失注</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Cancelled または Returned の注文。売上には含めず別集計。</span></td></tr>
   <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>
+  <tr><td><b>伝票数</b></td><td><span class="wrapok" style="max-width:70ch">invoice_no が発行された注文数。Shopee / Lazada 経由の注文には伝票番号が付かないため、注文数より少なくなります(差分は注文数列に灰色で <b>+n</b> と併記)。POS の注文は全件に伝票番号があります。</span></td></tr>
+  <tr><td><b>明細行</b></td><td><span class="wrapok" style="max-width:70ch">注文に含まれる商品行の数。1注文で複数モデルを買うと増えます。</span></td></tr>
   <tr><td><b>点数</b></td><td><span class="wrapok" style="max-width:70ch">シューズ・ソックスの数量合計。送料などのサービス行は除外。返品行(数量 −1)は差し引いています。</span></td></tr>
   <tr><td><b>モデル別売上</b></td><td><span class="wrapok" style="max-width:70ch">商品行の金額(product_total)ベース。注文単位の値引き・送料を含まないため、合計は純売上と一致しません。</span></td></tr>
   <tr><td><b>除外データ</b></td><td><span class="wrapok" style="max-width:70ch">テスト注文2件(INV-4 / INV-5、商品名 test3・test4、各 RM 1.00)は全集計から除外。</span></td></tr>
