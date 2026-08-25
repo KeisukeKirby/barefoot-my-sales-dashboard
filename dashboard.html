@@ -400,6 +400,23 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ オンライン / オフライン ══ -->
+  <section id="s-ops" data-pane="store">
+    <p class="eyebrow">Store Operations</p>
+    <h2>店舗の売れる曜日・時間帯</h2>
+    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみです。</p>
+    <div class="split">
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>曜日別 売上</h3></figcaption>
+        <div id="c-dow"></div>
+      </figure>
+      <figure class="chartbox" style="margin:0">
+        <figcaption><h3>店舗の時間帯別 注文件数</h3></figcaption>
+        <div id="c-hour"></div>
+      </figure>
+    </div>
+    <div class="tablebox"><table id="t-pay"></table></div>
+  </section>
+
   <section id="s-split" data-pane="store">
     <p class="eyebrow">Online / Offline</p>
     <h2>オンラインとオフラインの内訳</h2>
@@ -434,19 +451,15 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <!-- ══ チャネル ══ -->
   <section id="s-channel" data-pane="store">
     <p class="eyebrow">Channel</p>
-    <h2>チャネル別の成約と失注</h2>
-    <p class="lede">売上金額と、同じチャネルで失注(キャンセル・返品)した金額を並べています。オンラインの失注が構造的な問題として見えます。</p>
+    <h2>チャネル別の売上</h2>
+    <p class="lede">円グラフは売上構成。下の表では同じチャネルの失注(キャンセル・返品)も並べて確認できます。</p>
     <figure class="chartbox">
       <figcaption>
-        <h3>チャネル別 売上 / 失注</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--accent)"></i>売上(成約)</span>
-          <span><i class="sw hatch"></i>失注</span>
-        </div>
+        <h3>チャネル別 売上構成</h3>
+        <div class="legend" id="pie-legend"></div>
       </figcaption>
       <div id="c-channel"></div>
     </figure>
-    <div id="callouts" style="margin-top:1.4rem"></div>
     <div class="tablebox"><table id="t-channel"></table></div>
   </section>
 
@@ -455,10 +468,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="eyebrow">Product</p>
     <h2>モデル別の売上構成</h2>
     <p class="lede">商品行の金額ベース(注文単位の値引き・送料は含みません)。店舗とオンラインの内訳を積み上げています。</p>
-
-    <h3 style="margin-bottom:6px">ブランド(シリーズ)別の構成</h3>
-    <div class="sharebar" id="brandbar" style="margin-top:10px"></div>
-    <div class="sharelegend" id="brandlegend" style="margin-bottom:26px"></div>
 
     <figure class="chartbox">
       <figcaption>
@@ -475,7 +484,15 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       </div>
       <div id="c-model"></div>
     </figure>
-    <div class="tablebox"><table id="t-model"></table></div>
+    <h3 style="margin:1.6rem 0 .6rem">Vibram FiveFingers</h3>
+    <div class="tablebox"><table id="t-model-vff"></table></div>
+
+    <h3 style="margin:1.6rem 0 .6rem">その他ブランド・ソックス</h3>
+    <div class="tablebox"><table id="t-model-other"></table></div>
+
+    <h3 style="margin:2rem 0 .6rem">ブランド(シリーズ)別の構成</h3>
+    <div class="sharebar" id="brandbar" style="margin-top:10px"></div>
+    <div class="sharelegend" id="brandlegend"></div>
   </section>
 
   <!-- ══ サイズ・カラー ══ -->
@@ -492,10 +509,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <figcaption><h3>メンズ サイズ(EU)</h3></figcaption>
         <div id="c-sizem"></div>
       </figure>
-      <figure class="chartbox" style="margin:0">
-        <figcaption><h3>Marugo 足袋 サイズ(cm)</h3></figcaption>
-        <div id="c-sizet"></div>
-      </figure>
     </div>
     <figure class="chartbox">
       <figcaption><h3>カラー別 販売数量</h3></figcaption>
@@ -505,25 +518,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 店舗運営 ══ -->
-  <section id="s-ops" data-pane="store">
-    <p class="eyebrow">Store Operations</p>
-    <h2>店舗の売れる曜日・時間帯・商圏</h2>
-    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみ。地域は請求先の州です。</p>
-    <div class="split">
-      <figure class="chartbox" style="margin:0">
-        <figcaption><h3>曜日別 売上</h3></figcaption>
-        <div id="c-dow"></div>
-      </figure>
-      <figure class="chartbox" style="margin:0">
-        <figcaption><h3>店舗の時間帯別 注文件数</h3></figcaption>
-        <div id="c-hour"></div>
-      </figure>
-    </div>
-    <div class="split">
-      <div class="tablebox"><table id="t-state"></table></div>
-      <div class="tablebox"><table id="t-pay"></table></div>
-    </div>
-  </section>
 
 
   <!-- ══ 全注文 ══ -->
@@ -959,48 +953,70 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td></tr></tfoot>`;
 })();
 
-/* ═══ 5. Channel ══════════════════════════════════════ */
+/* ═══ 5. Channel(ドーナツ)══════════════════════════════ */
 (function(){
-  const rows = D.channels;
+  const rows = D.channels.filter(c=>c.rev>0);
+  const tot = rows.reduce((a,r)=>a+r.rev,0);
+  const CLS = ['f1','f2','f3','f4'];
+  const VAR = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
   const host = $('#c-channel');
-  const W = 900, rowH = 62, MT = 8, ML = 128, MR = 120;
-  const H = MT + rows.length*rowH + 26;
-  const pw = W-ML-MR;
-  const max = niceMax(Math.max(...rows.map(r=>Math.max(r.rev,r.lost_rev)))*1.02);
-  const s = mkSvg(host, W, H);
-  const x = v => ML + (v/max)*pw;
-  for (let i=0;i<=4;i++){
-    const v = max*i/4;
-    s.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:MT,y2:MT+rows.length*rowH,class:'grid'}));
-    const t = svgEl('text',{x:x(v),y:H-8,'text-anchor':'middle',class:'ax'});
-    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
-  }
-  s.appendChild(svgEl('line',{x1:ML,x2:ML,y1:MT,y2:MT+rows.length*rowH,class:'axis'}));
+  const W = 900, H = 340, cx = 230, cy = H/2, R = 122, r0 = 72;
+  const sv = mkSvg(host, W, H);
+
+  const arc = (a0,a1,ro,ri)=>{
+    const p=(a,rad)=>[cx+rad*Math.cos(a), cy+rad*Math.sin(a)];
+    const big = (a1-a0) > Math.PI ? 1 : 0;
+    const [x1,y1]=p(a0,ro), [x2,y2]=p(a1,ro), [x3,y3]=p(a1,ri), [x4,y4]=p(a0,ri);
+    return `M${x1},${y1} A${ro},${ro} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${ri},${ri} 0 ${big} 0 ${x4},${y4} Z`;
+  };
+
+  let ang = -Math.PI/2;
+  const GAP = 0.018;                                  // 面と面の間に隙間を入れる
   rows.forEach((r,i)=>{
-    const yT = MT + i*rowH + 8, bh = 18;
-    const nm = svgEl('text',{x:ML-12,y:yT+13,'text-anchor':'end',class:'axb'}); nm.textContent = r.name;
-    s.appendChild(nm);
-    const sg = svgEl('text',{x:ML-12,y:yT+30,'text-anchor':'end',class:'ax'}); sg.textContent = r.seg;
-    s.appendChild(sg);
-    s.appendChild(svgEl('path',{d:barH(ML,yT,(r.rev/max)*pw,bh,4), fill:'var(--accent)'}));
-    const v1 = svgEl('text',{x:x(r.rev)+8,y:yT+13,class:'dlab'}); v1.textContent = rm(r.rev); s.appendChild(v1);
-    if (r.lost_rev>0){
-      s.appendChild(svgEl('path',{d:barH(ML,yT+bh+4,(r.lost_rev/max)*pw,13,4),
-        fill:`url(#hatch${host.id})`, stroke:'var(--ghost)','stroke-width':1}));
-      const v2 = svgEl('text',{x:x(r.lost_rev)+8,y:yT+bh+15,class:'dlab2'});
-      v2.textContent = '失注 '+rm(r.lost_rev); s.appendChild(v2);
+    const sweep = (r.rev/tot) * Math.PI*2;
+    const a0 = ang + GAP/2, a1 = ang + sweep - GAP/2;
+    sv.appendChild(svgEl('path',{d:arc(a0,a1,R,r0), class:CLS[i%CLS.length]}));
+    // 5%以上のスライスだけ引き出し線と数値を付ける
+    if (r.rev/tot >= 0.05){
+      const mid = (a0+a1)/2, lx = cx + (R+16)*Math.cos(mid), ly = cy + (R+16)*Math.sin(mid);
+      const anchor = Math.cos(mid) >= 0 ? 'start' : 'end';
+      const t1 = svgEl('text',{x:lx,y:ly-2,'text-anchor':anchor,class:'dlab'});
+      t1.textContent = pct(r.rev,tot); sv.appendChild(t1);
+      const t2 = svgEl('text',{x:lx,y:ly+12,'text-anchor':anchor,class:'dlab2'});
+      t2.textContent = rm(r.rev); sv.appendChild(t2);
     }
-    const hit = svgEl('rect',{x:0,y:MT+i*rowH,width:W,height:rowH,class:'hit'});
+    const hit = svgEl('path',{d:arc(a0,a1,R+18,r0-8), class:'hit'});
     bindTip(hit, `<b>${esc(r.name)}</b><hr>
       <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
-      <div class="r"><span>構成比</span><span>${pct(r.rev,K.total.rev)}</span></div>
+      <div class="r"><span>構成比</span><span>${pct(r.rev,tot)}</span></div>
       <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
       <div class="r"><span>客単価</span><span>${rm2(r.rev/r.orders)}</span></div>
-      <hr><div class="r"><span>失注</span><b>${rm2(r.lost_rev)}</b></div>
-      <div class="r"><span>失注件数</span><span>${r.lost_orders} 件</span></div>
-      <div class="r"><span>失注率</span><span>${pct(r.lost_orders,r.lost_orders+r.orders)}</span></div>`);
-    s.appendChild(hit);
+      ${r.lost_rev?`<hr><div class="r"><span>失注</span><b>${rm2(r.lost_rev)}</b></div>
+      <div class="r"><span>失注率</span><span>${pct(r.lost_orders,r.lost_orders+r.orders)}</span></div>`:''}`);
+    sv.appendChild(hit);
+    ang += sweep;
   });
+
+  const c1 = svgEl('text',{x:cx,y:cy-4,'text-anchor':'middle',class:'dlab'});
+  c1.setAttribute('style','font-size:22px'); c1.textContent = rm(tot); sv.appendChild(c1);
+  const c2 = svgEl('text',{x:cx,y:cy+16,'text-anchor':'middle',class:'ax'});
+  c2.textContent = `${rows.reduce((a,r)=>a+r.orders,0)} 注文`; sv.appendChild(c2);
+
+  // 右側に内訳を並べる(色だけに頼らないため)
+  let ty = cy - rows.length*17 + 8;
+  rows.forEach((r,i)=>{
+    sv.appendChild(svgEl('rect',{x:470,y:ty-10,width:12,height:12,rx:3,class:CLS[i%CLS.length]}));
+    const t = svgEl('text',{x:492,y:ty,class:'axb'});
+    t.setAttribute('style','font-size:13px'); t.textContent = r.name; sv.appendChild(t);
+    const v = svgEl('text',{x:700,y:ty,'text-anchor':'end',class:'dlab'});
+    v.textContent = rm(r.rev); sv.appendChild(v);
+    const q = svgEl('text',{x:790,y:ty,'text-anchor':'end',class:'dlab2'});
+    q.textContent = pct(r.rev,tot); sv.appendChild(q);
+    ty += 34;
+  });
+
+  $('#pie-legend').innerHTML = rows.map((r,i)=>
+    `<span><i class="sw" style="background:${VAR[i%VAR.length]}"></i>${esc(r.name)}</span>`).join('');
 })();
 
 $('#t-channel').innerHTML = (()=>{
@@ -1020,35 +1036,6 @@ $('#t-channel').innerHTML = (()=>{
      <td class="n">${T.orders}</td><td class="n">${T.units}</td><td class="n">${n1(T.rev/T.orders)}</td>
      <td class="n">${n1(K.lost.rev)}</td><td class="n">${K.lost.orders}</td>
      <td class="n">${pct(K.lost.orders,K.lost.orders+T.orders)}</td></tr></tfoot>`;
-})();
-
-/* ═══ 6a. Brand (series) rollup ═══════════════════════ */
-(function(){
-  const B = {};
-  D.models.forEach(m=>{
-    if (m.name === '配送料') return;              // 送料はシリーズではないので除く
-    const b = B[m.brand] = B[m.brand] || {rev:0, units:0, models:[]};
-    b.rev += m.rev; b.units += m.units; b.models.push(m.name);
-  });
-  const rows = Object.entries(B).map(([name,v])=>({name, ...v})).sort((a,b)=>b.rev-a.rev);
-  const tot = rows.reduce((a,r)=>a+r.rev,0);
-  const SW = ['var(--s1)','var(--s3)','var(--s4)','var(--ghost)'];
-  $('#brandbar').innerHTML = rows.map((r,i)=>
-    `<i style="width:${r.rev/tot*100}%;background:${SW[i%SW.length]}"></i>`).join('');
-  $('#brandlegend').innerHTML = rows.map((r,i)=>
-    `<span style="display:inline-flex;align-items:center;gap:7px">
-       <i class="sw" style="background:${SW[i%SW.length]}"></i>
-       ${esc(r.name)} <b class="num">${pct(r.rev,tot)}</b>
-       <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
-     </span>`).join('');
-  rows.forEach((r,i)=>{
-    const el = $('#brandlegend').children[i];
-    if (el) bindTip(el, `<b>${esc(r.name)}</b><hr>
-      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
-      <div class="r"><span>構成比</span><span>${pct(r.rev,tot)}</span></div>
-      <div class="r"><span>数量</span><span>${r.units} 点</span></div>
-      <hr><div style="font-size:11px">${esc(r.models.join(' / '))}</div>`);
-  });
 })();
 
 /* ═══ 6. Model(月プルダウン)═══════════════════════════ */
@@ -1080,10 +1067,8 @@ $('#t-channel').innerHTML = (()=>{
     sv.appendChild(svgEl('line',{x1:ML,x2:ML,y1:MT,y2:MT+rows.length*rowH,class:'axis'}));
     rows.forEach((r,i)=>{
       const yT = MT + i*rowH + 6, bh = 20;
-      const nm = svgEl('text',{x:ML-12,y:yT+10,'text-anchor':'end',class:'axb'});
-      nm.textContent = r.name; sv.appendChild(nm);
-      const br = svgEl('text',{x:ML-12,y:yT+22,'text-anchor':'end',class:'ax'});
-      br.textContent = r.brand; sv.appendChild(br);
+      const nm = svgEl('text',{x:ML-12,y:yT+15,'text-anchor':'end',class:'axb'});
+      nm.setAttribute('style','font-size:13px'); nm.textContent = r.name; sv.appendChild(nm);
       const wOff = (r.off/max)*pw, wOn = (r.on/max)*pw;
       if (r.off>0) sv.appendChild(svgEl('path',{d:barH(ML,yT,wOff,bh, r.on>0?0:4), class:'f1'}));
       if (r.on>0)  sv.appendChild(svgEl('path',{d:barH(ML+wOff+(r.off>0?2:0),yT,wOn-(r.off>0?2:0),bh,4), class:'fon'}));
@@ -1100,19 +1085,43 @@ $('#t-channel').innerHTML = (()=>{
       sv.appendChild(hit);
     });
 
-    const tu = src.reduce((a,r)=>a+r.units,0), trev = src.reduce((a,r)=>a+r.rev,0);
-    $('#t-model').innerHTML =
-     `<thead><tr><th>モデル</th><th>ブランド</th><th class="n">売上</th><th class="n">構成比</th>
-       <th class="n">数量</th><th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
-      <tbody>${src.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
-        <td style="color:var(--text-secondary)">${esc(r.brand)}</td>
-        <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,trev)}</td>
-        <td class="n">${r.units}</td><td class="n">${r.avg?n1(r.avg):'—'}</td>
-        <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
-      <tfoot><tr><td>合計</td><td></td><td class="n">${n1(trev)}</td><td class="n">100.0%</td>
-        <td class="n">${tu}</td><td class="n">—</td>
-        <td class="n">${n1(src.reduce((a,r)=>a+r.off,0))}</td>
-        <td class="n">${n1(src.reduce((a,r)=>a+r.on,0))}</td></tr></tfoot>`;
+    const VFF = 'Vibram FiveFingers';
+    const draw1 = (elId, list, label) => {
+      const t = list.reduce((a,r)=>a+r.rev,0), u = list.reduce((a,r)=>a+r.units,0);
+      document.getElementById(elId).innerHTML = !list.length
+        ? `<thead><tr><th>${esc(label)}</th></tr></thead><tbody><tr><td style="color:var(--text-muted)">この月の販売はありません</td></tr></tbody>`
+        : `<thead><tr><th>モデル</th><th class="n">売上</th><th class="n">構成比</th>
+            <th class="n">数量</th><th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
+           <tbody>${list.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
+             <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,t)}</td>
+             <td class="n">${r.units}</td><td class="n">${r.avg?n1(r.avg):'—'}</td>
+             <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
+           <tfoot><tr><td>${esc(label)} 合計</td><td class="n">${n1(t)}</td><td class="n">100.0%</td>
+             <td class="n">${u}</td><td class="n">—</td>
+             <td class="n">${n1(list.reduce((a,r)=>a+r.off,0))}</td>
+             <td class="n">${n1(list.reduce((a,r)=>a+r.on,0))}</td></tr></tfoot>`;
+    };
+    draw1('t-model-vff',   src.filter(r=>r.brand===VFF), VFF);
+    draw1('t-model-other', src.filter(r=>r.brand!==VFF), 'その他ブランド・ソックス');
+
+    // ブランド(シリーズ)別の構成も選択中の月に合わせる
+    const B = {};
+    src.forEach(m=>{
+      if (m.name === '配送料') return;
+      const b = B[m.brand] = B[m.brand] || {rev:0, units:0, models:[]};
+      b.rev += m.rev; b.units += m.units; b.models.push(m.name);
+    });
+    const brows = Object.entries(B).map(([name,v])=>({name, ...v})).sort((a,b)=>b.rev-a.rev);
+    const btot = brows.reduce((a,r)=>a+r.rev,0);
+    const SW = ['var(--s1)','var(--s3)','var(--s4)','var(--ghost)'];
+    $('#brandbar').innerHTML = brows.map((r,i)=>
+      `<i style="width:${r.rev/btot*100}%;background:${SW[i%SW.length]}"></i>`).join('');
+    $('#brandlegend').innerHTML = brows.map((r,i)=>
+      `<span style="display:inline-flex;align-items:center;gap:7px">
+         <i class="sw" style="background:${SW[i%SW.length]}"></i>
+         ${esc(r.name)} <b class="num">${pct(r.rev,btot)}</b>
+         <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
+       </span>`).join('');
   }
   sel.addEventListener('change', draw);
   draw();
@@ -1143,7 +1152,6 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
 }
 countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
 countChart('c-sizem', D.sizes.men,   r=>r.size, r=>r.n, 'f3', '足');
-countChart('c-sizet', D.sizes.tabi,  r=>r.size, r=>r.n, 'f4', '足');
 countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
 (function(){
   const w = D.sizes.women, m = D.sizes.men, t = D.sizes.tabi;
@@ -1200,46 +1208,7 @@ function simpleTable(elId, title, rows, valLabel){
     <tfoot><tr><td>合計</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
       <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td></tr></tfoot>`;
 }
-simpleTable('t-state','州(請求先)', D.states);
 simpleTable('t-pay','決済方法', D.payments);
-
-/* ═══ 9. Lost / Unpaid ════════════════════════════════ */
-const shopee = D.channels.find(c=>c.name==='Shopee');
-(function(){
-  const lostRate = shopee.lost_orders/(shopee.lost_orders+shopee.orders);
-  // 失注に最も多く出てくる品目とその発生期間を数える(手書きだと更新のたびに古くなる)
-  const tally = {};
-  D.lost_rows.forEach(r => r.items.split(' / ').forEach(it=>{
-    (tally[it] = tally[it] || {n:0, dates:[]}).n++;
-    tally[it].dates.push(r.dt.slice(0,10));
-  }));
-  const top = Object.entries(tally).sort((a,b)=>b[1].n-a[1].n)[0];
-  let concentrated = '';
-  if (top && top[1].n >= 3){
-    const ds = top[1].dates.sort();
-    const span = ds[0]===ds[ds.length-1] ? jd(ds[0]) : `${jd(ds[0])}〜${jd(ds[ds.length-1])}`;
-    concentrated = `<p>失注品目で最も多いのは <b>${esc(top[0])} が ${top[1].n}件(${span})</b>。
-      同一SKUへの集中は在庫切れ・価格設定・配送設定など出品側の要因を疑う値です。</p>`;
-  }
-  // 未入金が本当に全てオンラインか、全件が失注で終わっているかを確認してから断定する
-  const upRows = D.unpaid_rows;
-  const allOnline = upRows.every(r => !r.channel.startsWith('POS'));
-  const chans = [...new Set(upRows.map(r=>r.channel))].join(' / ');
-
-  $('#callouts').innerHTML = `
-    <div class="callout">
-      <h3>${shopee.lost_rev > shopee.rev ? 'Shopee の失注が売上を上回っている' : 'Shopee の失注率が突出している'}</h3>
-      <p>Shopee の成約は <b>${shopee.orders}件 / ${rm2(shopee.rev)}</b> に対し、失注は <b>${shopee.lost_orders}件 / ${rm2(shopee.lost_rev)}</b>。
-      件数ベースの失注率は <b>${pct(shopee.lost_orders, shopee.lost_orders+shopee.orders)}</b> で、
-      Shopee 経由の受注は${lostRate > 0.5 ? '半分以上が売上になっていません' : '相当数が売上になっていません'}。</p>
-      ${concentrated}
-    </div>
-    <div class="callout warnflag">
-      <h3>未入金 ${K.unpaid.orders}件 / ${rm2(K.unpaid.rev)}${allOnline ? ' は全てオンライン' : ''}</h3>
-      <p>未入金(Unpaid)の注文は${allOnline ? `すべて${chans==='Shopee'?' Shopee ':`${esc(chans)} の`}経由で、かつ` : ''}全件がキャンセルまたは返品で終わっています。<b>入金は一度も発生していません</b>ので、売上にもキャッシュにも計上されていません。
-      「取り逃した受注額」として下の台帳で追跡してください。</p>
-    </div>`;
-})();
 
 /* ═══ 10. 注文明細(絞り込み付き) ═════════════════════ */
 (function(){
