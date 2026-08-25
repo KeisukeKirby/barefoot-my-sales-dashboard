@@ -148,6 +148,14 @@ h3{font-family:var(--font-heading);font-size:1.15rem;font-weight:700;margin:0 0 
 .hero .meta{text-align:right;font-size:.82rem;color:var(--text-muted);line-height:1.7}
 .hero .meta b{color:var(--text-primary);font-family:var(--font-heading);font-size:1rem;
   font-variant-numeric:tabular-nums}
+.hero .mom{display:inline-flex;align-items:baseline;gap:.5rem;margin-top:.6rem;
+  font-family:var(--font-heading);font-weight:700;font-size:1rem;padding:.3rem .8rem;border-radius:8px;
+  font-variant-numeric:tabular-nums}
+.hero .mom.up{background:rgba(198,255,0,.13);color:var(--accent-lime)}
+.hero .mom.down{background:rgba(255,90,77,.15);color:var(--crit)}
+.hero .mom em{font-style:normal;font-weight:500;font-size:.8rem;color:var(--text-secondary)}
+.hero .mom-day{display:block;margin-top:.45rem;font-size:.8rem;color:var(--text-muted);
+  font-variant-numeric:tabular-nums}
 
 .statstrip{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
@@ -269,7 +277,7 @@ td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
 }
 .callout.warnflag{border-left-color:var(--warn)}
 .callout h3{display:flex;align-items:center;gap:.55rem;margin-bottom:.5rem;font-size:1.25rem}
-.callout h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--crit);flex:none}
+.callout h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--dot,var(--crit));flex:none}
 .callout.warnflag h3::before{background:var(--warn)}
 .callout p{margin:0;font-size:.88rem;color:var(--text-secondary);max-width:88ch}
 .callout p + p{margin-top:.6rem}
@@ -347,35 +355,10 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ サマリー ══ -->
   <section id="s-summary" data-pane="overview">
-    <p class="eyebrow">Summary</p>
-    <h2>売上サマリー</h2>
-    <p class="lede">入金確認済み(Paid)かつ Completed / Shipped の注文のみを売上実績として集計。キャンセル・返品・未入金は売上から除外し、下部の台帳に別記録として残しています。</p>
+    <p class="eyebrow">Sales Report</p>
+    <h2>Barefootinc Malaysia Sales Report</h2>
     <div class="hero" id="hero"></div>
     <div class="statstrip" id="statstrip"></div>
-    <p class="note" id="summary-note"></p>
-
-    <figure class="chartbox">
-      <figcaption>
-        <h3>店舗 / オンライン 売上比較</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-        </div>
-      </figcaption>
-      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
-    </figure>
-
-    <figure class="chartbox">
-      <figcaption>
-        <h3>月ごとの週別売上</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-        </div>
-      </figcaption>
-      <div class="scroller"><div id="c-monthweek" style="min-width:640px"></div></div>
-      <figcaption style="margin:6px 0 0"><p class="note" id="monthweek-note" style="margin:0"></p></figcaption>
-    </figure>
 
     <figure class="chartbox">
       <figcaption>
@@ -391,25 +374,53 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 期間別 ══ -->
-  <section id="s-period" data-pane="overview">
-    <p class="eyebrow">Period</p>
-    <h2>期間別の実績</h2>
-    <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点の週次で区切っています。</p>
+  <section id="s-month" data-pane="overview">
+    <p class="eyebrow">Monthly</p>
+    <h2>月別の実績</h2>
+    <p class="lede">7月は 7/17 開業のため15日間、8月は進行中です。単純な月合計ではなく日平均もあわせて見てください。</p>
 
-    <div class="tabs" role="tablist" aria-label="期間の粒度">
-      <button role="tab" id="tab-week" aria-selected="true" aria-controls="pane-week">週次</button>
-      <button role="tab" id="tab-month" aria-selected="false" aria-controls="pane-month">月次</button>
-    </div>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>店舗 / オンライン 売上比較</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
+    </figure>
 
-    <div id="pane-week" role="tabpanel" aria-labelledby="tab-week">
-      <div class="tablebox"><table id="t-week"></table></div>
-      <p class="note">第5週は 8/21 時点で5日経過(進行中)。「日平均」は経過日数で割った値です。</p>
-    </div>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>月別 売上</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-monthbar" style="min-width:420px"></div></div>
+    </figure>
 
-    <div id="pane-month" role="tabpanel" aria-labelledby="tab-month" hidden>
-      <div class="tablebox"><table id="t-month"></table></div>
-      <p class="note">7月は 7/17 開業のため15日間、8月は 8/21 時点で21日経過(進行中)。単純な月合計の比較ではなく「日平均」で見てください。</p>
-    </div>
+    <div class="tablebox"><table id="t-month"></table></div>
+  </section>
+
+  <section id="s-week" data-pane="overview">
+    <p class="eyebrow">Weekly</p>
+    <h2>週別の実績</h2>
+    <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点で区切っています。</p>
+
+    <figure class="chartbox">
+      <figcaption>
+        <h3>週別 売上</h3>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
+          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+        </div>
+      </figcaption>
+      <div class="scroller"><div id="c-weekbar" style="min-width:620px"></div></div>
+    </figure>
+
+    <div class="tablebox"><table id="t-week"></table></div>
   </section>
 
   <!-- ══ オンライン / オフライン ══ -->
@@ -439,7 +450,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-daily" data-pane="overview">
     <p class="eyebrow">Daily</p>
     <h2>日次の実績</h2>
-    <p class="lede">売上のあった日のみ。件数・伝票数・明細行数まで数値で確認できます。</p>
+    <p class="lede">売上のあった日のみ。<b style="color:var(--accent-lime)">月曜・火曜</b>の行は日付と曜日を色分けしています。</p>
     <div class="tablebox" style="max-height:560px;overflow-y:auto"><table id="t-daily"></table></div>
     <p class="note" id="daily-note"></p>
   </section>
@@ -569,6 +580,12 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-def" data-pane="notes">
     <p class="eyebrow">Definitions</p>
     <h2>集計の定義</h2>
+    <div class="callout warnflag" style="border-left-color:var(--accent-orange)">
+      <h3 style="--dot:var(--accent-orange)">売上として数える条件</h3>
+      <p>入金確認済み(<b>Paid</b>)かつ <b>Completed</b> または <b>Shipped</b> の注文のみを売上実績として集計しています。
+      キャンセル・返品・未入金は売上から除外し、注文明細のプルダウンで別途確認できます。</p>
+      <p id="lost-basis"></p>
+    </div>
     <div class="tablebox"><table id="t-def"></table></div>
   </section>
 
@@ -578,6 +595,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2>このデータについて</h2>
     <dl class="metagrid" id="metagrid"></dl>
     <p class="note" id="meta-caveat"></p>
+    <p class="note" id="lost-summary"></p>
   </section>
 
   <footer>
@@ -680,30 +698,32 @@ const IC = {
 };
 const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 
+const MM = D.monthly;
+const cur = MM[MM.length-1], prev = MM.length>1 ? MM[MM.length-2] : null;
+const mom = prev && prev.rev ? (cur.rev/prev.rev - 1) : null;
 $('#hero').innerHTML =
   `<div>
-     <span class="l">純売上 NET SALES</span>
-     <span class="v"><small>RM</small>${n1(K.total.rev)}</span>
+     <span class="l">${esc(cur.label)}の売上${cur.ongoing?'(進行中)':''}</span>
+     <span class="v"><small>RM</small>${n1(cur.rev)}</span>
+     ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">前月比 ${mom>=0?'▲':'▼'} ${Math.abs(mom*100).toFixed(1)}%
+        <em>${esc(prev.label)} ${rm2(prev.rev)}(${prev.elapsed}日)→ ${cur.elapsed}日経過</em></span>`}
+     ${mom===null||prev.elapsed===cur.elapsed ? '' : `<span class="mom-day">日平均では ${rm2(prev.per_day)} → ${rm2(cur.per_day)}
+        (${cur.per_day>=prev.per_day?'▲':'▼'} ${Math.abs(cur.per_day/prev.per_day-1).toFixed(3)*100>0?Math.abs((cur.per_day/prev.per_day-1)*100).toFixed(1):'0.0'}%)</span>`}
    </div>
    <div class="meta">
-     ${M.period[0].replace(/-/g,'.')} – ${M.period[1].replace(/-/g,'.')}(${M.days}日間)<br>
-     <b>${K.total.orders}</b> 注文 · <b>${K.total.units}</b> 点 · 売上のあった日 <b>${K.active_days}</b> 日
+     ${esc(cur.label)} ${jd(cur.start)}–${jd(String(cur.end))}(${cur.elapsed}日経過)<br>
+     <b>${cur.orders}</b> 注文 · <b>${cur.units}</b> 点 · 売上のあった日 <b>${cur.active_days}</b> 日<br>
+     <span style="color:var(--text-muted)">期間累計 ${rm2(K.total.rev)} / ${K.total.orders} 注文</span>
    </div>`;
 
 const strip = [
-  ['店舗',       rm(K.offline.rev), pct(K.offline.rev,K.total.rev) + ' · ' + K.offline.orders + '注文', ''],
-  ['オンライン',  rm(K.online.rev),  pct(K.online.rev,K.total.rev)  + ' · ' + K.online.orders  + '注文', ''],
-  ['客単価',     rm(K.total.rev/K.total.orders), '1点 ' + rm(K.total.rev/K.total.units), ''],
-  ['日平均',     rm(K.total.rev/M.days), M.days + '日で割った値', ''],
-  ['失注',       rm(K.lost.rev),    K.lost.orders + '件 · 未入金 ' + K.unpaid.orders + '件', 'crit'],
+  ['店舗',      rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + '注文'],
+  ['オンライン', rm(cur.on),  pct(cur.on,cur.rev)  + ' · ' + cur.on_orders  + '注文'],
+  ['客単価',    rm(cur.aov), cur.orders + '注文の平均'],
 ];
-$('#statstrip').innerHTML = strip.map(([l,v,s,cls])=>
-  `<div class="st ${cls}"><span class="l">${esc(l)}</span><span class="v">${esc(v)}</span>
-   <span class="s">${esc(s)}</span></div>`).join('');
-
-$('#summary-note').textContent =
-  `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は上の純売上に含まれていません。内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
-  + ` 受注ベースの合計(売上+失注)は ${rm2(K.total.rev + K.lost.rev)}、そのうち ${pct(K.lost.rev, K.total.rev + K.lost.rev)} が失注しています。`;
+$('#statstrip').innerHTML = strip.map(([l,v,sub])=>
+  `<div class="st"><span class="l">${esc(l)}</span><span class="v">${esc(v)}</span>
+   <span class="s">${esc(sub)}</span></div>`).join('');
 
 /* ═══ 2. Period tables ═══════════════════════════════ */
 function periodTable(elId, rows, head){
@@ -711,52 +731,29 @@ function periodTable(elId, rows, head){
   const sum = k => rows.reduce((a,r)=>a+r[k],0);
   el.innerHTML =
    `<thead><tr>
-      <th>${head}</th><th>期間</th><th class="n">日数</th><th class="n">稼働日</th>
-      <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th><th class="n">ｵﾝﾗｲﾝ比</th>
-      <th class="n">注文数</th><th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th>
-      <th class="n">客単価</th><th class="n">1点単価</th><th class="n">日平均</th>
-      <th class="n">失注件数</th><th class="n">失注額</th><th>伝票レンジ</th></tr></thead>
+      <th>${head}</th><th>期間</th><th class="n">日数</th>
+      <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th>
+      <th class="n">注文数</th><th class="n">点数</th>
+      <th class="n">客単価</th><th class="n">日平均</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n">${r.elapsed}</td>
-      <td class="n">${r.active_days}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${n1(r.off)}</td>
       <td class="n">${n1(r.on)}</td>
-      <td class="n">${pct(r.on,r.rev)}</td>
-      <td class="n"><b>${r.orders}</b></td>
-      <td class="n">${r.invoices}${r.no_invoice?`<span style="color:var(--text-muted)"> +${r.no_invoice}</span>`:''}</td>
-      <td class="n">${r.lines}</td>
+      <td class="n">${r.orders}</td>
       <td class="n">${r.units}</td>
       <td class="n">${n1(r.aov)}</td>
-      <td class="n">${n1(r.unit_price)}</td>
-      <td class="n">${n1(r.per_day)}</td>
-      <td class="n" style="color:var(--crit)">${r.lostn||'—'}</td>
-      <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td>
-      <td class="num" style="font-size:11.5px;color:var(--text-muted)">${esc(r.inv_from)}–${esc(r.inv_to)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>合計</td><td></td>
-      <td class="n">${sum('elapsed')}</td><td class="n">${sum('active_days')}</td>
+      <td class="n">${n1(r.per_day)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>合計</td><td></td><td class="n">${sum('elapsed')}</td>
       <td class="n">${n1(sum('rev'))}</td><td class="n">${n1(sum('off'))}</td><td class="n">${n1(sum('on'))}</td>
-      <td class="n">${pct(sum('on'),sum('rev'))}</td>
-      <td class="n">${sum('orders')}</td><td class="n">${sum('invoices')}</td>
-      <td class="n">${sum('lines')}</td><td class="n">${sum('units')}</td>
-      <td class="n">${n1(sum('rev')/sum('orders'))}</td><td class="n">${n1(sum('rev')/sum('units'))}</td>
-      <td class="n">—</td>
-      <td class="n">${sum('lostn')}</td><td class="n">${n1(sum('lost'))}</td><td></td></tr></tfoot>`;
+      <td class="n">${sum('orders')}</td><td class="n">${sum('units')}</td>
+      <td class="n">${n1(sum('rev')/sum('orders'))}</td><td class="n">—</td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, '週');
 periodTable('t-month', D.monthly, '月');
 
-/* tabs */
-const tabW = $('#tab-week'), tabM = $('#tab-month');
-function selTab(which){
-  const w = which === 'week';
-  tabW.setAttribute('aria-selected', w); tabM.setAttribute('aria-selected', !w);
-  $('#pane-week').hidden = !w; $('#pane-month').hidden = w;
-}
-tabW.onclick = () => selTab('week');
-tabM.onclick = () => selTab('month');
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
 const segs = [
@@ -876,26 +873,17 @@ $('#split-note').textContent =
   });
 })();
 
-/* ═══ 3d. 月ごとの週別売上 ════════════════════════════ */
-(function(){
-  // 週は開始日の属する月に寄せる(W2 は 7/27〜8/2 で月をまたぐ)
-  const groups = [];
-  D.weekly.forEach(w=>{
-    const key = w.start.slice(0,7);
-    let g = groups.find(g=>g.key===key);
-    if (!g) groups.push(g = {key, label:`${+key.slice(5,7)}月`, weeks:[]});
-    g.weeks.push(w);
-  });
-  const host = $('#c-monthweek');
-  const all = groups.flatMap(g=>g.weeks);
-  const W = 980, H = 340, ML = 66, MR = 16, MT = 18, MB = 84;
+/* ═══ 3d. 期間別 積み上げ棒(月別 / 週別 共通)══════════ */
+function periodBar(hostId, rows, opts){
+  opts = opts || {};
+  const host = document.getElementById(hostId);
+  const W = opts.W || 900, H = 320, ML = 66, MR = 16, MT = 22, MB = 62;
   const pw = W-ML-MR, ph = H-MT-MB;
-  const max = niceMax(Math.max(...all.map(r=>r.rev))*1.12);
+  const max = niceMax(Math.max(...rows.map(r=>r.rev))*1.14);
   const y = v => MT + ph - (v/max)*ph;
   const s = mkSvg(host, W, H);
+  const step = pw/rows.length, bw = Math.min(opts.bw || 110, step*0.56);
 
-  const GAP = 34;                                     // 月グループ間の余白
-  const unit = (pw - GAP*(groups.length-1)) / all.length;
   for (let i=0;i<=4;i++){
     const v = max*i/4;
     s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
@@ -904,60 +892,34 @@ $('#split-note').textContent =
   }
   s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
 
-  let x = ML;
-  groups.forEach((g,gi)=>{
-    const gStart = x, bw = Math.min(84, unit*0.6);
-    g.weeks.forEach(r=>{
-      const cx = x + unit/2, bx = cx - bw/2;
-      const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
-      if (r.off>0) s.appendChild(svgEl('path',{d:barV(bx,y(r.off),bw,hOff, r.on>0?0:4), class:'f1'}));
-      if (r.on>0)  s.appendChild(svgEl('path',{d:barV(bx,y(r.rev),bw,hOn-(r.off>0?2:0),4), class:'fon'}));
-      const v1 = svgEl('text',{x:cx,y:y(r.rev)-7,'text-anchor':'middle',class:'dlab'});
-      v1.textContent = n0(r.rev); s.appendChild(v1);
-      const l1 = svgEl('text',{x:cx,y:H-MB+21,'text-anchor':'middle',class:'axb'});
-      l1.textContent = r.label; s.appendChild(l1);
-      const l2 = svgEl('text',{x:cx,y:H-MB+36,'text-anchor':'middle',class:'ax'});
-      l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
-      const hit = svgEl('rect',{x:x,y:MT,width:unit,height:ph,class:'hit'});
-      bindTip(hit, `<b>${esc(g.label)} · ${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
-        <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
-        <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
-        <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
-        <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
-        <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>`);
-      s.appendChild(hit);
-      x += unit;
-    });
-    // 月ラベルと下線でグループを明示
-    const gEnd = x, mid = (gStart+gEnd)/2;
-    s.appendChild(svgEl('line',{x1:gStart+4,x2:gEnd-4,y1:H-MB+48,y2:H-MB+48,
-      stroke:'var(--accent-orange)','stroke-width':2}));
-    const ml = svgEl('text',{x:mid,y:H-MB+68,'text-anchor':'middle',class:'axb'});
-    ml.setAttribute('style','font-size:15px;fill:var(--accent-orange)');
-    const sum = g.weeks.reduce((a,r)=>a+r.rev,0);
-    ml.textContent = `${g.label}  ${rm(sum)}`; s.appendChild(ml);
-    if (gi < groups.length-1){
-      s.appendChild(svgEl('line',{x1:x+GAP/2,x2:x+GAP/2,y1:MT,y2:MT+ph,
-        stroke:'var(--border-color)','stroke-width':1,'stroke-dasharray':'4 4'}));
-      x += GAP;
+  rows.forEach((r,i)=>{
+    const cx = ML + step*i + step/2, x = cx - bw/2;
+    const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
+    if (r.off>0) s.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,hOff, r.on>0?0:5), class:'f1'}));
+    if (r.on>0)  s.appendChild(svgEl('path',{d:barV(x,y(r.rev),bw,hOn-(r.off>0?2:0),5), class:'fon'}));
+    const v1 = svgEl('text',{x:cx,y:y(r.rev)-8,'text-anchor':'middle',class:'dlab'});
+    v1.setAttribute('style','font-size:14px'); v1.textContent = rm(r.rev); s.appendChild(v1);
+    const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
+    l1.setAttribute('style','font-size:13px'); l1.textContent = r.label; s.appendChild(l1);
+    const l2 = svgEl('text',{x:cx,y:H-MB+38,'text-anchor':'middle',class:'ax'});
+    l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
+    if (r.ongoing){
+      const l3 = svgEl('text',{x:cx,y:H-MB+53,'text-anchor':'middle',class:'ax'});
+      l3.setAttribute('style','fill:var(--warn)'); l3.textContent = '進行中'; s.appendChild(l3);
     }
+    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
+    bindTip(hit, `<b>${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
+      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
+      <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
+      <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>
+      <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>`);
+    s.appendChild(hit);
   });
-  // 月をまたぐ週があっても、実際に差額が出るとは限らない。数えてから書く。
-  const cross = D.weekly.filter(w=>w.start.slice(0,7)!==w.end.slice(0,7));
-  const diffs = groups.map(g=>{
-    const m = D.monthly.find(m=>m.id===g.key);
-    const sum = g.weeks.reduce((a,r)=>a+r.rev,0);
-    return m ? {label:g.label, d:Math.round((sum-m.rev)*100)/100} : null;
-  }).filter(x=>x && Math.abs(x.d) >= 0.01);
-  let note = '週は開始日の属する月に集計しています。';
-  if (cross.length){
-    note += `${cross.map(w=>`${w.label}(${jd(w.start)}–${jd(w.end)})`).join(' / ')} は月をまたぎます。`;
-    note += diffs.length
-      ? `そのため月次テーブルとは ${diffs.map(x=>`${x.label} ${x.d>0?'+':''}${rm2(x.d)}`).join(' / ')} ずれます。`
-      : 'ただし該当する日に売上が無いため、合計は月次テーブルと一致しています。';
-  }
-  $('#monthweek-note').textContent = note;
-})();
+}
+periodBar('c-monthbar', D.monthly, {W:620, bw:140});
+periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
 /* ═══ 4. Daily chart ══════════════════════════════════ */
 (function(){
@@ -1038,10 +1000,10 @@ $('#split-note').textContent =
      <th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th><th class="n">客単価</th>
      <th class="n">失注件数</th><th class="n">失注額</th></tr></thead>
     <tbody>${rows.map(r=>{
-      const tot = r.off + r.on, wk = wdOf(r.date), we = wk==='土'||wk==='日';
+      const tot = r.off + r.on, wk = wdOf(r.date), mt = wk==='月'||wk==='火';
       return `<tr>
-        <td class="num">${esc(r.date)}</td>
-        <td${we?' style="color:var(--accent-blue)"':''}>${wk}</td>
+        <td class="num"${mt?' style="color:var(--accent-lime);font-weight:600"':''}>${esc(r.date)}</td>
+        <td${mt?' style="color:var(--accent-lime);font-weight:600"':''}>${wk}</td>
         <td class="n"><b>${tot?n1(tot):'—'}</b></td>
         <td class="n">${r.off?n1(r.off):'—'}</td>
         <td class="n">${r.on?n1(r.on):'—'}</td>
@@ -1427,6 +1389,30 @@ const shopee = D.channels.find(c=>c.name==='Shopee');
     `<div class="find"><span class="tag ${t==='fact'?'fact':''}">${t==='fact'?'確認済':'推定'}</span>
      <h3>${esc(h)}</h3><p>${p}</p></div>`).join('');
 })();
+
+/* ═══ 11b. 失注の判定根拠(元データの status をそのまま示す)═══ */
+(function(){
+  const b = {};
+  D.all_rows.forEach(r=>{
+    const k = r.status + ' × ' + r.pay;
+    (b[k] = b[k] || {n:0, kind:r.kind})['n']++;
+  });
+  const rows = Object.entries(b).sort((a,c)=>c[1].n-a[1].n)
+    .map(([k,v])=>`${k} = ${v.n}件 → ${v.kind}`);
+  $('#lost-basis').innerHTML =
+    `失注は SiteGiant の <b>order_status</b> をそのまま使って判定しており、こちらでの推測は入っていません。`
+    + `<b>Cancelled</b> をキャンセル、<b>Returned</b> を返品としています。`
+    + `<b>payment_status</b> は売上判定にだけ使い、失注の判定には使っていません`
+    + `(キャンセルは Paid・Unpaid の両方を含みます)。`
+    + `<br><span style="font-size:.82rem;color:var(--text-muted)">実データの内訳 — ${rows.map(esc).join(' / ')}</span>`;
+})();
+
+/* ═══ 11c. 失注サマリー(備考の末尾)══════════════════════ */
+$('#lost-summary').textContent =
+  `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は純売上に含まれていません。`
+  + `内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
+  + `受注ベースの合計(売上+失注)は ${rm2(K.total.rev + K.lost.rev)} で、そのうち `
+  + `${pct(K.lost.rev, K.total.rev + K.lost.rev)} が失注しています。`;
 
 /* ═══ 12. Definitions ═════════════════════════════════ */
 $('#t-def').innerHTML =
