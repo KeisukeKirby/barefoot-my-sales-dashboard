@@ -149,6 +149,34 @@ models = [dict(name=k, brand=v['brand'], rev=R2(v['rev']), units=v['units'],
                avg=R2(sum(v['prices']) / len(v['prices'])) if v['prices'] else 0)
           for k, v in sorted(mm.items(), key=lambda x: -x[1]['rev'])]
 
+
+def models_for(subset):
+    d = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0, prices=[]))
+    for o in subset:
+        for it in o['items']:
+            if it['cat'] == 'test':
+                continue
+            m = d[it['model']]
+            m['rev'] += it['total']
+            m['units'] += it['qty']
+            m['brand'] = it['brand']
+            if isoff(o):
+                m['off'] += it['total']
+            else:
+                m['on'] += it['total']
+            if it['qty'] > 0:
+                m['prices'].append(it['price'])
+    return [dict(name=k, brand=v['brand'], rev=R2(v['rev']), units=v['units'],
+                 off=R2(v['off']), on=R2(v['on']),
+                 avg=R2(sum(v['prices']) / len(v['prices'])) if v['prices'] else 0)
+            for k, v in sorted(d.items(), key=lambda x: -x[1]['rev'])]
+
+
+# モデル別はプルダウンで月を切り替えるため、月ごとにも持たせる
+models_by_month = {'all': models}
+for mid, lab, a, b, nt in MONTHS:
+    models_by_month[mid] = models_for([o for o in sales if a <= o['date'] <= b])
+
 szW = collections.Counter(); szM = collections.Counter(); szO = collections.Counter()
 for o in sales:
     for it in o['items']:
@@ -244,7 +272,8 @@ P = dict(
              lost=block(lost), cancelled=block(canc), returned=block(retn),
              unpaid=block(unpaid), lost_offline=block(loff), lost_online=block(lon),
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),
-    daily=daily, weekly=weekly, monthly=monthly, channels=chan, models=models, sizes=sizes, colors=colors,
+    daily=daily, weekly=weekly, monthly=monthly, channels=chan, models=models,
+    models_by_month=models_by_month, sizes=sizes, colors=colors,
     states=states, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
     unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows, all_rows=all_rows,
