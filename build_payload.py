@@ -132,6 +132,7 @@ def period_stats(a, b):
         per_day=R2(sum(o['total'] for o in s) / elapsed) if elapsed else 0,
         biz_days=biz,                              # 経過分の店舗営業日数
         per_biz_day=R2(sum(o['total'] for o in s) / biz) if biz else 0,
+        off_per_biz_day=R2(sum(o['total'] for o in so) / biz) if biz else 0,
         active_days=act,
         lost=R2(sum(o['total'] for o in l)), lostn=len(l),
         unpaid=R2(sum(o['total'] for o in u)), unpaidn=len(u))
@@ -142,38 +143,31 @@ monthly = [dict(id=i, label=lb, note=nt, **period_stats(a, b)) for i, lb, a, b, 
 
 CH_POS = u'POS(実店舗)'
 CHORDER = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)']
-chan = []
-for c in CHORDER:
-    s = [o for o in sales if o['channel'] == c]
-    l = [o for o in lost if o['channel'] == c]
-    chan.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else u'オンライン'),
-                     lost_orders=len(l), lost_rev=R2(sum(o['total'] for o in l)),
-                     invoices=sum(1 for o in s if o['invoice'].strip()),
-                     lines=sum(o['n_lines'] for o in s), **block(s)))
 
-mm = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0, prices=[]))
-for o in sales:
-    for it in o['items']:
-        if it['cat'] == 'test':
-            continue
-        m = mm[it['model']]
-        m['rev'] += it['total']
-        m['units'] += it['qty']
-        m['brand'] = it['brand']
-        if isoff(o):
-            m['off'] += it['total']
-        else:
-            m['on'] += it['total']
-        if it['qty'] > 0:
-            m['prices'].append(it['price'])
-models = [dict(name=k, brand=v['brand'], rev=R2(v['rev']), units=v['units'],
-               off=R2(v['off']), on=R2(v['on']),
-               avg=R2(sum(v['prices']) / len(v['prices'])) if v['prices'] else 0)
-          for k, v in sorted(mm.items(), key=lambda x: -x[1]['rev'])]
+
+def channels_for(subset_sales, subset_lost):
+    out = []
+    for c in CHORDER:
+        sc = [o for o in subset_sales if o['channel'] == c]
+        lc = [o for o in subset_lost if o['channel'] == c]
+        out.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else u'オンライン'),
+                        lost_orders=len(lc), lost_rev=R2(sum(o['total'] for o in lc)),
+                        invoices=sum(1 for o in sc if o['invoice'].strip()),
+                        lines=sum(o['n_lines'] for o in sc), **block(sc)))
+    return out
+
+
+chan = channels_for(sales, lost)
+channels_by_month = {'all': chan}
+for mid, lab, a, b, nt in MONTHS:
+    channels_by_month[mid] = channels_for(
+        [o for o in sales if a <= o['date'] <= b],
+        [o for o in lost if a <= o['date'] <= b])
 
 
 def models_for(subset):
-    d = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0, prices=[]))
+    d = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0,
+                                             off_units=0, on_units=0, prices=[]))
     for o in subset:
         for it in o['items']:
             if it['cat'] == 'test':
@@ -186,13 +180,20 @@ def models_for(subset):
                 m['off'] += it['total']
             else:
                 m['on'] += it['total']
+            if isoff(o):
+                m['off_units'] += it['qty']
+            else:
+                m['on_units'] += it['qty']
             if it['qty'] > 0:
                 m['prices'].append(it['price'])
     return [dict(name=k, brand=v['brand'], rev=R2(v['rev']), units=v['units'],
                  off=R2(v['off']), on=R2(v['on']),
+                 off_units=v['off_units'], on_units=v['on_units'],
                  avg=R2(sum(v['prices']) / len(v['prices'])) if v['prices'] else 0)
             for k, v in sorted(d.items(), key=lambda x: -x[1]['rev'])]
 
+
+models = models_for(sales)
 
 # モデル別はプルダウンで月を切り替えるため、月ごとにも持たせる
 models_by_month = {'all': models}
@@ -294,7 +295,7 @@ P = dict(
              lost=block(lost), cancelled=block(canc), returned=block(retn),
              unpaid=block(unpaid), lost_offline=block(loff), lost_online=block(lon),
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),
-    daily=daily, weekly=weekly, monthly=monthly, closed_days=closed_days, channels=chan, models=models,
+    daily=daily, weekly=weekly, monthly=monthly, closed_days=closed_days, channels=chan, channels_by_month=channels_by_month, models=models,
     models_by_month=models_by_month, sizes=sizes, colors=colors,
     states=states, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],

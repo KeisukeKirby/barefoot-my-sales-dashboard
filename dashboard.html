@@ -417,6 +417,34 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="tablebox"><table id="t-pay"></table></div>
   </section>
 
+  <section id="s-channel" data-pane="store">
+    <p class="eyebrow">Channel</p>
+    <h2>チャネル別の売上</h2>
+    <p class="lede">円グラフは売上構成。下の表では同じチャネルの失注(キャンセル・返品)も並べて確認できます。</p>
+    <figure class="chartbox">
+      <figcaption>
+        <h3>チャネル別 売上構成</h3>
+        <div class="legend" id="pie-legend"></div>
+      </figcaption>
+      <div class="filterrow">
+        <label for="f-ch-month">期間</label>
+        <select id="f-ch-month"></select>
+        <span class="count" id="f-ch-count"></span>
+      </div>
+      <div id="c-channel"></div>
+    </figure>
+    <div class="tablebox"><table id="t-channel"></table></div>
+  </section>
+
+  <section id="s-avg" data-pane="store">
+    <p class="eyebrow">Daily Average</p>
+    <h2>1日あたりの売上</h2>
+    <p class="lede">「全体 / 暦日」は店舗+オンラインを期間の暦日数で割った値。「店舗 / 営業日」は店舗売上だけを営業日数で割った値です(休業日は 7/27・7/28 と 8月以降の毎週月・火)。</p>
+    <div class="tablebox"><table id="t-avg-month"></table></div>
+    <h3 style="margin:1.6rem 0 .6rem">週別(開業週以降)</h3>
+    <div class="tablebox"><table id="t-avg-week"></table></div>
+  </section>
+
   <section id="s-split" data-pane="store">
     <p class="eyebrow">Online / Offline</p>
     <h2>オンラインとオフラインの内訳</h2>
@@ -449,19 +477,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ チャネル ══ -->
-  <section id="s-channel" data-pane="store">
-    <p class="eyebrow">Channel</p>
-    <h2>チャネル別の売上</h2>
-    <p class="lede">円グラフは売上構成。下の表では同じチャネルの失注(キャンセル・返品)も並べて確認できます。</p>
-    <figure class="chartbox">
-      <figcaption>
-        <h3>チャネル別 売上構成</h3>
-        <div class="legend" id="pie-legend"></div>
-      </figcaption>
-      <div id="c-channel"></div>
-    </figure>
-    <div class="tablebox"><table id="t-channel"></table></div>
-  </section>
 
   <!-- ══ 商品 ══ -->
   <section id="s-product" data-pane="product">
@@ -697,35 +712,28 @@ function periodTable(elId, rows, head, opt){
   const sum = k => rows.reduce((a,r)=>a+r[k],0);
   const shareCell = (v, tot) =>
     `${n1(v)} <span style="color:var(--text-muted);font-size:.9em">${pct(v,tot)}</span>`;
-  const dayCol = opt.hideDays ? '' : '<th class="n">営業日</th>';
-  const dayCell = r => opt.hideDays ? '' : `<td class="n">${r.biz_days}</td>`;
   el.innerHTML =
    `<thead><tr>
-      <th>${head}</th><th>期間</th>${dayCol}
+      <th>${head}</th><th>期間</th>
       <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th>
-      <th class="n">注文数</th><th class="n">点数</th>
-      <th class="n">客単価</th><th class="n">営業日平均</th></tr></thead>
+      <th class="n">注文数</th><th class="n">点数</th><th class="n">客単価</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
-      ${dayCell(r)}
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${shareCell(r.off, r.rev)}</td>
       <td class="n">${shareCell(r.on, r.rev)}</td>
       <td class="n">${r.orders}</td>
       <td class="n">${r.units}</td>
-      <td class="n">${n1(r.aov)}</td>
-      <td class="n">${n1(r.per_biz_day)}</td></tr>`).join('')}</tbody>
+      <td class="n">${n1(r.aov)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>${esc(opt.totalLabel || '合計')}</td><td></td>
-      ${opt.hideDays ? '' : `<td class="n">${sum('biz_days')}</td>`}
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
       <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
       <td class="n">${sum('orders')}</td><td class="n">${sum('units')}</td>
-      <td class="n">${n1(sum('rev')/sum('orders'))}</td>
-      <td class="n">${opt.hideDays ? '—' : n1(sum('rev')/sum('biz_days'))}</td></tr></tfoot>`;
+      <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
-periodTable('t-week', D.weekly, '週', {hideDays:true});
+periodTable('t-week', D.weekly, '週');
 periodTable('t-month', D.monthly, '月', {totalLabel:'2026年 合計'});
 
 
@@ -844,8 +852,7 @@ function periodBar(hostId, rows, opts){
       <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
       <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
       <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
-      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>
-      <div class="r"><span>日平均</span><span>${rm2(r.per_day)}</span></div>`);
+      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>`);
     s.appendChild(hit);
   });
 }
@@ -924,7 +931,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
 /* ═══ 4b. 日次テーブル(数値) ═════════════════════════ */
 (function(){
-  const rows = D.daily.filter(r=>r.off+r.on>0 || r.lost>0);
+  const rows = D.daily.filter(r=>r.off+r.on>0);
   const S = k => rows.reduce((a,r)=>a+r[k],0);
   $('#t-daily').innerHTML =
    `<thead><tr><th>日付</th><th>曜日</th><th class="n">売上</th><th class="n">店舗</th>
@@ -953,90 +960,123 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td></tr></tfoot>`;
 })();
 
-/* ═══ 5. Channel(ドーナツ)══════════════════════════════ */
+/* ═══ 5. Channel(ドーナツ・期間プルダウン)══════════════ */
 (function(){
-  const rows = D.channels.filter(c=>c.rev>0);
-  const tot = rows.reduce((a,r)=>a+r.rev,0);
+  const sel = $('#f-ch-month'), cnt = $('#f-ch-count');
+  [['all','全期間'], ...D.monthly.map(m=>[m.id, m.label])].forEach(([v,l])=>{
+    const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
+  });
+  sel.value = 'all';
   const CLS = ['f1','f2','f3','f4'];
   const VAR = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
-  const host = $('#c-channel');
-  const W = 900, H = 340, cx = 230, cy = H/2, R = 122, r0 = 72;
-  const sv = mkSvg(host, W, H);
 
-  const arc = (a0,a1,ro,ri)=>{
-    const p=(a,rad)=>[cx+rad*Math.cos(a), cy+rad*Math.sin(a)];
-    const big = (a1-a0) > Math.PI ? 1 : 0;
-    const [x1,y1]=p(a0,ro), [x2,y2]=p(a1,ro), [x3,y3]=p(a1,ri), [x4,y4]=p(a0,ri);
-    return `M${x1},${y1} A${ro},${ro} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${ri},${ri} 0 ${big} 0 ${x4},${y4} Z`;
+  function draw(){
+    const src = D.channels_by_month[sel.value] || D.channels;
+    const rows = src.filter(c=>c.rev>0);
+    const tot = rows.reduce((a,r)=>a+r.rev,0);
+    cnt.textContent = rows.length + 'チャネル · ' + rm2(tot) + ' · ' + rows.reduce((a,r)=>a+r.orders,0) + '注文';
+
+    const host = $('#c-channel');
+    const W = 900, H = 340, cx = 230, cy = H/2, R = 122, r0 = 72;
+    const sv = mkSvg(host, W, H);
+    const arc = (a0,a1,ro,ri)=>{
+      const p = (a,rad)=>[cx+rad*Math.cos(a), cy+rad*Math.sin(a)];
+      const big = (a1-a0) > Math.PI ? 1 : 0;
+      const q1=p(a0,ro), q2=p(a1,ro), q3=p(a1,ri), q4=p(a0,ri);
+      return 'M'+q1[0]+','+q1[1]+' A'+ro+','+ro+' 0 '+big+' 1 '+q2[0]+','+q2[1]
+           + ' L'+q3[0]+','+q3[1]+' A'+ri+','+ri+' 0 '+big+' 0 '+q4[0]+','+q4[1]+' Z';
+    };
+    let ang = -Math.PI/2;
+    const GAP = 0.018;                                   // 面と面の間に隙間
+    rows.forEach((r,i)=>{
+      const sweep = (r.rev/tot) * Math.PI*2;
+      const a0 = ang + GAP/2, a1 = ang + sweep - GAP/2;
+      sv.appendChild(svgEl('path',{d:arc(a0,a1,R,r0), class:CLS[i%CLS.length]}));
+      if (r.rev/tot >= 0.05){                            // 細いスライスは重なるので出さない
+        const mid = (a0+a1)/2, lx = cx + (R+16)*Math.cos(mid), ly = cy + (R+16)*Math.sin(mid);
+        const anchor = Math.cos(mid) >= 0 ? 'start' : 'end';
+        const t1 = svgEl('text',{x:lx,y:ly-2,'text-anchor':anchor,class:'dlab'});
+        t1.textContent = pct(r.rev,tot); sv.appendChild(t1);
+        const t2 = svgEl('text',{x:lx,y:ly+12,'text-anchor':anchor,class:'dlab2'});
+        t2.textContent = rm(r.rev); sv.appendChild(t2);
+      }
+      const hit = svgEl('path',{d:arc(a0,a1,R+18,r0-8), class:'hit'});
+      bindTip(hit, '<b>'+esc(r.name)+'</b><hr>'
+        + '<div class="r"><span>売上</span><b>'+rm2(r.rev)+'</b></div>'
+        + '<div class="r"><span>構成比</span><span>'+pct(r.rev,tot)+'</span></div>'
+        + '<div class="r"><span>注文 / 点数</span><span>'+r.orders+' / '+r.units+'</span></div>'
+        + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>'
+        + (r.lost_rev ? '<hr><div class="r"><span>失注</span><b>'+rm2(r.lost_rev)+'</b></div>'
+            + '<div class="r"><span>失注率</span><span>'+pct(r.lost_orders,r.lost_orders+r.orders)+'</span></div>' : ''));
+      sv.appendChild(hit);
+      ang += sweep;
+    });
+    const c1 = svgEl('text',{x:cx,y:cy-4,'text-anchor':'middle',class:'dlab'});
+    c1.setAttribute('style','font-size:22px'); c1.textContent = rm(tot); sv.appendChild(c1);
+    const c2 = svgEl('text',{x:cx,y:cy+16,'text-anchor':'middle',class:'ax'});
+    c2.textContent = rows.reduce((a,r)=>a+r.orders,0) + ' 注文'; sv.appendChild(c2);
+
+    let ty = cy - rows.length*17 + 8;                    // 右側の内訳(色だけに頼らない)
+    rows.forEach((r,i)=>{
+      sv.appendChild(svgEl('rect',{x:470,y:ty-10,width:12,height:12,rx:3,class:CLS[i%CLS.length]}));
+      const t = svgEl('text',{x:492,y:ty,class:'axb'});
+      t.setAttribute('style','font-size:13px'); t.textContent = r.name; sv.appendChild(t);
+      const v = svgEl('text',{x:700,y:ty,'text-anchor':'end',class:'dlab'});
+      v.textContent = rm(r.rev); sv.appendChild(v);
+      const q = svgEl('text',{x:790,y:ty,'text-anchor':'end',class:'dlab2'});
+      q.textContent = pct(r.rev,tot); sv.appendChild(q);
+      ty += 34;
+    });
+    $('#pie-legend').innerHTML = rows.map((r,i)=>
+      '<span><i class="sw" style="background:'+VAR[i%VAR.length]+'"></i>'+esc(r.name)+'</span>').join('');
+
+    const T = {rev:tot, orders:rows.reduce((a,r)=>a+r.orders,0), units:rows.reduce((a,r)=>a+r.units,0)};
+    const L = {rev:src.reduce((a,r)=>a+r.lost_rev,0), n:src.reduce((a,r)=>a+r.lost_orders,0)};
+    $('#t-channel').innerHTML =
+      '<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>'
+      + '<th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th>'
+      + '<th class="n">失注額</th><th class="n">失注件数</th><th class="n">失注率</th></tr></thead><tbody>'
+      + src.map(r=>'<tr><td><b>'+esc(r.name)+'</b></td>'
+        + '<td><span class="chip '+(r.seg==='オフライン'?'pos':'mute')+'">'+esc(r.seg)+'</span></td>'
+        + '<td class="n"><b>'+(r.rev?n1(r.rev):'—')+'</b></td>'
+        + '<td class="n">'+(r.rev?pct(r.rev,tot):'—')+'</td>'
+        + '<td class="n">'+(r.orders||'—')+'</td><td class="n">'+(r.units||'—')+'</td>'
+        + '<td class="n">'+(r.orders?n1(r.rev/r.orders):'—')+'</td>'
+        + '<td class="n" style="color:var(--crit)">'+(r.lost_rev?n1(r.lost_rev):'—')+'</td>'
+        + '<td class="n" style="color:var(--crit)">'+(r.lost_orders||'—')+'</td>'
+        + '<td class="n" style="color:var(--crit)">'+(r.lost_orders?pct(r.lost_orders,r.lost_orders+r.orders):'—')+'</td></tr>').join('')
+      + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+n1(T.rev)+'</td><td class="n">100.0%</td>'
+      + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+'</td><td class="n">'+n1(T.rev/T.orders)+'</td>'
+      + '<td class="n">'+n1(L.rev)+'</td><td class="n">'+L.n+'</td>'
+      + '<td class="n">'+(L.n?pct(L.n,L.n+T.orders):'—')+'</td></tr></tfoot>';
+  }
+  sel.addEventListener('change', draw);
+  draw();
+})();
+
+/* ═══ 5b. 1日あたりの売上 ═══════════════════════════════ */
+(function(){
+  const build = (elId, rows, head) => {
+    const S = k => rows.reduce((a,r)=>a+r[k],0);
+    document.getElementById(elId).innerHTML =
+      '<thead><tr><th>'+esc(head)+'</th><th>期間</th><th class="n">暦日</th><th class="n">営業日</th>'
+      + '<th class="n">売上</th><th class="n">全体 / 暦日</th>'
+      + '<th class="n">店舗売上</th><th class="n">店舗 / 営業日</th></tr></thead><tbody>'
+      + rows.map(r=>'<tr><td><b>'+esc(r.label)+'</b>'
+          + (r.ongoing?' <span class="chip mute">進行中</span>':'')+'</td>'
+        + '<td class="num" style="font-size:12px;color:var(--text-secondary)">'+jd(r.start)+'–'+jd(r.end)+'</td>'
+        + '<td class="n">'+r.elapsed+'</td><td class="n">'+r.biz_days+'</td>'
+        + '<td class="n">'+n1(r.rev)+'</td><td class="n"><b>'+n1(r.per_day)+'</b></td>'
+        + '<td class="n">'+n1(r.off)+'</td><td class="n"><b>'+n1(r.off_per_biz_day)+'</b></td></tr>').join('')
+      + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+S('elapsed')+'</td>'
+      + '<td class="n">'+S('biz_days')+'</td><td class="n">'+n1(S('rev'))+'</td>'
+      + '<td class="n">'+n1(S('rev')/S('elapsed'))+'</td><td class="n">'+n1(S('off'))+'</td>'
+      + '<td class="n">'+n1(S('off')/S('biz_days'))+'</td></tr></tfoot>';
   };
-
-  let ang = -Math.PI/2;
-  const GAP = 0.018;                                  // 面と面の間に隙間を入れる
-  rows.forEach((r,i)=>{
-    const sweep = (r.rev/tot) * Math.PI*2;
-    const a0 = ang + GAP/2, a1 = ang + sweep - GAP/2;
-    sv.appendChild(svgEl('path',{d:arc(a0,a1,R,r0), class:CLS[i%CLS.length]}));
-    // 5%以上のスライスだけ引き出し線と数値を付ける
-    if (r.rev/tot >= 0.05){
-      const mid = (a0+a1)/2, lx = cx + (R+16)*Math.cos(mid), ly = cy + (R+16)*Math.sin(mid);
-      const anchor = Math.cos(mid) >= 0 ? 'start' : 'end';
-      const t1 = svgEl('text',{x:lx,y:ly-2,'text-anchor':anchor,class:'dlab'});
-      t1.textContent = pct(r.rev,tot); sv.appendChild(t1);
-      const t2 = svgEl('text',{x:lx,y:ly+12,'text-anchor':anchor,class:'dlab2'});
-      t2.textContent = rm(r.rev); sv.appendChild(t2);
-    }
-    const hit = svgEl('path',{d:arc(a0,a1,R+18,r0-8), class:'hit'});
-    bindTip(hit, `<b>${esc(r.name)}</b><hr>
-      <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
-      <div class="r"><span>構成比</span><span>${pct(r.rev,tot)}</span></div>
-      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
-      <div class="r"><span>客単価</span><span>${rm2(r.rev/r.orders)}</span></div>
-      ${r.lost_rev?`<hr><div class="r"><span>失注</span><b>${rm2(r.lost_rev)}</b></div>
-      <div class="r"><span>失注率</span><span>${pct(r.lost_orders,r.lost_orders+r.orders)}</span></div>`:''}`);
-    sv.appendChild(hit);
-    ang += sweep;
-  });
-
-  const c1 = svgEl('text',{x:cx,y:cy-4,'text-anchor':'middle',class:'dlab'});
-  c1.setAttribute('style','font-size:22px'); c1.textContent = rm(tot); sv.appendChild(c1);
-  const c2 = svgEl('text',{x:cx,y:cy+16,'text-anchor':'middle',class:'ax'});
-  c2.textContent = `${rows.reduce((a,r)=>a+r.orders,0)} 注文`; sv.appendChild(c2);
-
-  // 右側に内訳を並べる(色だけに頼らないため)
-  let ty = cy - rows.length*17 + 8;
-  rows.forEach((r,i)=>{
-    sv.appendChild(svgEl('rect',{x:470,y:ty-10,width:12,height:12,rx:3,class:CLS[i%CLS.length]}));
-    const t = svgEl('text',{x:492,y:ty,class:'axb'});
-    t.setAttribute('style','font-size:13px'); t.textContent = r.name; sv.appendChild(t);
-    const v = svgEl('text',{x:700,y:ty,'text-anchor':'end',class:'dlab'});
-    v.textContent = rm(r.rev); sv.appendChild(v);
-    const q = svgEl('text',{x:790,y:ty,'text-anchor':'end',class:'dlab2'});
-    q.textContent = pct(r.rev,tot); sv.appendChild(q);
-    ty += 34;
-  });
-
-  $('#pie-legend').innerHTML = rows.map((r,i)=>
-    `<span><i class="sw" style="background:${VAR[i%VAR.length]}"></i>${esc(r.name)}</span>`).join('');
+  build('t-avg-month', D.monthly, '月');
+  build('t-avg-week',  D.weekly,  '週');
 })();
 
-$('#t-channel').innerHTML = (()=>{
-  const rows = D.channels, T = K.total;
-  return `<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>
-    <th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th>
-    <th class="n">失注額</th><th class="n">失注件数</th><th class="n">失注率</th></tr></thead>
-   <tbody>${rows.map(r=>`<tr>
-     <td><b>${esc(r.name)}</b></td>
-     <td><span class="chip ${r.seg==='オフライン'?'pos':'mute'}">${esc(r.seg)}</span></td>
-     <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,T.rev)}</td>
-     <td class="n">${r.orders}</td><td class="n">${r.units}</td><td class="n">${n1(r.rev/r.orders)}</td>
-     <td class="n" style="color:var(--crit)">${r.lost_rev?n1(r.lost_rev):'—'}</td>
-     <td class="n" style="color:var(--crit)">${r.lost_orders||'—'}</td>
-     <td class="n" style="color:var(--crit)">${r.lost_orders?pct(r.lost_orders,r.lost_orders+r.orders):'—'}</td></tr>`).join('')}</tbody>
-   <tfoot><tr><td>合計</td><td></td><td class="n">${n1(T.rev)}</td><td class="n">100.0%</td>
-     <td class="n">${T.orders}</td><td class="n">${T.units}</td><td class="n">${n1(T.rev/T.orders)}</td>
-     <td class="n">${n1(K.lost.rev)}</td><td class="n">${K.lost.orders}</td>
-     <td class="n">${pct(K.lost.orders,K.lost.orders+T.orders)}</td></tr></tfoot>`;
-})();
 
 /* ═══ 6. Model(月プルダウン)═══════════════════════════ */
 (function(){
@@ -1081,6 +1121,7 @@ $('#t-channel').innerHTML = (()=>{
         <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
         <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
         <div class="r"><span>数量</span><span>${r.units} 点</span></div>
+        <div class="r"><span>　店舗 / ｵﾝﾗｲﾝ</span><span>${r.off_units} / ${r.on_units} 点</span></div>
         <div class="r"><span>平均単価</span><span>${rm2(r.avg)}</span></div>`);
       sv.appendChild(hit);
     });
@@ -1091,13 +1132,19 @@ $('#t-channel').innerHTML = (()=>{
       document.getElementById(elId).innerHTML = !list.length
         ? `<thead><tr><th>${esc(label)}</th></tr></thead><tbody><tr><td style="color:var(--text-muted)">この月の販売はありません</td></tr></tbody>`
         : `<thead><tr><th>モデル</th><th class="n">売上</th><th class="n">構成比</th>
-            <th class="n">数量</th><th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
+            <th class="n">数量</th><th class="n">店舗点数</th><th class="n">ｵﾝﾗｲﾝ点数</th>
+            <th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
            <tbody>${list.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
              <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,t)}</td>
-             <td class="n">${r.units}</td><td class="n">${r.avg?n1(r.avg):'—'}</td>
+             <td class="n">${r.units}</td>
+             <td class="n">${r.off_units||'—'}</td><td class="n">${r.on_units||'—'}</td>
+             <td class="n">${r.avg?n1(r.avg):'—'}</td>
              <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
            <tfoot><tr><td>${esc(label)} 合計</td><td class="n">${n1(t)}</td><td class="n">100.0%</td>
-             <td class="n">${u}</td><td class="n">—</td>
+             <td class="n">${u}</td>
+             <td class="n">${list.reduce((a,r)=>a+r.off_units,0)}</td>
+             <td class="n">${list.reduce((a,r)=>a+r.on_units,0)}</td>
+             <td class="n">—</td>
              <td class="n">${n1(list.reduce((a,r)=>a+r.off,0))}</td>
              <td class="n">${n1(list.reduce((a,r)=>a+r.on,0))}</td></tr></tfoot>`;
     };
