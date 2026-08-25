@@ -237,6 +237,7 @@ svg{display:block;width:100%;height:auto}
 /* ── Tables ───────────────────────────────────────────── */
 .tablebox{overflow-x:auto;margin-bottom:.4rem}
 table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:520px;text-align:left}
+table.fixed{table-layout:fixed;min-width:640px}
 th,td{padding:.8rem 1.2rem;border-bottom:1px solid var(--border-color);white-space:nowrap}
 thead th{font-family:var(--font-heading);font-weight:700;text-transform:uppercase;font-size:.72rem;
   letter-spacing:.05em;color:var(--text-secondary);background-color:rgba(255,255,255,.02);
@@ -440,15 +441,15 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="eyebrow">Daily Average</p>
     <h2>1日あたりの売上</h2>
     <p class="lede">「全体 / 暦日」は店舗+オンラインを期間の暦日数で割った値。「店舗 / 営業日」は店舗売上だけを営業日数で割った値です(休業日は 7/27・7/28 と 8月以降の毎週月・火)。</p>
-    <div class="tablebox"><table id="t-avg-month"></table></div>
+    <div class="tablebox"><table id="t-avg-month" class="fixed"></table></div>
     <h3 style="margin:1.6rem 0 .6rem">週別(開業週以降)</h3>
-    <div class="tablebox"><table id="t-avg-week"></table></div>
+    <div class="tablebox"><table id="t-avg-week" class="fixed"></table></div>
   </section>
 
   <section id="s-split" data-pane="store">
     <p class="eyebrow">Online / Offline</p>
     <h2>オンラインとオフラインの内訳</h2>
-    <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。</p>
+    <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。<b id="split-period"></b></p>
     <div class="split" id="split"></div>
 
     <figure class="chartbox">
@@ -464,7 +465,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
     <div class="sharebar" id="sharebar"></div>
     <div class="sharelegend" id="sharelegend"></div>
-    <p class="note" id="split-note"></p>
   </section>
 
   <!-- ══ 日次 ══ -->
@@ -482,7 +482,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-product" data-pane="product">
     <p class="eyebrow">Product</p>
     <h2>モデル別の売上構成</h2>
-    <p class="lede">商品行の金額ベース(注文単位の値引き・送料は含みません)。店舗とオンラインの内訳を積み上げています。</p>
 
     <figure class="chartbox">
       <figcaption>
@@ -515,6 +514,8 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="eyebrow">Size &amp; Color</p>
     <h2>売れたサイズとカラー</h2>
     <p class="lede">発注・在庫補充の判断材料。数量ベースで集計しています。</p>
+    <div class="sharebar" id="genderbar"></div>
+    <div class="sharelegend" id="genderlegend" style="margin-bottom:1.4rem"></div>
     <div class="split">
       <figure class="chartbox" style="margin:0">
         <figcaption><h3>レディース サイズ(EU)</h3></figcaption>
@@ -753,21 +754,16 @@ $('#split').innerHTML = segs.map(s => {
       <div><span class="l">点数</span><span class="v">${b.units}</span></div>
       <div><span class="l">客単価</span><span class="v">${n0(b.rev/b.orders)}</span></div>
       <div><span class="l">1点単価</span><span class="v">${n0(b.rev/b.units)}</span></div>
-      <div><span class="l">失注</span><span class="v" style="color:var(--crit)">${n0(s.lost.rev)}</span></div>
-      <div><span class="l">失注率</span><span class="v" style="color:var(--crit)">${pct(s.lost.orders, s.lost.orders+b.orders)}</span></div>
     </div></div>`;
 }).join('');
+$('#split-period').textContent =
+  ` 集計期間: ${M.period[0]} 〜 ${M.period[1]}(${M.days}日間)の累計。`;
 $('#sharebar').innerHTML =
   `<i style="width:${K.offline.rev/K.total.rev*100}%;background:var(--s1)"></i>` +
   `<i style="width:${K.online.rev/K.total.rev*100}%;background:var(--s-online)"></i>`;
 $('#sharelegend').innerHTML = segs.map(s =>
   `<span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:${s.color}"></i>
    ${s.name} <b class="num">${pct(K[s.k].rev,K.total.rev)}</b> <span style="color:var(--text-muted)">${rm2(K[s.k].rev)}</span></span>`).join('');
-$('#split-note').textContent =
-  `店舗の客単価は ${rm2(K.offline.rev/K.offline.orders)}、オンラインは ${rm2(K.online.rev/K.online.orders)}。`
-  + ` 店舗は1注文あたり ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンラインは ${(K.online.units/K.online.orders).toFixed(2)}点で、`
-  + ` 店舗では複数点をまとめ買いする客が客単価を押し上げています。`
-  + ` 失注率(件数ベース)は店舗 ${pct(K.lost_offline.orders,K.lost_offline.orders+K.offline.orders)} に対しオンライン ${pct(K.lost_online.orders,K.lost_online.orders+K.online.orders)}。`;
 
 /* ═══ 3c. 週ごとの 店舗 / オンライン(グループ棒)═══════ */
 (function(){
@@ -1005,9 +1001,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         + '<div class="r"><span>売上</span><b>'+rm2(r.rev)+'</b></div>'
         + '<div class="r"><span>構成比</span><span>'+pct(r.rev,tot)+'</span></div>'
         + '<div class="r"><span>注文 / 点数</span><span>'+r.orders+' / '+r.units+'</span></div>'
-        + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>'
-        + (r.lost_rev ? '<hr><div class="r"><span>失注</span><b>'+rm2(r.lost_rev)+'</b></div>'
-            + '<div class="r"><span>失注率</span><span>'+pct(r.lost_orders,r.lost_orders+r.orders)+'</span></div>' : ''));
+        + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>');
       sv.appendChild(hit);
       ang += sweep;
     });
@@ -1031,24 +1025,18 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       '<span><i class="sw" style="background:'+VAR[i%VAR.length]+'"></i>'+esc(r.name)+'</span>').join('');
 
     const T = {rev:tot, orders:rows.reduce((a,r)=>a+r.orders,0), units:rows.reduce((a,r)=>a+r.units,0)};
-    const L = {rev:src.reduce((a,r)=>a+r.lost_rev,0), n:src.reduce((a,r)=>a+r.lost_orders,0)};
     $('#t-channel').innerHTML =
       '<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>'
-      + '<th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th>'
-      + '<th class="n">失注額</th><th class="n">失注件数</th><th class="n">失注率</th></tr></thead><tbody>'
+      + '<th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th></tr></thead><tbody>'
       + src.map(r=>'<tr><td><b>'+esc(r.name)+'</b></td>'
         + '<td><span class="chip '+(r.seg==='オフライン'?'pos':'mute')+'">'+esc(r.seg)+'</span></td>'
         + '<td class="n"><b>'+(r.rev?n1(r.rev):'—')+'</b></td>'
         + '<td class="n">'+(r.rev?pct(r.rev,tot):'—')+'</td>'
         + '<td class="n">'+(r.orders||'—')+'</td><td class="n">'+(r.units||'—')+'</td>'
-        + '<td class="n">'+(r.orders?n1(r.rev/r.orders):'—')+'</td>'
-        + '<td class="n" style="color:var(--crit)">'+(r.lost_rev?n1(r.lost_rev):'—')+'</td>'
-        + '<td class="n" style="color:var(--crit)">'+(r.lost_orders||'—')+'</td>'
-        + '<td class="n" style="color:var(--crit)">'+(r.lost_orders?pct(r.lost_orders,r.lost_orders+r.orders):'—')+'</td></tr>').join('')
+        + '<td class="n">'+(r.orders?n1(r.rev/r.orders):'—')+'</td></tr>').join('')
       + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+n1(T.rev)+'</td><td class="n">100.0%</td>'
-      + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+'</td><td class="n">'+n1(T.rev/T.orders)+'</td>'
-      + '<td class="n">'+n1(L.rev)+'</td><td class="n">'+L.n+'</td>'
-      + '<td class="n">'+(L.n?pct(L.n,L.n+T.orders):'—')+'</td></tr></tfoot>';
+      + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+'</td>'
+      + '<td class="n">'+n1(T.rev/T.orders)+'</td></tr></tfoot>';
   }
   sel.addEventListener('change', draw);
   draw();
@@ -1059,11 +1047,12 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   const build = (elId, rows, head) => {
     const S = k => rows.reduce((a,r)=>a+r[k],0);
     document.getElementById(elId).innerHTML =
-      '<thead><tr><th>'+esc(head)+'</th><th>期間</th><th class="n">暦日</th><th class="n">営業日</th>'
-      + '<th class="n">売上</th><th class="n">全体 / 暦日</th>'
-      + '<th class="n">店舗売上</th><th class="n">店舗 / 営業日</th></tr></thead><tbody>'
-      + rows.map(r=>'<tr><td><b>'+esc(r.label)+'</b>'
-          + (r.ongoing?' <span class="chip mute">進行中</span>':'')+'</td>'
+      '<colgroup><col style="width:15%"><col style="width:15%"><col style="width:9%"><col style="width:9%">'
+      + '<col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:13%"></colgroup>'
+      + '<thead><tr><th>'+esc(head)+'</th><th>期間</th><th class="n">暦日</th><th class="n">営業日</th>'
+      + '<th class="n">売上</th><th class="n">日平均(全体)</th>'
+      + '<th class="n">店舗売上</th><th class="n">日平均(店舗のみ)</th></tr></thead><tbody>'
+      + rows.map(r=>'<tr><td><b>'+esc(r.label)+'</b></td>'
         + '<td class="num" style="font-size:12px;color:var(--text-secondary)">'+jd(r.start)+'–'+jd(r.end)+'</td>'
         + '<td class="n">'+r.elapsed+'</td><td class="n">'+r.biz_days+'</td>'
         + '<td class="n">'+n1(r.rev)+'</td><td class="n"><b>'+n1(r.per_day)+'</b></td>'
@@ -1197,6 +1186,27 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
     s.appendChild(hit);
   });
 }
+(function(){
+  // 男女比。Marugo 足袋は cm 表記で男女共用のため別枠にする
+  const w = D.sizes.women.reduce((a,r)=>a+r.n,0);
+  const m = D.sizes.men.reduce((a,r)=>a+r.n,0);
+  const u = D.sizes.tabi.reduce((a,r)=>a+r.n,0);
+  const rows = [
+    {name:'レディース', n:w, c:'var(--s1)'},
+    {name:'メンズ',    n:m, c:'var(--s2)'},
+    {name:'ユニセックス(足袋)', n:u, c:'var(--s3)'},
+  ].filter(r=>r.n>0);
+  const tot = rows.reduce((a,r)=>a+r.n,0);
+  $('#genderbar').innerHTML = rows.map(r=>
+    `<i style="width:${r.n/tot*100}%;background:${r.c}"></i>`).join('');
+  $('#genderlegend').innerHTML = rows.map(r=>
+    `<span style="display:inline-flex;align-items:center;gap:7px">
+       <i class="sw" style="background:${r.c}"></i>${esc(r.name)}
+       <b class="num">${pct(r.n,tot)}</b>
+       <span style="color:var(--text-muted)">${r.n}足</span></span>`).join('')
+    + `<span style="color:var(--text-muted)">合計 ${tot}足</span>`;
+})();
+
 countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
 countChart('c-sizem', D.sizes.men,   r=>r.size, r=>r.n, 'f3', '足');
 countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
