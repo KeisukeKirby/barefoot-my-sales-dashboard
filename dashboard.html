@@ -360,26 +360,12 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       </div>
       <div class="scroller"><div id="c-daily" style="min-width:700px"></div></div>
     </figure>
-    <p class="note" id="daily-chart-note"></p>
   </section>
 
   <!-- ══ 期間別 ══ -->
   <section id="s-month" data-pane="overview">
     <p class="eyebrow">Monthly</p>
     <h2>月別の実績</h2>
-    <p class="lede">7月は 7/17 開業のため15日間、8月は進行中です。単純な月合計ではなく日平均もあわせて見てください。</p>
-
-    <figure class="chartbox">
-      <figcaption>
-        <h3>店舗 / オンライン 売上比較</h3>
-        <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-        </div>
-      </figcaption>
-      <div class="scroller"><div id="c-segbar" style="min-width:560px"></div></div>
-    </figure>
-
     <figure class="chartbox">
       <figcaption>
         <h3>月別 売上</h3>
@@ -711,33 +697,42 @@ $('#hero').innerHTML =
    </div>`;
 
 /* ═══ 2. Period tables ═══════════════════════════════ */
-function periodTable(elId, rows, head){
+function periodTable(elId, rows, head, opt){
+  opt = opt || {};
   const el = document.getElementById(elId);
   const sum = k => rows.reduce((a,r)=>a+r[k],0);
+  const shareCell = (v, tot) =>
+    `${n1(v)} <span style="color:var(--text-muted);font-size:.9em">${pct(v,tot)}</span>`;
+  const dayCol = opt.hideDays ? '' : '<th class="n">営業日</th>';
+  const dayCell = r => opt.hideDays ? '' : `<td class="n">${r.biz_days}</td>`;
   el.innerHTML =
    `<thead><tr>
-      <th>${head}</th><th>期間</th><th class="n">日数</th>
+      <th>${head}</th><th>期間</th>${dayCol}
       <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th>
       <th class="n">注文数</th><th class="n">点数</th>
-      <th class="n">客単価</th><th class="n">日平均</th></tr></thead>
+      <th class="n">客単価</th><th class="n">営業日平均</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
-      <td class="n">${r.elapsed}</td>
+      ${dayCell(r)}
       <td class="n"><b>${n1(r.rev)}</b></td>
-      <td class="n">${n1(r.off)}</td>
-      <td class="n">${n1(r.on)}</td>
+      <td class="n">${shareCell(r.off, r.rev)}</td>
+      <td class="n">${shareCell(r.on, r.rev)}</td>
       <td class="n">${r.orders}</td>
       <td class="n">${r.units}</td>
       <td class="n">${n1(r.aov)}</td>
-      <td class="n">${n1(r.per_day)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>合計</td><td></td><td class="n">${sum('elapsed')}</td>
-      <td class="n">${n1(sum('rev'))}</td><td class="n">${n1(sum('off'))}</td><td class="n">${n1(sum('on'))}</td>
+      <td class="n">${n1(r.per_biz_day)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${esc(opt.totalLabel || '合計')}</td><td></td>
+      ${opt.hideDays ? '' : `<td class="n">${sum('biz_days')}</td>`}
+      <td class="n">${n1(sum('rev'))}</td>
+      <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
+      <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
       <td class="n">${sum('orders')}</td><td class="n">${sum('units')}</td>
-      <td class="n">${n1(sum('rev')/sum('orders'))}</td><td class="n">—</td></tr></tfoot>`;
+      <td class="n">${n1(sum('rev')/sum('orders'))}</td>
+      <td class="n">${opt.hideDays ? '—' : n1(sum('rev')/sum('biz_days'))}</td></tr></tfoot>`;
 }
-periodTable('t-week', D.weekly, '週');
-periodTable('t-month', D.monthly, '月');
+periodTable('t-week', D.weekly, '週', {hideDays:true});
+periodTable('t-month', D.monthly, '月', {totalLabel:'2026年 合計'});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
@@ -771,49 +766,6 @@ $('#split-note').textContent =
   + ` 店舗は1注文あたり ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンラインは ${(K.online.units/K.online.orders).toFixed(2)}点で、`
   + ` 店舗では複数点をまとめ買いする客が客単価を押し上げています。`
   + ` 失注率(件数ベース)は店舗 ${pct(K.lost_offline.orders,K.lost_offline.orders+K.offline.orders)} に対しオンライン ${pct(K.lost_online.orders,K.lost_online.orders+K.online.orders)}。`;
-
-/* ═══ 3b. 店舗 / オンライン 棒グラフ ═══════════════════ */
-(function(){
-  const rows = [
-    {name:'店舗(POS)', sub:'Barefoot Malaysia POS', b:K.offline, cls:'f1'},
-    {name:'オンライン',  sub:'Shopee · Lazada · 直販', b:K.online,  cls:'fon'},
-  ];
-  const host = $('#c-segbar');
-  const W = 900, H = 300, ML = 74, MR = 20, MT = 22, MB = 62;
-  const pw = W-ML-MR, ph = H-MT-MB;
-  const max = niceMax(Math.max(...rows.map(r=>r.b.rev))*1.14);
-  const y = v => MT + ph - (v/max)*ph;
-  const s = mkSvg(host, W, H);
-  const step = pw/rows.length, bw = Math.min(150, step*0.44);
-
-  for (let i=0;i<=4;i++){
-    const v = max*i/4;
-    s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(v),y2:y(v),class:'grid'}));
-    const t = svgEl('text',{x:ML-10,y:y(v)+3.5,'text-anchor':'end',class:'ax'});
-    t.textContent = i===0?'0':n0(v/1000)+'k'; s.appendChild(t);
-  }
-  s.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
-
-  rows.forEach((r,i)=>{
-    const cx = ML + step*i + step/2, x = cx - bw/2;
-    s.appendChild(svgEl('path',{d:barV(x,y(r.b.rev),bw,(r.b.rev/max)*ph,5), class:r.cls}));
-    const v1 = svgEl('text',{x:cx,y:y(r.b.rev)-24,'text-anchor':'middle',class:'dlab'});
-    v1.setAttribute('style','font-size:19px'); v1.textContent = rm(r.b.rev); s.appendChild(v1);
-    const v2 = svgEl('text',{x:cx,y:y(r.b.rev)-8,'text-anchor':'middle',class:'dlab2'});
-    v2.textContent = `${pct(r.b.rev,K.total.rev)} · ${r.b.orders}注文 · ${r.b.units}点`; s.appendChild(v2);
-    const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
-    l1.setAttribute('style','font-size:14px'); l1.textContent = r.name; s.appendChild(l1);
-    const l2 = svgEl('text',{x:cx,y:H-MB+39,'text-anchor':'middle',class:'ax'});
-    l2.textContent = r.sub; s.appendChild(l2);
-    const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
-    bindTip(hit, `<b>${esc(r.name)}</b><hr>
-      <div class="r"><span>売上</span><b>${rm2(r.b.rev)}</b></div>
-      <div class="r"><span>構成比</span><span>${pct(r.b.rev,K.total.rev)}</span></div>
-      <div class="r"><span>注文 / 点数</span><span>${r.b.orders} / ${r.b.units}</span></div>
-      <div class="r"><span>客単価</span><span>${rm2(r.b.rev/r.b.orders)}</span></div>`);
-    s.appendChild(hit);
-  });
-})();
 
 /* ═══ 3c. 週ごとの 店舗 / オンライン(グループ棒)═══════ */
 (function(){
@@ -908,7 +860,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
 /* ═══ 4. Daily chart(月ごと・月火は店舗休業日)══════════ */
 (function(){
-  const CLOSED = ['月','火'];                       // 店舗休業日
+  const CLOSED = new Set(D.closed_days);           // 集計側と同じ休業日リスト
   const sel = $('#f-month'), cnt = $('#f-month-count');
   D.monthly.forEach(m=>{
     const o = document.createElement('option');
@@ -931,7 +883,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     const step = pw/rows.length, bw = Math.min(22, step*0.62);
 
     rows.forEach((r,i)=>{
-      if (CLOSED.includes(wdOf(r.date)))
+      if (CLOSED.has(r.date))
         sv.appendChild(svgEl('rect',{x:ML+step*i, y:MT, width:step, height:ph,
           fill:'rgba(255,90,77,.10)'}));
     });
@@ -945,7 +897,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
     rows.forEach((r,i)=>{
       const x = ML + step*i + (step-bw)/2, tot = r.off+r.on;
-      const closed = CLOSED.includes(wdOf(r.date));
+      const closed = CLOSED.has(r.date);
       if (r.off>0) sv.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,(r.off/max)*ph, r.on>0?0:3), class:'f1'}));
       if (r.on>0)  sv.appendChild(svgEl('path',{d:barV(x,y(tot),bw,(r.on/max)*ph-(r.off>0?2:0),3), class:'fon'}));
       const lab = svgEl('text',{x:ML+step*i+step/2, y:H-MB+18,'text-anchor':'middle', class:'ax'});
@@ -971,12 +923,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
   const rows = D.daily;
   const best = rows.reduce((a,r)=> (r.off+r.on) > (a.off+a.on) ? r : a);
-  const closedSales = rows.filter(r=>CLOSED.includes(wdOf(r.date)) && r.off>0);
-  $('#daily-chart-note').textContent =
-    `赤帯は月曜・火曜(店舗休業日)。最高日は ${best.date}(${wdOf(best.date)}) の ${rm2(best.off+best.on)}。`
-    + (closedSales.length
-        ? ` なお休業日に店舗売上が ${closedSales.length}日分あります(${closedSales.map(r=>jd(r.date)).join(' / ')})。`
-        : ' 休業日の店舗売上はありません。');
+
   $('#daily-note').textContent =
     `${M.days}日中 ${rows.filter(r=>r.off+r.on>0).length}日に売上があります。`;
 })();
@@ -988,8 +935,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   $('#t-daily').innerHTML =
    `<thead><tr><th>日付</th><th>曜日</th><th class="n">売上</th><th class="n">店舗</th>
      <th class="n">オンライン</th><th class="n">注文数</th><th class="n">店舗件数</th><th class="n">ｵﾝﾗｲﾝ件数</th>
-     <th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th><th class="n">客単価</th>
-     <th class="n">失注件数</th><th class="n">失注額</th></tr></thead>
+     <th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th><th class="n">客単価</th></tr></thead>
     <tbody>${rows.map(r=>{
       const tot = r.off + r.on, wk = wdOf(r.date), mt = wk==='月'||wk==='火';
       return `<tr>
@@ -1004,16 +950,13 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         <td class="n">${r.invoices||'—'}</td>
         <td class="n">${r.lines||'—'}</td>
         <td class="n">${r.units||'—'}</td>
-        <td class="n">${r.orders?n1(tot/r.orders):'—'}</td>
-        <td class="n" style="color:var(--crit)">${r.lostn||'—'}</td>
-        <td class="n" style="color:var(--crit)">${r.lost?n1(r.lost):'—'}</td></tr>`;
+        <td class="n">${r.orders?n1(tot/r.orders):'—'}</td></tr>`;
     }).join('')}</tbody>
     <tfoot><tr><td>合計 ${rows.length}日</td><td></td>
       <td class="n">${n1(S('off')+S('on'))}</td><td class="n">${n1(S('off'))}</td><td class="n">${n1(S('on'))}</td>
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
       <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${S('units')}</td>
-      <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td>
-      <td class="n">${S('lostn')}</td><td class="n">${n1(S('lost'))}</td></tr></tfoot>`;
+      <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td></tr></tfoot>`;
 })();
 
 /* ═══ 5. Channel ══════════════════════════════════════ */

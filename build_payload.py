@@ -77,6 +77,24 @@ MONTHS = [
 LAST = d1.isoformat()
 
 
+# --- 店舗の休業日 -------------------------------------------------------------
+# 開業直後(7/17〜7/26)は連日営業。7/27・7/28 が最初の休業で、8月以降は毎週月・火。
+WEEKLY_CLOSED_FROM = datetime.date(2026, 8, 1)
+EXTRA_CLOSED = {datetime.date(2026, 7, 27), datetime.date(2026, 7, 28)}
+
+
+def is_closed(d):
+    if d in EXTRA_CLOSED:
+        return True
+    if d >= WEEKLY_CLOSED_FROM:
+        return d.weekday() in (0, 1)      # 月・火
+    return False
+
+
+closed_days = [(d0 + datetime.timedelta(n)).isoformat()
+               for n in range(days) if is_closed(d0 + datetime.timedelta(n))]
+
+
 def invnum(o):
     try:
         return int(o['invoice'].split('-')[1])
@@ -97,6 +115,8 @@ def period_stats(a, b):
     span = (db - da).days + 1
     elapsed = max(0, (dbe - da).days + 1)
     act = len(set(o['date'] for o in s))
+    biz = sum(1 for n in range((dbe - da).days + 1)
+              if not is_closed(da + datetime.timedelta(n))) if dbe >= da else 0
     return dict(
         start=a, end=b, span=span, elapsed=elapsed, ongoing=(db > d1),
         off=R2(sum(o['total'] for o in so)), on=R2(sum(o['total'] for o in sn)),
@@ -110,6 +130,8 @@ def period_stats(a, b):
         unit_price=R2(sum(o['total'] for o in s) / sum(o['units'] for o in s)) if sum(o['units'] for o in s) else 0,
         aov=R2(sum(o['total'] for o in s) / len(s)) if s else 0,
         per_day=R2(sum(o['total'] for o in s) / elapsed) if elapsed else 0,
+        biz_days=biz,                              # 経過分の店舗営業日数
+        per_biz_day=R2(sum(o['total'] for o in s) / biz) if biz else 0,
         active_days=act,
         lost=R2(sum(o['total'] for o in l)), lostn=len(l),
         unpaid=R2(sum(o['total'] for o in u)), unpaidn=len(u))
@@ -272,7 +294,7 @@ P = dict(
              lost=block(lost), cancelled=block(canc), returned=block(retn),
              unpaid=block(unpaid), lost_offline=block(loff), lost_online=block(lon),
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),
-    daily=daily, weekly=weekly, monthly=monthly, channels=chan, models=models,
+    daily=daily, weekly=weekly, monthly=monthly, closed_days=closed_days, channels=chan, models=models,
     models_by_month=models_by_month, sizes=sizes, colors=colors,
     states=states, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
