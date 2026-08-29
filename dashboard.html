@@ -421,7 +421,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-channel" data-pane="store">
     <p class="eyebrow">Channel</p>
     <h2>チャネル別の売上</h2>
-    <p class="lede">円グラフは売上構成。下の表では同じチャネルの失注(キャンセル・返品)も並べて確認できます。</p>
+    <p class="lede">円グラフは売上構成です。期間はプルダウンで切り替えられます。</p>
     <figure class="chartbox">
       <figcaption>
         <h3>チャネル別 売上構成</h3>
@@ -546,7 +546,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       <select id="f-kind">
         <option value="sales" selected>売上のみ</option>
         <option value="all">すべて</option>
-        <option value="lost">失注(キャンセル+返品)</option>
         <option value="cancelled">キャンセルのみ</option>
         <option value="returned">返品のみ</option>
         <option value="unpaid">未入金のみ</option>
@@ -575,7 +574,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
       <h3 style="--dot:var(--accent-orange)">売上として数える条件</h3>
       <p>入金確認済み(<b>Paid</b>)かつ <b>Completed</b> または <b>Shipped</b> の注文のみを売上実績として集計しています。
       キャンセル・返品・未入金は売上から除外し、注文明細のプルダウンで別途確認できます。</p>
-      <p id="lost-basis"></p>
     </div>
     <div class="tablebox"><table id="t-def"></table></div>
   </section>
@@ -717,31 +715,34 @@ function periodTable(elId, rows, head, opt){
    `<thead><tr>
       <th>${head}</th><th>期間</th>
       <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th>
-      <th class="n">注文数</th><th class="n">点数</th><th class="n">客単価</th></tr></thead>
+      <th class="n">注文数${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
+      <th class="n">点数${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
+      <th class="n">客単価</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${shareCell(r.off, r.rev)}</td>
       <td class="n">${shareCell(r.on, r.rev)}</td>
-      <td class="n">${r.orders}</td>
-      <td class="n">${r.units}</td>
+      <td class="n">${r.orders}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_orders})</span>`:''}</td>
+      <td class="n">${r.units}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_units})</span>`:''}</td>
       <td class="n">${n1(r.aov)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>${esc(opt.totalLabel || '合計')}</td><td></td>
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
       <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
-      <td class="n">${sum('orders')}</td><td class="n">${sum('units')}</td>
+      <td class="n">${sum('orders')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_orders')})</span>`:''}</td>
+      <td class="n">${sum('units')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_units')})</span>`:''}</td>
       <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, '週');
-periodTable('t-month', D.monthly, '月', {totalLabel:'2026年 合計'});
+periodTable('t-month', D.monthly, '月', {totalLabel:'2026年 合計', withStore:true});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
 const segs = [
-  {k:'offline', name:'オフライン(店舗)', sub:'Barefoot Malaysia POS · Johor Bahru', cls:'tone-off', color:'var(--s1)', lost:K.lost_offline},
-  {k:'online',  name:'オンライン',       sub:'Shopee · Lazada · 自社直販',          cls:'tone-on',  color:'var(--s-online)', lost:K.lost_online}
+  {k:'offline', name:'オフライン(店舗)', sub:'Barefoot Malaysia POS · Johor Bahru', cls:'tone-off', color:'var(--s1)'},
+  {k:'online',  name:'オンライン',       sub:'Shopee · Lazada · 自社直販',          cls:'tone-on',  color:'var(--s-online)'}
 ];
 $('#split').innerHTML = segs.map(s => {
   const b = K[s.k];
@@ -911,7 +912,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
              <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
              <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>`
           : `<div class="r"><span>売上</span><span>なし</span></div>`)
-        + (r.lost>0?`<hr><div class="r"><span>失注</span><b>${rm2(r.lost)}</b></div>`:''));
+);
       sv.appendChild(hit);
     });
   }
@@ -1273,7 +1274,6 @@ simpleTable('t-pay','決済方法', D.payments);
   const FILTERS = {
     sales:     r => r.bucket === 'sales',
     all:       () => true,
-    lost:      r => r.bucket === 'cancelled' || r.bucket === 'returned',
     cancelled: r => r.bucket === 'cancelled',
     returned:  r => r.bucket === 'returned',
     unpaid:    r => r.pay === 'Unpaid',
@@ -1329,24 +1329,17 @@ simpleTable('t-pay','決済方法', D.payments);
   w.forEach((r,i)=>{ if (r.per_day < w[lowIdx].per_day) lowIdx = i; });
   let streak = 0;
   for (let i=lowIdx+1; i<w.length; i++){ if (w[i].per_day > w[i-1].per_day) streak++; else break; }
-  // 売れ筋レディースサイズ上位3と、失注に最も多く出るサイズ
+  // 売れ筋レディースサイズ上位3
   const wsz = [...D.sizes.women].sort((a,b)=>b.n-a.n).slice(0,3);
   const topSizes = wsz.map(s=>s.size).sort();
   const topShare = wsz.reduce((a,s)=>a+s.n,0);
   const womenTotal = D.sizes.women.reduce((a,s)=>a+s.n,0);
-  const szTally = {};
-  D.lost_rows.forEach(r => r.items.split(' / ').forEach(it=>{
-    const m = it.match(/\b([WM]\d{2}|\d+(?:\.\d+)?cm)$/);
-    if (m) szTally[m[1]] = (szTally[m[1]]||0)+1;
-  }));
-  const lostTop = Object.entries(szTally).sort((a,b)=>b[1]-a[1])[0];
-  const lostSize = lostTop && lostTop[1] >= 2 ? `${lostTop[0]}(${lostTop[1]}件)` : null;
   const items = [
     ['fact',`日商は開業週の${growth.toFixed(1)}倍に伸びている`,
      `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(w5.label)} ${rm2(w5.per_day)}(${growth.toFixed(1)}倍)。`
      + `${esc(w[lowIdx].label)}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`],
-    ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗、しかし失注の${(K.lost_online.rev/K.lost.rev*10).toFixed(0)}割はオンライン`,
-     `店舗 ${pct(K.offline.rev,K.total.rev)} / オンライン ${pct(K.online.rev,K.total.rev)}。一方で失注額の ${pct(K.lost_online.rev,K.lost.rev)} がオンライン発生です。`],
+    ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗`,
+     `店舗 ${pct(K.offline.rev,K.total.rev)}(${K.offline.orders}注文 / ${K.offline.units}点)に対しオンラインは ${pct(K.online.rev,K.total.rev)}(${K.online.orders}注文 / ${K.online.units}点)。1注文あたりの点数は店舗 ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンライン ${(K.online.units/K.online.orders).toFixed(2)}点です。`],
     ['fact',`${vsoul.name} 1モデルで売上の${pct(vsoul.rev, D.models.reduce((a,m)=>a+m.rev,0))}`,
      `${vsoul.units}点で ${rm2(vsoul.rev)}。2位以下(${D.models.slice(1,4).map(m=>m.name).join(' / ')})を大きく引き離しており、実質シングルモデル依存の状態です。`],
     ['fact',`商圏は ${esc(D.states[0].name)} に集中`,
@@ -1354,39 +1347,12 @@ simpleTable('t-pay','決済方法', D.payments);
      + `残り ${D.states.length-1} 地域を合わせても ${pct(K.total.rev-D.states[0].rev, K.total.rev)} で、オンライン経由の遠隔地需要はまだ小さい規模です。`],
     ['est',`${vsoul.name} EU${topSizes[0]}〜${topSizes[topSizes.length-1]} は在庫を厚めに`,
      `販売実績の中心は EU${topSizes.join(' · ')}(レディース、上位3サイズで ${pct(topShare, womenTotal)})。`
-     + (lostSize ? `同時に失注が集中したのも ${esc(lostSize)} でした。売れ筋と欠品疑いのサイズが一致しているため、この帯の在庫確保が最優先と推定されます。`
-                 : `この帯を切らさないことが最優先と推定されます。`)],
-    ['est','Shopee は「出品の設定」を疑う段階',
-     `未入金キャンセルが同一SKUに集中している以上、需要不足ではなく在庫連動・価格・配送設定の不整合の可能性が高いと推定されます。Shopee 管理画面側の在庫数と配送オプションの確認を推奨します。`]
+     + `この帯を切らさないことが最優先と推定されます。`],
   ];
   $('#finds').innerHTML = items.map(([t,h,p])=>
     `<div class="find"><span class="tag ${t==='fact'?'fact':''}">${t==='fact'?'確認済':'推定'}</span>
      <h3>${esc(h)}</h3><p>${p}</p></div>`).join('');
 })();
-
-/* ═══ 11b. 失注の判定根拠(元データの status をそのまま示す)═══ */
-(function(){
-  const b = {};
-  D.all_rows.forEach(r=>{
-    const k = r.status + ' × ' + r.pay;
-    (b[k] = b[k] || {n:0, kind:r.kind})['n']++;
-  });
-  const rows = Object.entries(b).sort((a,c)=>c[1].n-a[1].n)
-    .map(([k,v])=>`${k} = ${v.n}件 → ${v.kind}`);
-  $('#lost-basis').innerHTML =
-    `失注は SiteGiant の <b>order_status</b> をそのまま使って判定しており、こちらでの推測は入っていません。`
-    + `<b>Cancelled</b> をキャンセル、<b>Returned</b> を返品としています。`
-    + `<b>payment_status</b> は売上判定にだけ使い、失注の判定には使っていません`
-    + `(キャンセルは Paid・Unpaid の両方を含みます)。`
-    + `<br><span style="font-size:.82rem;color:var(--text-muted)">実データの内訳 — ${rows.map(esc).join(' / ')}</span>`;
-})();
-
-/* ═══ 11c. 失注サマリー(備考の末尾)══════════════════════ */
-$('#lost-summary').textContent =
-  `失注 ${rm2(K.lost.rev)}(${K.lost.orders}件)は純売上に含まれていません。`
-  + `内訳はキャンセル ${K.cancelled.orders}件 ${rm2(K.cancelled.rev)}、返品 ${K.returned.orders}件 ${rm2(K.returned.rev)}。`
-  + `受注ベースの合計(売上+失注)は ${rm2(K.total.rev + K.lost.rev)} で、そのうち `
-  + `${pct(K.lost.rev, K.total.rev + K.lost.rev)} が失注しています。`;
 
 /* ═══ 12. Definitions ═════════════════════════════════ */
 $('#t-def').innerHTML =
@@ -1394,7 +1360,6 @@ $('#t-def').innerHTML =
   <tr><td><b>売上実績</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Completed または Shipped、かつ payment_status が Paid の注文。金額は注文合計(total = 商品合計 + 送料 − 値引き)。</span></td></tr>
   <tr><td><b>オフライン(店舗)</b></td><td><span class="wrapok" style="max-width:70ch">marketplace = Barefoot Malaysia POS。Johor Bahru 店頭での販売。</span></td></tr>
   <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
-  <tr><td><b>失注</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Cancelled または Returned の注文。売上には含めず別集計。</span></td></tr>
   <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>
   <tr><td><b>伝票数</b></td><td><span class="wrapok" style="max-width:70ch">invoice_no が発行された注文数。Shopee / Lazada 経由の注文には伝票番号が付かないため、注文数より少なくなります(差分は注文数列に灰色で <b>+n</b> と併記)。POS の注文は全件に伝票番号があります。</span></td></tr>
   <tr><td><b>明細行</b></td><td><span class="wrapok" style="max-width:70ch">注文に含まれる商品行の数。1注文で複数モデルを買うと増えます。</span></td></tr>

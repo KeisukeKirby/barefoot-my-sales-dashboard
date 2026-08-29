@@ -25,11 +25,17 @@ Barefoot Inc Malaysia(Johor Bahru 店舗 / Shopee / Lazada / 自社直販)の販
 管理画面から Orders をエクスポートした xlsx を用意して、上から順に実行する。
 
 ```bash
-python aggregate.py "<Orders.xlsx のパス>" && python build_payload.py && python build.py
+python aggregate.py "<Orders.xlsx>" ["<追加のOrders.xlsx>" ...] && python build_payload.py && python build.py
 ```
 
-引数を省略すると `~/Downloads/Copy of Orders_21-08-2026-1787304991_1.xlsx` を読む。
-環境変数 `ORDERS_XLSX` でも指定できる。
+**エクスポートは差分で出てくることがある。** 2026-08-28 のエクスポートは INV-71 以降だけを
+含んでいた。過去分のファイルもあわせて渡すこと。`aggregate.py` が `order_id` で統合し、
+同じ注文が複数ファイルにあれば後ろのファイルを採用する。
+
+書式が外れたセルは日付が Excel のシリアル値(`46261.5090` など)で降ってくるため、
+`fix_date()` で文字列に戻している。
+
+環境変数 `ORDERS_XLSX` でも指定できる(複数は `;` 区切り)。
 
 `index.html` を commit して push すれば Vercel が自動で再デプロイする。
 

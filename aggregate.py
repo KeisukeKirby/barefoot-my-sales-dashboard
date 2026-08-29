@@ -5,13 +5,45 @@ import xlsxread, collections, json, re, datetime
 
 DEFAULT_SRC = os.path.join(os.path.expanduser('~'), 'Downloads',
                            'Copy of Orders_21-08-2026-1787304991_1.xlsx')
-SRC = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('ORDERS_XLSX', DEFAULT_SRC)
-if not os.path.exists(SRC):
-    sys.exit(u'Orders の xlsx が見つかりません: ' + SRC +
-             u'\n  使い方: python aggregate.py "<Orders.xlsx のパス>"')
-rows = xlsxread.read(SRC)
-h = rows[0]
-data = [dict(zip(h, r + [''] * (len(h) - len(r)))) for r in rows[1:]]
+SRCS = sys.argv[1:] or [x for x in os.environ.get('ORDERS_XLSX', DEFAULT_SRC).split(os.pathsep) if x]
+missing = [x for x in SRCS if not os.path.exists(x)]
+if missing:
+    sys.exit(u'Orders の xlsx が見つかりません: ' + ', '.join(missing) +
+             u'\n  使い方: python aggregate.py "<Orders.xlsx>" ["<追加のOrders.xlsx>" ...]')
+
+# エクスポートは差分で出てくることがあるため、複数ファイルを order_id で統合する。
+# 同じ order_id が複数ファイルにあれば後のファイル(新しい方)を採用。
+merged, header = {}, None
+for path in SRCS:
+    rows = xlsxread.read(path)
+    h = rows[0]
+    header = header or h
+    for r in rows[1:]:
+        d = dict(zip(h, r + [''] * (len(h) - len(r))))
+        merged.setdefault(d['order_id'], {'src': path, 'lines': []})
+        if merged[d['order_id']]['src'] != path:       # 別ファイルの同一注文は差し替え
+            merged[d['order_id']] = {'src': path, 'lines': []}
+        merged[d['order_id']]['lines'].append(d)
+
+EPOCH = datetime.datetime(1899, 12, 30)
+
+
+def fix_date(v):
+    """書式が外れた日付は Excel のシリアル値で降ってくるので文字列に戻す。"""
+    v = str(v).strip()
+    if not v or '-' in v:
+        return v
+    try:
+        return (EPOCH + datetime.timedelta(days=float(v))).strftime('%Y-%m-%d %H:%M')
+    except ValueError:
+        return v
+
+
+data = []
+for oid in sorted(merged, key=lambda x: int(x) if str(x).isdigit() else 0):
+    for d in merged[oid]['lines']:
+        d['order_creation_date'] = fix_date(d['order_creation_date'])
+        data.append(d)
 
 def f(x):
     try: return float(str(x).strip() or 0)
@@ -124,7 +156,7 @@ test  = [o for o in O if o['bucket'] == 'test']
 unpaid = [o for o in O if o['pay'] == 'Unpaid']
 
 out = dict(orders=O, meta=dict(
-    src=os.path.basename(SRC),
+    src=' + '.join(os.path.basename(x) for x in SRCS),
     rows=len(data), n_orders=len(O),
     period=[min(o['date'] for o in O), max(o['date'] for o in O)],
 ))

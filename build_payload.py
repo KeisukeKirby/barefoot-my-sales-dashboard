@@ -69,6 +69,7 @@ WEEKS = [
     (u'W3', u'第3週',  '2026-08-03', '2026-08-09'),
     (u'W4', u'第4週',  '2026-08-10', '2026-08-16'),
     (u'W5', u'第5週',  '2026-08-17', '2026-08-23'),
+    (u'W6', u'第6週',  '2026-08-24', '2026-08-30'),
 ]
 MONTHS = [
     (u'2026-07', u'2026年7月', '2026-07-17', '2026-07-31', u'開業月(7/17〜)'),
@@ -122,6 +123,7 @@ def period_stats(a, b):
         off=R2(sum(o['total'] for o in so)), on=R2(sum(o['total'] for o in sn)),
         rev=R2(sum(o['total'] for o in s)), orders=len(s), units=sum(o['units'] for o in s),
         off_orders=len(so), on_orders=len(sn),
+        off_units=sum(o['units'] for o in so), on_units=sum(o['units'] for o in sn),
         invoices=len(nums),                       # 伝票が発行された注文数
         no_invoice=len(s) - len(nums),            # 伝票番号なし(マーケットプレイス経由)
         inv_from=('INV-%d' % min(nums)) if nums else '—',
