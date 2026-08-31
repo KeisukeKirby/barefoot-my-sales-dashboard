@@ -671,7 +671,7 @@ const STR = {
   '点数':['点数','Units'], '客単価':['客単価','Avg Order'], '構成比':['構成比','Share'],
   '(店舗のみ)':['(店舗のみ)','(store only)'],
   'シューズ点数':['シューズ点数','Shoe Units'],
-  (LANG==='en'?'2026 Total':'2026年 合計'):[(LANG==='en'?'2026 Total':'2026年 合計'),'2026 Total'], '合計':['合計','Total'],
+  '2026年 合計':['2026年 合計','2026 Total'], '合計':['合計','Total'],
   '暦日':['暦日','Cal. days'], '営業日':['営業日','Open days'],
   '日平均(全体)':['日平均(全体)','Avg / cal. day'],
   '店舗売上':['店舗売上','Store sales'],
@@ -857,7 +857,7 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, t('週'));
-periodTable('t-month', D.monthly, t('月'), {totalLabel:(LANG==='en'?'2026 Total':'2026年 合計'), withStore:true});
+periodTable('t-month', D.monthly, t('月'), {totalLabel:'2026年 合計', withStore:true});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
