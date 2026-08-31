@@ -671,7 +671,7 @@ const STR = {
   '点数':['点数','Units'], '客単価':['客単価','Avg Order'], '構成比':['構成比','Share'],
   '(店舗のみ)':['(店舗のみ)','(store only)'],
   'シューズ点数':['シューズ点数','Shoe Units'],
-  '2026年 合計':['2026年 合計','2026 Total'], '合計':['合計','Total'],
+  (LANG==='en'?'2026 Total':'2026年 合計'):[(LANG==='en'?'2026 Total':'2026年 合計'),'2026 Total'], '合計':['合計','Total'],
   '暦日':['暦日','Cal. days'], '営業日':['営業日','Open days'],
   '日平均(全体)':['日平均(全体)','Avg / cal. day'],
   '店舗売上':['店舗売上','Store sales'],
@@ -685,7 +685,7 @@ const STR = {
   '平均単価':['平均単価','Avg price'],
   '受注日時':['受注日時','Ordered at'], '伝票':['伝票','Invoice'], '状態':['状態','Status'],
   '入金':['入金','Payment'], '決済':['決済','Method'], '州':['州','State'], '明細':['明細','Lines'],
-  '金額':['金額','Amount'], '商品':['商品','Items'],
+  '金額':['金額','Amount'], 'col商品':['商品','Items'],
   '表示':['表示','Show'], '売上のみ':['売上のみ','Sales only'], 'すべて':['すべて','All'],
   'キャンセルのみ':['キャンセルのみ','Cancelled only'], '返品のみ':['返品のみ','Returned only'],
   '未入金のみ':['未入金のみ','Unpaid only'],
@@ -699,6 +699,18 @@ const STR = {
   'うち靴':['うち靴','shoes'],
 };
 const t = k => (STR[k] ? STR[k][LANG === 'en' ? 1 : 0] : k);
+// 期間ラベルは集計側が日本語で持っているので、表示時に置き換える
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function tl(label){
+  if (LANG !== 'en') return label;
+  let m = /^(\d{4})年(\d{1,2})月$/.exec(label);
+  if (m) return MON[+m[2]-1] + ' ' + m[1];
+  if (label === '開業週') return 'Opening wk';
+  m = /^第(\d+)週$/.exec(label);
+  if (m) return 'Week ' + m[1];
+  return label;
+}
+const UNIT = LANG === 'en' ? ' prs' : '足';
 document.documentElement.lang = LANG;
 document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
 document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
@@ -798,7 +810,7 @@ const cur = MM[MM.length-1], prev = MM.length>1 ? MM[MM.length-2] : null;
 const mom = prev && prev.rev ? (cur.rev/prev.rev - 1) : null;
 $('#hero').innerHTML =
   `<div class="hero-main">
-     <span class="l">${esc(cur.label)}${t('の売上')}${cur.ongoing?` (${t('進行中')})`:''}</span>
+     <span class="l">${esc(tl(cur.label))}${t('の売上')}${cur.ongoing?` (${t('進行中')})`:''}</span>
      <span class="v"><small>RM</small>${n1(cur.rev)}</span>
      ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">${t('前月比')} ${mom>=0?'▲':'▼'} ${Math.abs(mom*100).toFixed(1)}%</span>`}
    </div>
@@ -821,12 +833,12 @@ function periodTable(elId, rows, head, opt){
    `<thead><tr>
       <th>${head}</th><th>${t('期間')}</th>
       <th class="n">${t('売上')}</th><th class="n">${t('店舗')}</th><th class="n">${t('オンライン')}</th>
-      <th class="n">${t('注文数')}${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
+      <th class="n">${t('注文数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${t('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${t('点数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${t('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${t('シューズ点数')}<br><span style="font-weight:400;text-transform:none">(VFF)</span></th>
       <th class="n">${t('客単価')}</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
-      <td><b>${esc(r.label)}</b>${r.ongoing?` <span class="chip mute">${t('進行中')}</span>`:''}</td>
+      <td><b>${esc(tl(r.label))}</b>${r.ongoing?` <span class="chip mute">${t('進行中')}</span>`:''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${shareCell(r.off, r.rev)}</td>
@@ -845,7 +857,7 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, t('週'));
-periodTable('t-month', D.monthly, t('月'), {totalLabel:'2026年 合計', withStore:true});
+periodTable('t-month', D.monthly, t('月'), {totalLabel:(LANG==='en'?'2026 Total':'2026年 合計'), withStore:true});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
@@ -902,14 +914,14 @@ $('#sharelegend').innerHTML = segs.map(s =>
       t.textContent = v>0 ? n0(v) : '0'; s.appendChild(t);
     });
     const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
-    l1.textContent = r.label; s.appendChild(l1);
+    l1.textContent = tl(r.label); s.appendChild(l1);
     const l2 = svgEl('text',{x:cx,y:H-MB+38,'text-anchor':'middle',class:'ax'});
     l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
     const l3 = svgEl('text',{x:cx,y:H-MB+54,'text-anchor':'middle',class:'ax'});
     l3.setAttribute('style','fill:var(--text-secondary)');
     l3.textContent = `ｵﾝﾗｲﾝ ${pct(r.on,r.rev)}`; s.appendChild(l3);
     const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
-    bindTip(hit, `<b>${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
+    bindTip(hit, `<b>${esc(tl(r.label))}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
       <div class="r"><span>店舗</span><b>${rm2(r.off)}</b></div>
       <div class="r"><span>オンライン</span><b>${rm2(r.on)}</b></div>
       <div class="r"><span>オンライン比</span><span>${pct(r.on,r.rev)}</span></div>
@@ -945,7 +957,7 @@ function periodBar(hostId, rows, opts){
     const v1 = svgEl('text',{x:cx,y:y(r.rev)-8,'text-anchor':'middle',class:'dlab'});
     v1.setAttribute('style','font-size:14px'); v1.textContent = rm(r.rev); s.appendChild(v1);
     const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
-    l1.setAttribute('style','font-size:13px'); l1.textContent = r.label; s.appendChild(l1);
+    l1.setAttribute('style','font-size:13px'); l1.textContent = tl(r.label); s.appendChild(l1);
     const l2 = svgEl('text',{x:cx,y:H-MB+38,'text-anchor':'middle',class:'ax'});
     l2.textContent = `${jd(r.start)}–${jd(r.end)}`; s.appendChild(l2);
     if (r.ongoing){
@@ -953,7 +965,7 @@ function periodBar(hostId, rows, opts){
       l3.setAttribute('style','fill:var(--warn)'); l3.textContent = '進行中'; s.appendChild(l3);
     }
     const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
-    bindTip(hit, `<b>${esc(r.label)}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
+    bindTip(hit, `<b>${esc(tl(r.label))}</b> ${esc(r.start)}〜${esc(r.end)}<hr>
       <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
       <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
       <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
@@ -972,7 +984,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   const sel = $('#f-month'), cnt = $('#f-month-count');
   D.monthly.forEach(m=>{
     const o = document.createElement('option');
-    o.value = m.id; o.textContent = m.label; sel.appendChild(o);
+    o.value = m.id; o.textContent = tl(m.label); sel.appendChild(o);
   });
   sel.value = D.monthly[D.monthly.length-1].id;
 
@@ -1071,7 +1083,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 /* ═══ 5. Channel(ドーナツ・期間プルダウン)══════════════ */
 (function(){
   const sel = $('#f-ch-month'), cnt = $('#f-ch-count');
-  [['all','全期間'], ...D.monthly.map(m=>[m.id, m.label])].forEach(([v,l])=>{
+  [['all','全期間'], ...D.monthly.map(m=>[m.id, tl(m.label)])].forEach(([v,l])=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
   sel.value = 'all';
@@ -1168,7 +1180,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       + '<th class="n">'+t('営業日')+'</th><th class="n">'+t('売上')+'</th>'
       + '<th class="n">'+t('日平均(全体)')+'</th><th class="n">'+t('店舗売上')+'</th>'
       + '<th class="n">'+t('日平均(店舗のみ)')+'</th></tr></thead><tbody>'
-      + rows.map(r=>'<tr><td><b>'+esc(r.label)+'</b></td>'
+      + rows.map(r=>'<tr><td><b>'+esc(tl(r.label))+'</b></td>'
         + '<td class="num" style="font-size:12px;color:var(--text-secondary)">'+jd(r.start)+'–'+jd(r.end)+'</td>'
         + '<td class="n">'+r.elapsed+'</td><td class="n">'+r.biz_days+'</td>'
         + '<td class="n">'+n1(r.rev)+'</td><td class="n"><b>'+n1(r.per_day)+'</b></td>'
@@ -1186,7 +1198,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 /* ═══ 6. Model(月プルダウン)═══════════════════════════ */
 (function(){
   const sel = $('#f-model-month'), cnt = $('#f-model-count');
-  [['all','全期間'], ...D.monthly.map(m=>[m.id, m.label])].forEach(([v,l])=>{
+  [['all','全期間'], ...D.monthly.map(m=>[m.id, tl(m.label)])].forEach(([v,l])=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
   sel.value = 'all';
@@ -1319,8 +1331,8 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
     `<span style="display:inline-flex;align-items:center;gap:7px">
        <i class="sw" style="background:${r.c}"></i>${esc(r.name)}
        <b class="num">${pct(r.n,tot)}</b>
-       <span style="color:var(--text-muted)">${r.n}足</span></span>`).join('')
-    + `<span style="color:var(--text-muted)">合計 ${tot}足</span>`;
+       <span style="color:var(--text-muted)">${r.n}${UNIT}</span></span>`).join('')
+    + `<span style="color:var(--text-muted)">${t('合計')} ${tot}${UNIT}</span>`;
 })();
 
 countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
@@ -1406,7 +1418,7 @@ simpleTable('t-pay','決済方法', D.payments);
     count.textContent = `${list.length} 件 / 全 ${rows.length} 件`;
     $('#t-sales').innerHTML =
      `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>状態</th><th>入金</th><th>チャネル</th>
-       <th>商品</th><th>州</th><th>決済</th><th class="n">明細</th><th class="n">点数</th><th class="n">金額</th></tr></thead>
+       <th>${t('col商品')}</th><th>${t('州')}</th><th>決済</th><th class="n">明細</th><th class="n">点数</th><th class="n">金額</th></tr></thead>
       <tbody>${list.map(r=>`<tr>
         <td class="num" style="font-size:12px">${esc(r.dt)}</td>
         <td class="num" style="font-size:12px">${esc(r.invoice)}</td>
@@ -1452,8 +1464,8 @@ simpleTable('t-pay','決済方法', D.payments);
   const womenTotal = D.sizes.women.reduce((a,s)=>a+s.n,0);
   const items = [
     ['fact',`日商は開業週の${growth.toFixed(1)}倍に伸びている`,
-     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(w5.label)} ${rm2(w5.per_day)}(${growth.toFixed(1)}倍)。`
-     + `${esc(w[lowIdx].label)}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`],
+     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(tl(w5.label))} ${rm2(w5.per_day)}(${growth.toFixed(1)}倍)。`
+     + `${esc(tl(w[lowIdx].label))}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`],
     ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗`,
      `店舗 ${pct(K.offline.rev,K.total.rev)}(${K.offline.orders}注文 / ${K.offline.units}点)に対しオンラインは ${pct(K.online.rev,K.total.rev)}(${K.online.orders}注文 / ${K.online.units}点)。1注文あたりの点数は店舗 ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンライン ${(K.online.units/K.online.orders).toFixed(2)}点です。`],
     ['fact',`${vsoul.name} 1モデルで売上の${pct(vsoul.rev, D.models.reduce((a,m)=>a+m.rev,0))}`,
