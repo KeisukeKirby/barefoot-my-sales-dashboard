@@ -25,10 +25,10 @@ for path in SRCS:
             merged[d['order_id']] = {'src': path, 'lines': []}
         merged[d['order_id']]['lines'].append(d)
 
-# 書式が外れたセルは日付が Excel のシリアル値で降ってくる。SiteGiant の出力は
-# 1899-12-31 起点で、しかも時刻部分は実際の受注時刻と一致しない(実測で確認)。
-# 日付だけは復元できるので使うが、当たった注文は警告に出して再エクスポートを促す。
-EPOCH = datetime.datetime(1899, 12, 31)
+# 書式が外れたセルは日付が Excel のシリアル値で降ってくる。起点は Excel 標準の
+# 1899-12-30。order_id 103-110 の10行を実データと突き合わせて日時とも一致を確認済み
+# (2026-08-31)。当たった注文は警告に出し、書式付きで再エクスポートできるようにする。
+EPOCH = datetime.datetime(1899, 12, 30)
 serial_hits = []
 
 
