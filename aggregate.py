@@ -25,24 +25,29 @@ for path in SRCS:
             merged[d['order_id']] = {'src': path, 'lines': []}
         merged[d['order_id']]['lines'].append(d)
 
-EPOCH = datetime.datetime(1899, 12, 30)
+# 書式が外れたセルは日付が Excel のシリアル値で降ってくる。SiteGiant の出力は
+# 1899-12-31 起点で、しかも時刻部分は実際の受注時刻と一致しない(実測で確認)。
+# 日付だけは復元できるので使うが、当たった注文は警告に出して再エクスポートを促す。
+EPOCH = datetime.datetime(1899, 12, 31)
+serial_hits = []
 
 
-def fix_date(v):
-    """書式が外れた日付は Excel のシリアル値で降ってくるので文字列に戻す。"""
+def fix_date(v, oid=''):
     v = str(v).strip()
     if not v or '-' in v:
         return v
     try:
-        return (EPOCH + datetime.timedelta(days=float(v))).strftime('%Y-%m-%d %H:%M')
+        d = EPOCH + datetime.timedelta(days=float(v))
     except ValueError:
         return v
+    serial_hits.append(oid)
+    return d.strftime('%Y-%m-%d %H:%M')
 
 
 data = []
 for oid in sorted(merged, key=lambda x: int(x) if str(x).isdigit() else 0):
     for d in merged[oid]['lines']:
-        d['order_creation_date'] = fix_date(d['order_creation_date'])
+        d['order_creation_date'] = fix_date(d['order_creation_date'], oid)
         data.append(d)
 
 def f(x):
@@ -143,6 +148,7 @@ for oid, v in orders.items():
                   coupon=a['coupon'], adj=a['adj'],
                   gross=sum(L['line_total'] for L in v),
                   units=sum(L['qty'] for L in v if L['cat'] in ('shoes', 'socks')),
+                  shoe_units=sum(L['qty'] for L in v if L['cat'] == 'shoes'),
                   n_lines=len(v),
                   items=[dict(sku=L['sku'], model=L['model'], brand=L['brand'], cat=L['cat'],
                               color=L['color'], size=L['size'], price=L['price'],
@@ -161,6 +167,14 @@ out = dict(orders=O, meta=dict(
     period=[min(o['date'] for o in O), max(o['date'] for o in O)],
 ))
 json.dump(out, open('agg.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+
+if serial_hits:
+    ids = sorted(set(serial_hits), key=lambda x: int(x) if str(x).isdigit() else 0)
+    print()
+    print('!' * 72)
+    print(u'日付が Excel のシリアル値で入っていた注文が %d 件あります: %s' % (len(ids), ', '.join(ids)))
+    print(u'日付は復元しましたが時刻は当てになりません。該当分を再エクスポートして渡し直してください。')
+    print('!' * 72)
 
 R = lambda x: round(x, 2)
 print('=== BUCKETS (orders / revenue RM / units) ===')

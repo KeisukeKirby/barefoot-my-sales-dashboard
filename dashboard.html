@@ -608,6 +608,9 @@ const n1 = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractio
 const rm = n => 'RM ' + n0(n);
 const rm2 = n => 'RM ' + n1(n);
 const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '—';
+// 点数は総数のうちシューズが何足かを併記する(残りはソックス類)
+const sub = t => ` <span style="color:var(--text-muted);font-size:.9em">(${t})</span>`;
+const uCell = (u, shoe) => `${u}${sub('靴'+shoe)}`;
 const jd = s => s.slice(5).replace('-','/');
 const WD = ['月','火','水','木','金','土','日'];
 const wdOf = s => { const [y,m,d]=s.split('-').map(Number); return WD[(new Date(Date.UTC(y,m-1,d)).getUTCDay()+6)%7]; };
@@ -725,14 +728,18 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${shareCell(r.off, r.rev)}</td>
       <td class="n">${shareCell(r.on, r.rev)}</td>
       <td class="n">${r.orders}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_orders})</span>`:''}</td>
-      <td class="n">${r.units}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_units})</span>`:''}</td>
+      <td class="n">${r.units}${sub(opt.withStore
+          ? `靴${r.shoe_units} / 店舗${r.off_units}・靴${r.off_shoe_units}`
+          : `靴${r.shoe_units}`)}</td>
       <td class="n">${n1(r.aov)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td>${esc(opt.totalLabel || '合計')}</td><td></td>
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
       <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
       <td class="n">${sum('orders')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_orders')})</span>`:''}</td>
-      <td class="n">${sum('units')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_units')})</span>`:''}</td>
+      <td class="n">${sum('units')}${sub(opt.withStore
+          ? `靴${sum('shoe_units')} / 店舗${sum('off_units')}・靴${sum('off_shoe_units')}`
+          : `靴${sum('shoe_units')}`)}</td>
       <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, '週');
@@ -848,7 +855,8 @@ function periodBar(hostId, rows, opts){
       <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
       <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
       <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
-      <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
+      <div class="r"><span>注文</span><span>${r.orders}</span></div>
+      <div class="r"><span>点数(うち靴)</span><span>${r.units}(${r.shoe_units})</span></div>
       <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>`);
     s.appendChild(hit);
   });
@@ -910,7 +918,8 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
           ? `<div class="r"><span>売上</span><b>${rm2(tot)}</b></div>
              <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
              <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
-             <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>`
+             <div class="r"><span>注文</span><span>${r.orders}</span></div>
+             <div class="r"><span>点数(うち靴)</span><span>${r.units}(${r.shoe_units})</span></div>`
           : `<div class="r"><span>売上</span><span>なし</span></div>`)
 );
       sv.appendChild(hit);
@@ -947,13 +956,13 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         <td class="n">${r.on_orders||'—'}</td>
         <td class="n">${r.invoices||'—'}</td>
         <td class="n">${r.lines||'—'}</td>
-        <td class="n">${r.units||'—'}</td>
+        <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
         <td class="n">${r.orders?n1(tot/r.orders):'—'}</td></tr>`;
     }).join('')}</tbody>
     <tfoot><tr><td>合計 ${rows.length}日</td><td></td>
       <td class="n">${n1(S('off')+S('on'))}</td><td class="n">${n1(S('off'))}</td><td class="n">${n1(S('on'))}</td>
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
-      <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${S('units')}</td>
+      <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
       <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td></tr></tfoot>`;
 })();
 
@@ -1001,7 +1010,8 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       bindTip(hit, '<b>'+esc(r.name)+'</b><hr>'
         + '<div class="r"><span>売上</span><b>'+rm2(r.rev)+'</b></div>'
         + '<div class="r"><span>構成比</span><span>'+pct(r.rev,tot)+'</span></div>'
-        + '<div class="r"><span>注文 / 点数</span><span>'+r.orders+' / '+r.units+'</span></div>'
+        + '<div class="r"><span>注文</span><span>'+r.orders+'</span></div>'
+        + '<div class="r"><span>点数(うち靴)</span><span>'+r.units+'('+r.shoe_units+')</span></div>'
         + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>');
       sv.appendChild(hit);
       ang += sweep;
@@ -1025,7 +1035,8 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     $('#pie-legend').innerHTML = rows.map((r,i)=>
       '<span><i class="sw" style="background:'+VAR[i%VAR.length]+'"></i>'+esc(r.name)+'</span>').join('');
 
-    const T = {rev:tot, orders:rows.reduce((a,r)=>a+r.orders,0), units:rows.reduce((a,r)=>a+r.units,0)};
+    const T = {rev:tot, orders:rows.reduce((a,r)=>a+r.orders,0), units:rows.reduce((a,r)=>a+r.units,0),
+               shoe:rows.reduce((a,r)=>a+r.shoe_units,0)};
     $('#t-channel').innerHTML =
       '<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>'
       + '<th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th></tr></thead><tbody>'
@@ -1033,10 +1044,11 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         + '<td><span class="chip '+(r.seg==='オフライン'?'pos':'mute')+'">'+esc(r.seg)+'</span></td>'
         + '<td class="n"><b>'+(r.rev?n1(r.rev):'—')+'</b></td>'
         + '<td class="n">'+(r.rev?pct(r.rev,tot):'—')+'</td>'
-        + '<td class="n">'+(r.orders||'—')+'</td><td class="n">'+(r.units||'—')+'</td>'
+        + '<td class="n">'+(r.orders||'—')+'</td>'
+        + '<td class="n">'+(r.units? r.units+sub('靴'+r.shoe_units) : '—')+'</td>'
         + '<td class="n">'+(r.orders?n1(r.rev/r.orders):'—')+'</td></tr>').join('')
       + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+n1(T.rev)+'</td><td class="n">100.0%</td>'
-      + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+'</td>'
+      + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+sub('靴'+T.shoe)+'</td>'
       + '<td class="n">'+n1(T.rev/T.orders)+'</td></tr></tfoot>';
   }
   sel.addEventListener('change', draw);
@@ -1303,10 +1315,11 @@ simpleTable('t-pay','決済方法', D.payments);
         <td style="font-size:12px;color:var(--text-secondary)">${esc(r.state)}</td>
         <td style="font-size:12px;color:var(--text-secondary)">${esc(r.pay_method)}</td>
         <td class="n">${r.lines}</td>
-        <td class="n">${r.units}</td>
+        <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
         <td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
       <tfoot><tr><td>合計 ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-        <td class="n">${S('lines')}</td><td class="n">${S('units')}</td><td class="n">${n1(S('total'))}</td></tr></tfoot>`;
+        <td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
+        <td class="n">${n1(S('total'))}</td></tr></tfoot>`;
   }
   selKind.addEventListener('change', render);
   selCh.addEventListener('change', render);
