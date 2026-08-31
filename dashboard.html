@@ -1054,9 +1054,11 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   const rows = D.daily.filter(r=>r.off+r.on>0);
   const S = k => rows.reduce((a,r)=>a+r[k],0);
   $('#t-daily').innerHTML =
-   `<thead><tr><th>日付</th><th>曜日</th><th class="n">売上</th><th class="n">店舗</th>
-     <th class="n">オンライン</th><th class="n">注文数</th><th class="n">店舗件数</th><th class="n">ｵﾝﾗｲﾝ件数</th>
-     <th class="n">伝票数</th><th class="n">明細行</th><th class="n">点数</th><th class="n">客単価</th></tr></thead>
+   `<thead><tr><th>${t('日付')}</th><th>${t('曜日')}</th><th class="n">${t('売上')}</th>
+     <th class="n">${t('店舗')}</th><th class="n">${t('オンライン')}</th><th class="n">${t('注文数')}</th>
+     <th class="n">${t('店舗件数')}</th><th class="n">${t('ｵﾝﾗｲﾝ件数')}</th>
+     <th class="n">${t('伝票数')}</th><th class="n">${t('明細行')}</th>
+     <th class="n">${t('点数')}</th><th class="n">${t('客単価')}</th></tr></thead>
     <tbody>${rows.map(r=>{
       const tot = r.off + r.on, wk = wdOf(r.date), mt = wk==='月'||wk==='火';
       return `<tr>
@@ -1073,7 +1075,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
         <td class="n">${r.orders?n1(tot/r.orders):'—'}</td></tr>`;
     }).join('')}</tbody>
-    <tfoot><tr><td>合計 ${rows.length}日</td><td></td>
+    <tfoot><tr><td>${t('合計')} ${rows.length}日</td><td></td>
       <td class="n">${n1(S('off')+S('on'))}</td><td class="n">${n1(S('off'))}</td><td class="n">${n1(S('on'))}</td>
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
       <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
@@ -1152,10 +1154,11 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     const T = {rev:tot, orders:rows.reduce((a,r)=>a+r.orders,0), units:rows.reduce((a,r)=>a+r.units,0),
                shoe:rows.reduce((a,r)=>a+r.shoe_units,0)};
     $('#t-channel').innerHTML =
-      '<thead><tr><th>チャネル</th><th>区分</th><th class="n">売上</th><th class="n">構成比</th>'
-      + '<th class="n">注文</th><th class="n">点数</th><th class="n">客単価</th></tr></thead><tbody>'
+      '<thead><tr><th>'+t('チャネル')+'</th><th>'+t('区分')+'</th><th class="n">'+t('売上')+'</th>'
+      + '<th class="n">'+t('構成比')+'</th><th class="n">'+t('注文')+'</th>'
+      + '<th class="n">'+t('点数')+'</th><th class="n">'+t('客単価')+'</th></tr></thead><tbody>'
       + src.map(r=>'<tr><td><b>'+esc(r.name)+'</b></td>'
-        + '<td><span class="chip '+(r.seg==='オフライン'?'pos':'mute')+'">'+esc(r.seg)+'</span></td>'
+        + '<td><span class="chip '+(r.seg==='オフライン'?'pos':'mute')+'">'+esc(t(r.seg))+'</span></td>'
         + '<td class="n"><b>'+(r.rev?n1(r.rev):'—')+'</b></td>'
         + '<td class="n">'+(r.rev?pct(r.rev,tot):'—')+'</td>'
         + '<td class="n">'+(r.orders||'—')+'</td>'
@@ -1248,9 +1251,9 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       const t = list.reduce((a,r)=>a+r.rev,0), u = list.reduce((a,r)=>a+r.units,0);
       document.getElementById(elId).innerHTML = !list.length
         ? `<thead><tr><th>${esc(label)}</th></tr></thead><tbody><tr><td style="color:var(--text-muted)">この月の販売はありません</td></tr></tbody>`
-        : `<thead><tr><th>モデル</th><th class="n">売上</th><th class="n">構成比</th>
-            <th class="n">数量</th><th class="n">店舗点数</th><th class="n">ｵﾝﾗｲﾝ点数</th>
-            <th class="n">平均単価</th><th class="n">店舗</th><th class="n">オンライン</th></tr></thead>
+        : `<thead><tr><th>${t('モデル')}</th><th class="n">${t('売上')}</th><th class="n">${t('構成比')}</th>
+            <th class="n">${t('数量')}</th><th class="n">${t('店舗点数')}</th><th class="n">${t('ｵﾝﾗｲﾝ点数')}</th>
+            <th class="n">${t('平均単価')}</th><th class="n">${t('店舗')}</th><th class="n">${t('オンライン')}</th></tr></thead>
            <tbody>${list.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
              <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,t)}</td>
              <td class="n">${r.units}</td>
@@ -1415,14 +1418,16 @@ simpleTable('t-pay','決済方法', D.payments);
     const ch = selCh.value;
     const list = rows.filter(r => f(r) && (!ch || r.channel === ch));
     const S = k => list.reduce((a,r)=>a+r[k],0);
-    count.textContent = `${list.length} 件 / 全 ${rows.length} 件`;
+    count.textContent = LANG==='en' ? `${list.length} of ${rows.length}` : `${list.length} 件 / 全 ${rows.length} 件`;
     $('#t-sales').innerHTML =
-     `<thead><tr><th>受注日時</th><th>伝票</th><th>区分</th><th>状態</th><th>入金</th><th>チャネル</th>
-       <th>${t('col商品')}</th><th>${t('州')}</th><th>決済</th><th class="n">明細</th><th class="n">点数</th><th class="n">金額</th></tr></thead>
+     `<thead><tr><th>${t('受注日時')}</th><th>${t('伝票')}</th><th>${t('区分')}</th>
+       <th>${t('状態')}</th><th>${t('入金')}</th><th>${t('チャネル')}</th>
+       <th>${t('col商品')}</th><th>${t('州')}</th><th>${t('決済')}</th>
+       <th class="n">${t('明細')}</th><th class="n">${t('点数')}</th><th class="n">${t('金額')}</th></tr></thead>
       <tbody>${list.map(r=>`<tr>
         <td class="num" style="font-size:12px">${esc(r.dt)}</td>
         <td class="num" style="font-size:12px">${esc(r.invoice)}</td>
-        <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?'店舗':'ｵﾝﾗｲﾝ'}</span></td>
+        <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?t('店舗'):t('オンライン')}</span></td>
         <td><span class="chip ${r.bucket==='sales'?'mute':'crit'}">${esc(r.kind)}</span></td>
         <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
         <td style="font-size:12px">${esc(r.channel)}</td>
@@ -1432,7 +1437,7 @@ simpleTable('t-pay','決済方法', D.payments);
         <td class="n">${r.lines}</td>
         <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
         <td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
-      <tfoot><tr><td>合計 ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      <tfoot><tr><td>${t('合計')} ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         <td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
         <td class="n">${n1(S('total'))}</td></tr></tfoot>`;
   }
