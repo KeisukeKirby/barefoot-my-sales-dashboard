@@ -149,6 +149,8 @@ for oid, v in orders.items():
                   gross=sum(L['line_total'] for L in v),
                   units=sum(L['qty'] for L in v if L['cat'] in ('shoes', 'socks')),
                   shoe_units=sum(L['qty'] for L in v if L['cat'] == 'shoes'),
+                  vff_units=sum(L['qty'] for L in v
+                                if L['cat'] == 'shoes' and L['brand'] == 'Vibram FiveFingers'),
                   n_lines=len(v),
                   items=[dict(sku=L['sku'], model=L['model'], brand=L['brand'], cat=L['cat'],
                               color=L['color'], size=L['size'], price=L['price'],

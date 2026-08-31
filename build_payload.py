@@ -24,7 +24,8 @@ def items_str(o, skip_fee=False):
 
 def block(gs):
     return dict(orders=len(gs), rev=R2(sum(o['total'] for o in gs)),
-                units=sum(o['units'] for o in gs), shoe_units=sum(o['shoe_units'] for o in gs))
+                units=sum(o['units'] for o in gs), shoe_units=sum(o['shoe_units'] for o in gs),
+                vff_units=sum(o['vff_units'] for o in gs))
 
 
 def isoff(o):
@@ -36,7 +37,7 @@ d1 = datetime.date(*map(int, max(o['date'] for o in O).split('-')))
 days = (d1 - d0).days + 1
 alldates = [(d0 + datetime.timedelta(n)).isoformat() for n in range(days)]
 
-dsale = collections.defaultdict(lambda: dict(off=0.0, on=0.0, o_off=0, o_on=0, units=0, shoe=0))
+dsale = collections.defaultdict(lambda: dict(off=0.0, on=0.0, o_off=0, o_on=0, units=0, shoe=0, vff=0))
 for o in sales:
     k = dsale[o['date']]
     if isoff(o):
@@ -45,6 +46,7 @@ for o in sales:
         k['on'] += o['total']; k['o_on'] += 1
     k['units'] += o['units']
     k['shoe'] += o['shoe_units']
+    k['vff'] += o['vff_units']
 dlost = collections.Counter()
 for o in lost:
     dlost[o['date']] += o['total']
@@ -60,7 +62,7 @@ for o in lost:
 daily = [dict(date=d, off=R2(dsale[d]['off']), on=R2(dsale[d]['on']),
               orders=dsale[d]['o_off'] + dsale[d]['o_on'],
               off_orders=dsale[d]['o_off'], on_orders=dsale[d]['o_on'],
-              units=dsale[d]['units'], shoe_units=dsale[d]['shoe'],
+              units=dsale[d]['units'], shoe_units=dsale[d]['shoe'], vff_units=dsale[d]['vff'],
               lines=dline.get(d, 0), invoices=dinv.get(d, 0),
               lost=R2(dlost.get(d, 0)), lostn=dlostn.get(d, 0)) for d in alldates]
 
@@ -129,6 +131,7 @@ def period_stats(a, b):
         off_units=sum(o['units'] for o in so), on_units=sum(o['units'] for o in sn),
         shoe_units=sum(o['shoe_units'] for o in s),
         off_shoe_units=sum(o['shoe_units'] for o in so),
+        vff_units=sum(o['vff_units'] for o in s),
         invoices=len(nums),                       # 伝票が発行された注文数
         no_invoice=len(s) - len(nums),            # 伝票番号なし(マーケットプレイス経由)
         inv_from=('INV-%d' % min(nums)) if nums else '—',
@@ -285,7 +288,7 @@ KIND = {'sales': u'売上', 'cancelled': u'キャンセル', 'returned': u'返�
 all_rows = [dict(dt=o['dt'], invoice=o['invoice'] or u'—', channel=o['channel'], seg=o['seg'],
                  status=o['status'], pay=o['pay'], kind=KIND.get(o['bucket'], o['bucket']),
                  bucket=o['bucket'], total=R2(o['total']), units=o['units'],
-                 shoe_units=o['shoe_units'], state=o['state'],
+                 shoe_units=o['shoe_units'], vff_units=o['vff_units'], state=o['state'],
                  lines=o['n_lines'], pay_method=o['pay_method'],
                  items=items_str(o, skip_fee=True))
             for o in sorted(O, key=lambda x: x['dt'])]

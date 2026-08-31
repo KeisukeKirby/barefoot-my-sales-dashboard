@@ -88,6 +88,15 @@ body{
 }
 .side-kpi .s{display:block;font-size:.72rem;color:var(--text-muted)}
 
+.langswitch{display:flex;gap:2px;background:var(--bg-card);border:1px solid var(--border-color);
+  padding:3px;border-radius:10px}
+.langswitch button{flex:1;background:transparent;border:0;border-radius:7px;cursor:pointer;
+  font-family:var(--font-heading);font-weight:600;font-size:.78rem;padding:.4rem;
+  color:var(--text-secondary);transition:var(--smooth)}
+.langswitch button:hover{color:var(--text-primary)}
+.langswitch button[aria-pressed="true"]{background:var(--accent-orange);color:#fff;
+  box-shadow:0 2px 8px rgba(255,107,43,.3)}
+.langswitch button:focus-visible{outline:2px solid var(--accent-blue);outline-offset:1px}
 .nav-menu{display:flex;flex-direction:column;gap:.35rem}
 .nav-item{
   background:transparent;border:none;color:var(--text-secondary);
@@ -332,6 +341,11 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <span class="s num" id="mast-range">—</span>
   </div>
 
+  <div class="langswitch" role="group" aria-label="Language">
+    <button type="button" data-lang="ja">日本語</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+
   <nav class="nav-menu" id="tabnav" aria-label="セクション"></nav>
 
   <div class="side-foot" id="side-foot"></div>
@@ -341,21 +355,21 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ サマリー ══ -->
   <section id="s-summary" data-pane="overview">
-    <p class="eyebrow">Sales Report</p>
-    <h2>Barefootinc Malaysia Sales Report</h2>
+    <p class="eyebrow" data-i18n="Sales Report">Sales Report</p>
+    <h2 data-i18n="Barefootinc Malaysia Sales Report">Barefootinc Malaysia Sales Report</h2>
     <div class="hero" id="hero"></div>
 
     <figure class="chartbox">
       <figcaption>
-        <h3>日次売上(店舗 / オンライン)</h3>
+        <h3 data-i18n="日次売上(店舗 / オンライン)">日次売上(店舗 / オンライン)</h3>
         <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
-          <span><i class="sw" style="background:rgba(255,90,77,.18);border:1px solid var(--crit)"></i>月・火(店舗休業日)</span>
+          <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
+          <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:rgba(255,90,77,.18);border:1px solid var(--crit)"></i><span data-i18n="月・火(店舗休業日)">月・火(店舗休業日)</span></span>
         </div>
       </figcaption>
       <div class="filterrow">
-        <label for="f-month">月</label>
+        <label for="f-month" data-i18n="月">月</label>
         <select id="f-month"></select>
         <span class="count" id="f-month-count"></span>
       </div>
@@ -365,14 +379,14 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ 期間別 ══ -->
   <section id="s-month" data-pane="overview">
-    <p class="eyebrow">Monthly</p>
-    <h2>月別の実績</h2>
+    <p class="eyebrow" data-i18n="Monthly">Monthly</p>
+    <h2 data-i18n="月別の実績">月別の実績</h2>
     <figure class="chartbox">
       <figcaption>
-        <h3>月別 売上</h3>
+        <h3 data-i18n="月別 売上">月別 売上</h3>
         <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+          <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
+          <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-monthbar" style="min-width:420px"></div></div>
@@ -382,16 +396,16 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <section id="s-week" data-pane="overview">
-    <p class="eyebrow">Weekly</p>
-    <h2>週別の実績</h2>
+    <p class="eyebrow" data-i18n="Weekly">Weekly</p>
+    <h2 data-i18n="週別の実績">週別の実績</h2>
     <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点で区切っています。</p>
 
     <figure class="chartbox">
       <figcaption>
-        <h3>週別 売上</h3>
+        <h3 data-i18n="週別 売上">週別 売上</h3>
         <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+          <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
+          <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-weekbar" style="min-width:620px"></div></div>
@@ -402,16 +416,16 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ オンライン / オフライン ══ -->
   <section id="s-ops" data-pane="store">
-    <p class="eyebrow">Store Operations</p>
-    <h2>店舗の売れる曜日・時間帯</h2>
+    <p class="eyebrow" data-i18n="Store Operations">Store Operations</p>
+    <h2 data-i18n="店舗の売れる曜日・時間帯">店舗の売れる曜日・時間帯</h2>
     <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみです。</p>
     <div class="split">
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3>曜日別 売上</h3></figcaption>
+        <figcaption><h3 data-i18n="曜日別 売上">曜日別 売上</h3></figcaption>
         <div id="c-dow"></div>
       </figure>
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3>店舗の時間帯別 注文件数</h3></figcaption>
+        <figcaption><h3 data-i18n="店舗の時間帯別 注文件数">店舗の時間帯別 注文件数</h3></figcaption>
         <div id="c-hour"></div>
       </figure>
     </div>
@@ -419,16 +433,16 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <section id="s-channel" data-pane="store">
-    <p class="eyebrow">Channel</p>
-    <h2>チャネル別の売上</h2>
+    <p class="eyebrow" data-i18n="Channel">Channel</p>
+    <h2 data-i18n="チャネル別の売上">チャネル別の売上</h2>
     <p class="lede">円グラフは売上構成です。期間はプルダウンで切り替えられます。</p>
     <figure class="chartbox">
       <figcaption>
-        <h3>チャネル別 売上構成</h3>
+        <h3 data-i18n="チャネル別 売上構成">チャネル別 売上構成</h3>
         <div class="legend" id="pie-legend"></div>
       </figcaption>
       <div class="filterrow">
-        <label for="f-ch-month">期間</label>
+        <label for="f-ch-month" data-i18n="期間">期間</label>
         <select id="f-ch-month"></select>
         <span class="count" id="f-ch-count"></span>
       </div>
@@ -438,26 +452,26 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <section id="s-avg" data-pane="store">
-    <p class="eyebrow">Daily Average</p>
-    <h2>1日あたりの売上</h2>
+    <p class="eyebrow" data-i18n="Daily Average">Daily Average</p>
+    <h2 data-i18n="1日あたりの売上">1日あたりの売上</h2>
     <p class="lede">「全体 / 暦日」は店舗+オンラインを期間の暦日数で割った値。「店舗 / 営業日」は店舗売上だけを営業日数で割った値です(休業日は 7/27・7/28 と 8月以降の毎週月・火)。</p>
     <div class="tablebox"><table id="t-avg-month" class="fixed"></table></div>
-    <h3 style="margin:1.6rem 0 .6rem">週別(開業週以降)</h3>
+    <h3 style="margin:1.6rem 0 .6rem" data-i18n="週別(開業週以降)">週別(開業週以降)</h3>
     <div class="tablebox"><table id="t-avg-week" class="fixed"></table></div>
   </section>
 
   <section id="s-split" data-pane="store">
-    <p class="eyebrow">Online / Offline</p>
-    <h2>オンラインとオフラインの内訳</h2>
+    <p class="eyebrow" data-i18n="Online / Offline">Online / Offline</p>
+    <h2 data-i18n="オンラインとオフラインの内訳">オンラインとオフラインの内訳</h2>
     <p class="lede">Barefoot Malaysia POS を店舗売上(オフライン)、Shopee・Lazada・自社直販をオンラインとして分けています。<b id="split-period"></b></p>
     <div class="split" id="split"></div>
 
     <figure class="chartbox">
       <figcaption>
-        <h3>週ごとの 店舗 / オンライン</h3>
+        <h3 data-i18n="週ごとの 店舗 / オンライン">週ごとの 店舗 / オンライン</h3>
         <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+          <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
+          <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-segweek" style="min-width:620px"></div></div>
@@ -469,8 +483,8 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ 日次 ══ -->
   <section id="s-daily" data-pane="overview">
-    <p class="eyebrow">Daily</p>
-    <h2>日次の実績</h2>
+    <p class="eyebrow" data-i18n="Daily">Daily</p>
+    <h2 data-i18n="日次の実績">日次の実績</h2>
     <p class="lede">売上のあった日のみ。<b style="color:var(--accent-lime)">月曜・火曜</b>の行は日付と曜日を色分けしています。</p>
     <div class="tablebox" style="max-height:560px;overflow-y:auto"><table id="t-daily"></table></div>
     <p class="note" id="daily-note"></p>
@@ -480,19 +494,19 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ 商品 ══ -->
   <section id="s-product" data-pane="product">
-    <p class="eyebrow">Product</p>
-    <h2>モデル別の売上構成</h2>
+    <p class="eyebrow" data-i18n="Product">Product</p>
+    <h2 data-i18n="モデル別の売上構成">モデル別の売上構成</h2>
 
     <figure class="chartbox">
       <figcaption>
-        <h3>モデル別 売上</h3>
+        <h3 data-i18n="モデル別 売上">モデル別 売上</h3>
         <div class="legend">
-          <span><i class="sw" style="background:var(--s1)"></i>店舗(POS)</span>
-          <span><i class="sw" style="background:var(--s-online)"></i>オンライン</span>
+          <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
+          <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
         </div>
       </figcaption>
       <div class="filterrow">
-        <label for="f-model-month">月</label>
+        <label for="f-model-month" data-i18n="月">月</label>
         <select id="f-model-month"></select>
         <span class="count" id="f-model-count"></span>
       </div>
@@ -501,33 +515,33 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h3 style="margin:1.6rem 0 .6rem">Vibram FiveFingers</h3>
     <div class="tablebox"><table id="t-model-vff"></table></div>
 
-    <h3 style="margin:1.6rem 0 .6rem">その他ブランド・ソックス</h3>
+    <h3 style="margin:1.6rem 0 .6rem" data-i18n="その他ブランド・ソックス">その他ブランド・ソックス</h3>
     <div class="tablebox"><table id="t-model-other"></table></div>
 
-    <h3 style="margin:2rem 0 .6rem">ブランド(シリーズ)別の構成</h3>
+    <h3 style="margin:2rem 0 .6rem" data-i18n="ブランド(シリーズ)別の構成">ブランド(シリーズ)別の構成</h3>
     <div class="sharebar" id="brandbar" style="margin-top:10px"></div>
     <div class="sharelegend" id="brandlegend"></div>
   </section>
 
   <!-- ══ サイズ・カラー ══ -->
   <section id="s-size" data-pane="product">
-    <p class="eyebrow">Size &amp; Color</p>
-    <h2>売れたサイズとカラー</h2>
+    <p class="eyebrow" data-i18n="Size &amp; Color">Size &amp; Color</p>
+    <h2 data-i18n="売れたサイズとカラー">売れたサイズとカラー</h2>
     <p class="lede">発注・在庫補充の判断材料。数量ベースで集計しています。</p>
     <div class="sharebar" id="genderbar"></div>
     <div class="sharelegend" id="genderlegend" style="margin-bottom:1.4rem"></div>
     <div class="split">
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3>レディース サイズ(EU)</h3></figcaption>
+        <figcaption><h3 data-i18n="レディース サイズ(EU)">レディース サイズ(EU)</h3></figcaption>
         <div id="c-sizew"></div>
       </figure>
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3>メンズ サイズ(EU)</h3></figcaption>
+        <figcaption><h3 data-i18n="メンズ サイズ(EU)">メンズ サイズ(EU)</h3></figcaption>
         <div id="c-sizem"></div>
       </figure>
     </div>
     <figure class="chartbox">
-      <figcaption><h3>カラー別 販売数量</h3></figcaption>
+      <figcaption><h3 data-i18n="カラー別 販売数量">カラー別 販売数量</h3></figcaption>
       <div class="scroller"><div id="c-color" style="min-width:640px"></div></div>
     </figure>
     <p class="note" id="size-note"></p>
@@ -538,20 +552,20 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ 全注文 ══ -->
   <section id="s-ledger" data-pane="notes">
-    <p class="eyebrow">Ledger</p>
-    <h2>注文明細</h2>
+    <p class="eyebrow" data-i18n="Ledger">Ledger</p>
+    <h2 data-i18n="注文明細">注文明細</h2>
     <p class="lede">売上に計上した注文と、キャンセル・返品・未入金を1つの表にまとめています。プルダウンで絞り込めます。</p>
     <div class="filterrow">
-      <label for="f-kind">表示</label>
+      <label for="f-kind" data-i18n="表示">表示</label>
       <select id="f-kind">
-        <option value="sales" selected>売上のみ</option>
-        <option value="all">すべて</option>
-        <option value="cancelled">キャンセルのみ</option>
-        <option value="returned">返品のみ</option>
-        <option value="unpaid">未入金のみ</option>
+        <option value="sales" selected data-i18n="売上のみ">売上のみ</option>
+        <option value="all" data-i18n="すべて">すべて</option>
+        <option value="cancelled" data-i18n="キャンセルのみ">キャンセルのみ</option>
+        <option value="returned" data-i18n="返品のみ">返品のみ</option>
+        <option value="unpaid" data-i18n="未入金のみ">未入金のみ</option>
       </select>
-      <label for="f-ch">チャネル</label>
-      <select id="f-ch"><option value="">すべて</option></select>
+      <label for="f-ch" data-i18n="チャネル">チャネル</label>
+      <select id="f-ch"><option value="" data-i18n="すべて">すべて</option></select>
       <span class="count" id="f-count"></span>
     </div>
     <div class="tablebox" style="max-height:600px;overflow-y:auto"><table id="t-sales"></table></div>
@@ -560,18 +574,18 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ 読み取り ══ -->
   <section id="s-findings" data-pane="notes">
-    <p class="eyebrow">Findings</p>
-    <h2>数字から読めること</h2>
+    <p class="eyebrow" data-i18n="Findings">Findings</p>
+    <h2 data-i18n="数字から読めること">数字から読めること</h2>
     <p class="lede">「確認済」はデータから直接計算した事実、「推定」はデータから導いた解釈です。</p>
     <div class="finds" id="finds"></div>
   </section>
 
   <!-- ══ 定義 ══ -->
   <section id="s-def" data-pane="notes">
-    <p class="eyebrow">Definitions</p>
-    <h2>集計の定義</h2>
+    <p class="eyebrow" data-i18n="Definitions">Definitions</p>
+    <h2 data-i18n="集計の定義">集計の定義</h2>
     <div class="callout warnflag" style="border-left-color:var(--accent-orange)">
-      <h3 style="--dot:var(--accent-orange)">売上として数える条件</h3>
+      <h3 style="--dot:var(--accent-orange)" data-i18n="売上として数える条件">売上として数える条件</h3>
       <p>入金確認済み(<b>Paid</b>)かつ <b>Completed</b> または <b>Shipped</b> の注文のみを売上実績として集計しています。
       キャンセル・返品・未入金は売上から除外し、注文明細のプルダウンで別途確認できます。</p>
     </div>
@@ -580,8 +594,8 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 
   <!-- ══ データについて(概要タブ末尾) ══ -->
   <section id="s-meta" data-pane="notes">
-    <p class="eyebrow">Data</p>
-    <h2>このデータについて</h2>
+    <p class="eyebrow" data-i18n="Data">Data</p>
+    <h2 data-i18n="このデータについて">このデータについて</h2>
     <dl class="metagrid" id="metagrid"></dl>
     <p class="note" id="meta-caveat"></p>
     <p class="note" id="lost-summary"></p>
@@ -599,6 +613,95 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 (function(){
 "use strict";
 const D = JSON.parse(document.getElementById('payload').textContent);
+
+/* ── i18n ──────────────────────────────────────────────
+   切り替えは localStorage + リロード。各描画ブロックが一度だけ走る作りなので、
+   部分的に古い言語が残るより確実。 */
+// URL の ?lang= を最優先。localStorage が使えない環境(file:// など)でも
+// 切り替えが確実に効くようにするため。
+let LANG = 'ja';
+try {
+  const p = new URLSearchParams(location.search).get('lang');
+  LANG = p || localStorage.getItem('bmsd-lang') || 'ja';
+} catch (e) {
+  try { LANG = new URLSearchParams(location.search).get('lang') || 'ja'; } catch (e2) {}
+}
+if (LANG !== 'en') LANG = 'ja';
+const STR = {
+  'Sales Report':['Sales Report','Sales Report'],
+  'Barefootinc Malaysia Sales Report':['Barefootinc Malaysia Sales Report','Barefootinc Malaysia Sales Report'],
+  'Monthly':['Monthly','Monthly'], 'Weekly':['Weekly','Weekly'],
+  'Store Operations':['Store Operations','Store Operations'], 'Channel':['Channel','Channel'],
+  'Daily Average':['Daily Average','Daily Average'], 'Daily':['Daily','Daily'],
+  'Product':['Product','Product'], 'Size & Color':['Size & Color','Size & Color'],
+  'Ledger':['Ledger','Ledger'], 'Findings':['Findings','Findings'],
+  'Definitions':['Definitions','Definitions'], 'Data':['Data','Data'],
+  'Online / Offline':['Online / Offline','Online / Offline'],
+
+  '概要':['概要','Overview'], '店舗':['店舗','Store'], '商品':['商品','Products'], '備考':['備考','Notes'],
+  '月別の実績':['月別の実績','Monthly Results'], '週別の実績':['週別の実績','Weekly Results'],
+  '月別 売上':['月別 売上','Monthly Sales'], '週別 売上':['週別 売上','Weekly Sales'],
+  '日次の実績':['日次の実績','Daily Results'], '日次売上(店舗 / オンライン)':['日次売上(店舗 / オンライン)','Daily Sales (Store / Online)'],
+  '店舗の売れる曜日・時間帯':['店舗の売れる曜日・時間帯','Store Sales by Day and Hour'],
+  '曜日別 売上':['曜日別 売上','Sales by Day of Week'],
+  '店舗の時間帯別 注文件数':['店舗の時間帯別 注文件数','Store Orders by Hour'],
+  'チャネル別の売上':['チャネル別の売上','Sales by Channel'],
+  'チャネル別 売上構成':['チャネル別 売上構成','Sales Mix by Channel'],
+  '1日あたりの売上':['1日あたりの売上','Sales per Day'],
+  '週別(開業週以降)':['週別(開業週以降)','Weekly (from opening week)'],
+  'オンラインとオフラインの内訳':['オンラインとオフラインの内訳','Online and Offline Breakdown'],
+  'モデル別の売上構成':['モデル別の売上構成','Sales by Model'],
+  'モデル別 売上':['モデル別 売上','Sales by Model'],
+  'その他ブランド・ソックス':['その他ブランド・ソックス','Other Brands & Socks'],
+  'ブランド(シリーズ)別の構成':['ブランド(シリーズ)別の構成','Mix by Brand (Series)'],
+  '売れたサイズとカラー':['売れたサイズとカラー','Sizes and Colors Sold'],
+  'レディース サイズ(EU)':['レディース サイズ(EU)',"Women's Sizes (EU)"],
+  'メンズ サイズ(EU)':['メンズ サイズ(EU)',"Men's Sizes (EU)"],
+  'カラー別 販売数量':['カラー別 販売数量','Units by Color'],
+  '注文明細':['注文明細','Order Ledger'],
+  '数字から読めること':['数字から読めること','What the Numbers Show'],
+  '集計の定義':['集計の定義','Definitions'],
+  'このデータについて':['このデータについて','About This Data'],
+  '読み取り':['読み取り','Insights'],
+
+  '店舗(POS)':['店舗(POS)','Store (POS)'], 'オンライン':['オンライン','Online'],
+  '月・火(店舗休業日)':['月・火(店舗休業日)','Mon/Tue (store closed)'],
+  '月':['月','Month'], '週':['週','Week'], '期間':['期間','Period'],
+  '売上':['売上','Sales'], '注文数':['注文数','Orders'], '注文':['注文','Orders'],
+  '点数':['点数','Units'], '客単価':['客単価','Avg Order'], '構成比':['構成比','Share'],
+  '(店舗のみ)':['(店舗のみ)','(store only)'],
+  'シューズ点数':['シューズ点数','Shoe Units'],
+  '2026年 合計':['2026年 合計','2026 Total'], '合計':['合計','Total'],
+  '暦日':['暦日','Cal. days'], '営業日':['営業日','Open days'],
+  '日平均(全体)':['日平均(全体)','Avg / cal. day'],
+  '店舗売上':['店舗売上','Store sales'],
+  '日平均(店舗のみ)':['日平均(店舗のみ)','Avg / open day'],
+  '日付':['日付','Date'], '曜日':['曜日','Day'], '店舗件数':['店舗件数','Store orders'],
+  'ｵﾝﾗｲﾝ件数':['ｵﾝﾗｲﾝ件数','Online orders'], '伝票数':['伝票数','Invoices'], '明細行':['明細行','Lines'],
+  'チャネル':['チャネル','Channel'], '区分':['区分','Type'],
+  'オフライン':['オフライン','Offline'],
+  'モデル':['モデル','Model'], 'ブランド':['ブランド','Brand'], '数量':['数量','Units'],
+  '店舗点数':['店舗点数','Store units'], 'ｵﾝﾗｲﾝ点数':['ｵﾝﾗｲﾝ点数','Online units'],
+  '平均単価':['平均単価','Avg price'],
+  '受注日時':['受注日時','Ordered at'], '伝票':['伝票','Invoice'], '状態':['状態','Status'],
+  '入金':['入金','Payment'], '決済':['決済','Method'], '州':['州','State'], '明細':['明細','Lines'],
+  '金額':['金額','Amount'], '商品':['商品','Items'],
+  '表示':['表示','Show'], '売上のみ':['売上のみ','Sales only'], 'すべて':['すべて','All'],
+  'キャンセルのみ':['キャンセルのみ','Cancelled only'], '返品のみ':['返品のみ','Returned only'],
+  '未入金のみ':['未入金のみ','Unpaid only'],
+  '進行中':['進行中','in progress'], '確認済':['確認済','Verified'], '推定':['推定','Estimate'],
+  'レディース':['レディース','Women'], 'メンズ':['メンズ','Men'],
+  'ユニセックス(足袋)':['ユニセックス(足袋)','Unisex (tabi)'],
+  '店舗休業日':['店舗休業日','store closed'],
+  'の売上':['の売上',' Sales'], '前月比':['前月比','vs prev month'],
+  '注文の平均':['注文の平均',' orders avg'],
+  '点数(シューズのみ)':['点数(シューズのみ)','Units (shoes only)'],
+  'うち靴':['うち靴','shoes'],
+};
+const t = k => (STR[k] ? STR[k][LANG === 'en' ? 1 : 0] : k);
+document.documentElement.lang = LANG;
+document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
 const $ = s => document.querySelector(s);
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -695,14 +798,14 @@ const cur = MM[MM.length-1], prev = MM.length>1 ? MM[MM.length-2] : null;
 const mom = prev && prev.rev ? (cur.rev/prev.rev - 1) : null;
 $('#hero').innerHTML =
   `<div class="hero-main">
-     <span class="l">${esc(cur.label)}の売上${cur.ongoing?'(進行中)':''}</span>
+     <span class="l">${esc(cur.label)}${t('の売上')}${cur.ongoing?` (${t('進行中')})`:''}</span>
      <span class="v"><small>RM</small>${n1(cur.rev)}</span>
-     ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">前月比 ${mom>=0?'▲':'▼'} ${Math.abs(mom*100).toFixed(1)}%</span>`}
+     ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">${t('前月比')} ${mom>=0?'▲':'▼'} ${Math.abs(mom*100).toFixed(1)}%</span>`}
    </div>
    <div class="hero-stats">
-     ${[['店舗', rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + '注文'],
-        ['オンライン', rm(cur.on), pct(cur.on,cur.rev) + ' · ' + cur.on_orders + '注文'],
-        ['客単価', rm(cur.aov), cur.orders + '注文の平均']]
+     ${[[t('店舗'), rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + ' ' + t('注文')],
+        [t('オンライン'), rm(cur.on), pct(cur.on,cur.rev) + ' · ' + cur.on_orders + ' ' + t('注文')],
+        [t('客単価'), rm(cur.aov), cur.orders + t('注文の平均')]]
        .map(([l,v,sub])=>`<div class="st"><span class="l">${esc(l)}</span>
           <span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('')}
    </div>`;
@@ -716,34 +819,33 @@ function periodTable(elId, rows, head, opt){
     `${n1(v)} <span style="color:var(--text-muted);font-size:.9em">${pct(v,tot)}</span>`;
   el.innerHTML =
    `<thead><tr>
-      <th>${head}</th><th>期間</th>
-      <th class="n">売上</th><th class="n">店舗</th><th class="n">オンライン</th>
-      <th class="n">注文数${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
-      <th class="n">点数${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
-      <th class="n">客単価</th></tr></thead>
+      <th>${head}</th><th>${t('期間')}</th>
+      <th class="n">${t('売上')}</th><th class="n">${t('店舗')}</th><th class="n">${t('オンライン')}</th>
+      <th class="n">${t('注文数')}${opt.withStore?'<br><span style="font-weight:400;text-transform:none">(店舗のみ)</span>':''}</th>
+      <th class="n">${t('点数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${t('(店舗のみ)')}</span>`:''}</th>
+      <th class="n">${t('シューズ点数')}<br><span style="font-weight:400;text-transform:none">(VFF)</span></th>
+      <th class="n">${t('客単価')}</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>
-      <td><b>${esc(r.label)}</b>${r.ongoing?' <span class="chip mute">進行中</span>':''}</td>
+      <td><b>${esc(r.label)}</b>${r.ongoing?` <span class="chip mute">${t('進行中')}</span>`:''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${shareCell(r.off, r.rev)}</td>
       <td class="n">${shareCell(r.on, r.rev)}</td>
       <td class="n">${r.orders}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_orders})</span>`:''}</td>
-      <td class="n">${r.units}${sub(opt.withStore
-          ? `靴${r.shoe_units} / 店舗${r.off_units}・靴${r.off_shoe_units}`
-          : `靴${r.shoe_units}`)}</td>
+      <td class="n">${r.units}${opt.withStore?sub(r.off_units):''}</td>
+      <td class="n">${r.shoe_units}${sub(r.vff_units)}</td>
       <td class="n">${n1(r.aov)}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>${esc(opt.totalLabel || '合計')}</td><td></td>
+    <tfoot><tr><td>${esc(t(opt.totalLabel || '合計'))}</td><td></td>
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
       <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
       <td class="n">${sum('orders')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_orders')})</span>`:''}</td>
-      <td class="n">${sum('units')}${sub(opt.withStore
-          ? `靴${sum('shoe_units')} / 店舗${sum('off_units')}・靴${sum('off_shoe_units')}`
-          : `靴${sum('shoe_units')}`)}</td>
+      <td class="n">${sum('units')}${opt.withStore?sub(sum('off_units')):''}</td>
+      <td class="n">${sum('shoe_units')}${sub(sum('vff_units'))}</td>
       <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
 }
-periodTable('t-week', D.weekly, '週');
-periodTable('t-month', D.monthly, '月', {totalLabel:'2026年 合計', withStore:true});
+periodTable('t-week', D.weekly, t('週'));
+periodTable('t-month', D.monthly, t('月'), {totalLabel:'2026年 合計', withStore:true});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
@@ -856,7 +958,7 @@ function periodBar(hostId, rows, opts){
       <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
       <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
       <div class="r"><span>注文</span><span>${r.orders}</span></div>
-      <div class="r"><span>点数(うち靴)</span><span>${r.units}(${r.shoe_units})</span></div>
+      <div class="r"><span>点数(シューズのみ)</span><span>${r.units}(${r.shoe_units})</span></div>
       <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>`);
     s.appendChild(hit);
   });
@@ -919,7 +1021,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
              <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
              <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
              <div class="r"><span>注文</span><span>${r.orders}</span></div>
-             <div class="r"><span>点数(うち靴)</span><span>${r.units}(${r.shoe_units})</span></div>`
+             <div class="r"><span>点数(シューズのみ)</span><span>${r.units}(${r.shoe_units})</span></div>`
           : `<div class="r"><span>売上</span><span>なし</span></div>`)
 );
       sv.appendChild(hit);
@@ -1011,7 +1113,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         + '<div class="r"><span>売上</span><b>'+rm2(r.rev)+'</b></div>'
         + '<div class="r"><span>構成比</span><span>'+pct(r.rev,tot)+'</span></div>'
         + '<div class="r"><span>注文</span><span>'+r.orders+'</span></div>'
-        + '<div class="r"><span>点数(うち靴)</span><span>'+r.units+'('+r.shoe_units+')</span></div>'
+        + '<div class="r"><span>点数(シューズのみ)</span><span>'+r.units+'('+r.shoe_units+')</span></div>'
         + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>');
       sv.appendChild(hit);
       ang += sweep;
@@ -1062,21 +1164,22 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     document.getElementById(elId).innerHTML =
       '<colgroup><col style="width:15%"><col style="width:15%"><col style="width:9%"><col style="width:9%">'
       + '<col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:13%"></colgroup>'
-      + '<thead><tr><th>'+esc(head)+'</th><th>期間</th><th class="n">暦日</th><th class="n">営業日</th>'
-      + '<th class="n">売上</th><th class="n">日平均(全体)</th>'
-      + '<th class="n">店舗売上</th><th class="n">日平均(店舗のみ)</th></tr></thead><tbody>'
+      + '<thead><tr><th>'+esc(head)+'</th><th>'+t('期間')+'</th><th class="n">'+t('暦日')+'</th>'
+      + '<th class="n">'+t('営業日')+'</th><th class="n">'+t('売上')+'</th>'
+      + '<th class="n">'+t('日平均(全体)')+'</th><th class="n">'+t('店舗売上')+'</th>'
+      + '<th class="n">'+t('日平均(店舗のみ)')+'</th></tr></thead><tbody>'
       + rows.map(r=>'<tr><td><b>'+esc(r.label)+'</b></td>'
         + '<td class="num" style="font-size:12px;color:var(--text-secondary)">'+jd(r.start)+'–'+jd(r.end)+'</td>'
         + '<td class="n">'+r.elapsed+'</td><td class="n">'+r.biz_days+'</td>'
         + '<td class="n">'+n1(r.rev)+'</td><td class="n"><b>'+n1(r.per_day)+'</b></td>'
         + '<td class="n">'+n1(r.off)+'</td><td class="n"><b>'+n1(r.off_per_biz_day)+'</b></td></tr>').join('')
-      + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+S('elapsed')+'</td>'
+      + '</tbody><tfoot><tr><td>'+t('合計')+'</td><td></td><td class="n">'+S('elapsed')+'</td>'
       + '<td class="n">'+S('biz_days')+'</td><td class="n">'+n1(S('rev'))+'</td>'
       + '<td class="n">'+n1(S('rev')/S('elapsed'))+'</td><td class="n">'+n1(S('off'))+'</td>'
       + '<td class="n">'+n1(S('off')/S('biz_days'))+'</td></tr></tfoot>';
   };
-  build('t-avg-month', D.monthly, '月');
-  build('t-avg-week',  D.weekly,  '週');
+  build('t-avg-month', D.monthly, t('月'));
+  build('t-avg-week',  D.weekly,  t('週'));
 })();
 
 
@@ -1205,9 +1308,9 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
   const m = D.sizes.men.reduce((a,r)=>a+r.n,0);
   const u = D.sizes.tabi.reduce((a,r)=>a+r.n,0);
   const rows = [
-    {name:'レディース', n:w, c:'var(--s1)'},
-    {name:'メンズ',    n:m, c:'var(--s2)'},
-    {name:'ユニセックス(足袋)', n:u, c:'var(--s3)'},
+    {name:t('レディース'), n:w, c:'var(--s1)'},
+    {name:t('メンズ'),    n:m, c:'var(--s2)'},
+    {name:t('ユニセックス(足袋)'), n:u, c:'var(--s3)'},
   ].filter(r=>r.n>0);
   const tot = rows.reduce((a,r)=>a+r.n,0);
   $('#genderbar').innerHTML = rows.map(r=>
@@ -1364,7 +1467,7 @@ simpleTable('t-pay','決済方法', D.payments);
   ];
   $('#finds').innerHTML = items.map(([t,h,p])=>
     `<div class="find"><span class="tag ${t==='fact'?'fact':''}">${t==='fact'?'確認済':'推定'}</span>
-     <h3>${esc(h)}</h3><p>${p}</p></div>`).join('');
+     <h3 data-i18n="${esc(h)}">${esc(h)}</h3><p>${p}</p></div>`).join('');
 })();
 
 /* ═══ 12. Definitions ═════════════════════════════════ */
@@ -1394,13 +1497,27 @@ $('#foot-meta').innerHTML =
   `<p style="margin:0">Barefootinc Malaysia · 販売実績ダッシュボード · ${M.period[1]} 時点のデータ</p>`;
 $('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].replace(/-/g,'.')}<br>${M.n_orders} orders · ${M.lines} lines`;
 
+/* ═══ 13b. 言語切り替え ═══════════════════════════════ */
+(function(){
+  document.querySelectorAll('.langswitch button').forEach(b=>{
+    b.setAttribute('aria-pressed', String(b.dataset.lang === LANG));
+    b.addEventListener('click', ()=>{
+      if (b.dataset.lang === LANG) return;
+      try { localStorage.setItem('bmsd-lang', b.dataset.lang); } catch (e) {}
+      const u = new URL(location.href);        // 開いているタブは維持する
+      u.searchParams.set('lang', b.dataset.lang);
+      location.href = u.toString();            // 全ブロックを新しい言語で描き直す
+    });
+  });
+})();
+
 /* ═══ 14. Section tabs ════════════════════════════════ */
 (function(){
   const TABS = [
-    ['overview', '概要',   'chart'],
-    ['store',    '店舗',   'store'],
-    ['product',  '商品',   'box'],
-    ['notes',    '備考',   'book'],
+    ['overview', t('概要'), 'chart'],
+    ['store',    t('店舗'), 'store'],
+    ['product',  t('商品'), 'box'],
+    ['notes',    t('備考'), 'book'],
   ];
   const main = document.querySelector('main');
   const foot = main.querySelector('footer');
