@@ -29,7 +29,15 @@ def block(gs):
 
 
 def isoff(o):
-    return o['seg'].startswith(u'オフライン')  # オフライン
+    return o['seg'].startswith(u'オフライン')      # 店舗
+
+
+def ison(o):
+    return o['seg'] == u'オンライン'               # Shopee / Lazada / 直販
+
+
+def iswh(o):
+    return o['seg'] == u'卸売'                     # 法人向け。1件で桁が違うので必ず分ける
 
 
 d0 = datetime.date(*map(int, min(o['date'] for o in O).split('-')))
@@ -37,11 +45,14 @@ d1 = datetime.date(*map(int, max(o['date'] for o in O).split('-')))
 days = (d1 - d0).days + 1
 alldates = [(d0 + datetime.timedelta(n)).isoformat() for n in range(days)]
 
-dsale = collections.defaultdict(lambda: dict(off=0.0, on=0.0, o_off=0, o_on=0, units=0, shoe=0, vff=0))
+dsale = collections.defaultdict(lambda: dict(off=0.0, on=0.0, wh=0.0, o_off=0, o_on=0, o_wh=0,
+                                             units=0, shoe=0, vff=0))
 for o in sales:
     k = dsale[o['date']]
     if isoff(o):
         k['off'] += o['total']; k['o_off'] += 1
+    elif iswh(o):
+        k['wh'] += o['total']; k['o_wh'] += 1
     else:
         k['on'] += o['total']; k['o_on'] += 1
     k['units'] += o['units']
@@ -59,9 +70,9 @@ for o in sales:
         dinv[o['date']] += 1
 for o in lost:
     dlostn[o['date']] += 1
-daily = [dict(date=d, off=R2(dsale[d]['off']), on=R2(dsale[d]['on']),
-              orders=dsale[d]['o_off'] + dsale[d]['o_on'],
-              off_orders=dsale[d]['o_off'], on_orders=dsale[d]['o_on'],
+daily = [dict(date=d, off=R2(dsale[d]['off']), on=R2(dsale[d]['on']), wh=R2(dsale[d]['wh']),
+              orders=dsale[d]['o_off'] + dsale[d]['o_on'] + dsale[d]['o_wh'],
+              off_orders=dsale[d]['o_off'], on_orders=dsale[d]['o_on'], wh_orders=dsale[d]['o_wh'],
               units=dsale[d]['units'], shoe_units=dsale[d]['shoe'], vff_units=dsale[d]['vff'],
               lines=dline.get(d, 0), invoices=dinv.get(d, 0),
               lost=R2(dlost.get(d, 0)), lostn=dlostn.get(d, 0)) for d in alldates]
@@ -75,10 +86,12 @@ WEEKS = [
     (u'W4', u'第4週',  '2026-08-10', '2026-08-16'),
     (u'W5', u'第5週',  '2026-08-17', '2026-08-23'),
     (u'W6', u'第6週',  '2026-08-24', '2026-08-30'),
+    (u'W7', u'第7週',  '2026-08-31', '2026-09-06'),
 ]
 MONTHS = [
     (u'2026-07', u'2026年7月', '2026-07-17', '2026-07-31', u'開業月(7/17〜)'),
-    (u'2026-08', u'2026年8月', '2026-08-01', '2026-08-31', u'進行中'),
+    (u'2026-08', u'2026年8月', '2026-08-01', '2026-08-31', u''),
+    (u'2026-09', u'2026年9月', '2026-09-01', '2026-09-30', u'進行中'),
 ]
 LAST = d1.isoformat()
 
@@ -113,7 +126,8 @@ def period_stats(a, b):
     l = [o for o in lost if a <= o['date'] <= b]
     u = [o for o in unpaid if a <= o['date'] <= b]
     so = [o for o in s if isoff(o)]
-    sn = [o for o in s if not isoff(o)]
+    sn = [o for o in s if ison(o)]
+    sw = [o for o in s if iswh(o)]
     nums = [n for n in (invnum(o) for o in s) if n is not None]
     da = datetime.date(*map(int, a.split('-')))
     db = datetime.date(*map(int, b.split('-')))
@@ -126,9 +140,11 @@ def period_stats(a, b):
     return dict(
         start=a, end=b, span=span, elapsed=elapsed, ongoing=(db > d1),
         off=R2(sum(o['total'] for o in so)), on=R2(sum(o['total'] for o in sn)),
+        wh=R2(sum(o['total'] for o in sw)),
         rev=R2(sum(o['total'] for o in s)), orders=len(s), units=sum(o['units'] for o in s),
-        off_orders=len(so), on_orders=len(sn),
+        off_orders=len(so), on_orders=len(sn), wh_orders=len(sw),
         off_units=sum(o['units'] for o in so), on_units=sum(o['units'] for o in sn),
+        wh_units=sum(o['units'] for o in sw),
         shoe_units=sum(o['shoe_units'] for o in s),
         off_shoe_units=sum(o['shoe_units'] for o in so),
         vff_units=sum(o['vff_units'] for o in s),
@@ -152,7 +168,7 @@ weekly = [dict(id=i, label=lb, **period_stats(a, b)) for i, lb, a, b in WEEKS]
 monthly = [dict(id=i, label=lb, note=nt, **period_stats(a, b)) for i, lb, a, b, nt in MONTHS]
 
 CH_POS = u'POS(実店舗)'
-CHORDER = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)']
+CHORDER = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)', u'卸売']
 
 
 def channels_for(subset_sales, subset_lost):
@@ -160,7 +176,7 @@ def channels_for(subset_sales, subset_lost):
     for c in CHORDER:
         sc = [o for o in subset_sales if o['channel'] == c]
         lc = [o for o in subset_lost if o['channel'] == c]
-        out.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else u'オンライン'),
+        out.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else (u'卸売' if c == u'卸売' else u'オンライン')),
                         lost_orders=len(lc), lost_rev=R2(sum(o['total'] for o in lc)),
                         invoices=sum(1 for o in sc if o['invoice'].strip()),
                         lines=sum(o['n_lines'] for o in sc), **block(sc)))
@@ -176,8 +192,8 @@ for mid, lab, a, b, nt in MONTHS:
 
 
 def models_for(subset):
-    d = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0,
-                                             off_units=0, on_units=0, prices=[]))
+    d = collections.defaultdict(lambda: dict(rev=0.0, units=0, brand='', off=0.0, on=0.0, wh=0.0,
+                                             off_units=0, on_units=0, wh_units=0, prices=[]))
     for o in subset:
         for it in o['items']:
             if it['cat'] == 'test':
@@ -187,18 +203,16 @@ def models_for(subset):
             m['units'] += it['qty']
             m['brand'] = it['brand']
             if isoff(o):
-                m['off'] += it['total']
+                m['off'] += it['total']; m['off_units'] += it['qty']
+            elif iswh(o):
+                m['wh'] += it['total']; m['wh_units'] += it['qty']
             else:
-                m['on'] += it['total']
-            if isoff(o):
-                m['off_units'] += it['qty']
-            else:
-                m['on_units'] += it['qty']
+                m['on'] += it['total']; m['on_units'] += it['qty']
             if it['qty'] > 0:
                 m['prices'].append(it['price'])
     return [dict(name=k, brand=v['brand'], rev=R2(v['rev']), units=v['units'],
-                 off=R2(v['off']), on=R2(v['on']),
-                 off_units=v['off_units'], on_units=v['on_units'],
+                 off=R2(v['off']), on=R2(v['on']), wh=R2(v['wh']),
+                 off_units=v['off_units'], on_units=v['on_units'], wh_units=v['wh_units'],
                  avg=R2(sum(v['prices']) / len(v['prices'])) if v['prices'] else 0)
             for k, v in sorted(d.items(), key=lambda x: -x[1]['rev'])]
 
@@ -294,7 +308,8 @@ all_rows = [dict(dt=o['dt'], invoice=o['invoice'] or u'—', channel=o['channel'
             for o in sorted(O, key=lambda x: x['dt'])]
 
 off = [o for o in sales if isoff(o)]
-on = [o for o in sales if not isoff(o)]
+on = [o for o in sales if ison(o)]
+wh = [o for o in sales if iswh(o)]
 loff = [o for o in lost if o['channel'] == CH_POS]
 lon = [o for o in lost if o['channel'] != CH_POS]
 
@@ -302,7 +317,7 @@ P = dict(
     meta=dict(source=J['meta'].get('src') or J['meta'].get('source'),
               period=[d0.isoformat(), d1.isoformat()], days=days,
               lines=J['meta']['rows'], n_orders_raw=J['meta']['n_orders'], n_orders=len(O)),
-    kpi=dict(total=block(sales), offline=block(off), online=block(on),
+    kpi=dict(total=block(sales), offline=block(off), online=block(on), wholesale=block(wh),
              lost=block(lost), cancelled=block(canc), returned=block(retn),
              unpaid=block(unpaid), lost_offline=block(loff), lost_online=block(lon),
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),

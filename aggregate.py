@@ -105,6 +105,22 @@ def classify(d):
 CH = {'Barefoot Malaysia POS': 'POS(実店舗)', 'Barefoot Malaysia - Shopee': 'Shopee',
       'Barefoot Malaysia - Lazada': 'Lazada', '': 'Online(直販)'}
 
+# 卸売はシステム上の区分が無く POS でも marketplace でもないため、注文IDで指定する。
+# 1件で通常の15倍の金額・24点が動くので、混ぜると客単価も点数も歪む。
+WHOLESALE = {'136'}
+
+
+def channel_of(d):
+    if d['order_id'] in WHOLESALE:
+        return '卸売'
+    return CH.get(d['marketplace'], d['marketplace'] or 'Online(直販)')
+
+
+def seg_of(ch):
+    if ch == '卸売':
+        return '卸売'
+    return 'オフライン(店舗)' if ch == 'POS(実店舗)' else 'オンライン'
+
 # ---- build line + order records --------------------------------------------
 lines = []
 for d in data:
@@ -113,7 +129,7 @@ for d in data:
         order_id=d['order_id'], invoice=d['invoice_no'],
         dt=d['order_creation_date'], date=d['order_creation_date'][:10],
         status=d['order_status'], pay=d['payment_status'],
-        channel=CH.get(d['marketplace'], d['marketplace'] or 'Online(直販)'),
+        channel=channel_of(d),
         pay_method=d['billing_method'], state=d['billing_state'] or '(不明)',
         city=d['billing_city'] or '(不明)',
         sku=d['product_sku'], pname=d['product_name'],
@@ -141,7 +157,7 @@ O = []
 for oid, v in orders.items():
     a = v[0]
     O.append(dict(order_id=oid, invoice=a['invoice'], dt=a['dt'], date=a['date'],
-                  status=a['status'], pay=a['pay'], channel=a['channel'], seg=('オフライン(店舗)' if a['channel']=='POS(実店舗)' else 'オンライン'),
+                  status=a['status'], pay=a['pay'], channel=a['channel'], seg=seg_of(a['channel']),
                   pay_method=a['pay_method'], state=a['state'], city=a['city'],
                   customer=a['customer'], bucket=bucket(v),
                   total=a['order_total'], ship_fee=a['ship_fee'],
@@ -169,6 +185,18 @@ out = dict(orders=O, meta=dict(
     period=[min(o['date'] for o in O), max(o['date'] for o in O)],
 ))
 json.dump(out, open('agg.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+
+company_orders = {}
+for d in data:
+    if d.get('billing_company', '').strip() and d['order_id'] not in WHOLESALE:
+        company_orders[d['order_id']] = d['billing_company'].strip()
+if company_orders:
+    print()
+    print('!' * 72)
+    print(u'法人名が入っていて卸売に未指定の注文があります。卸売なら WHOLESALE に追加してください:')
+    for k, v in sorted(company_orders.items(), key=lambda x: int(x[0])):
+        print(u'  order_id %s  %s' % (k, v))
+    print('!' * 72)
 
 if serial_hits:
     ids = sorted(set(serial_hits), key=lambda x: int(x) if str(x).isdigit() else 0)

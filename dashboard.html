@@ -32,6 +32,7 @@
   --s2:#0d9fbd;  /* Shopee        */
   --s3:#8a9e00;  /* Lazada        */
   --s4:#c05a9e;  /* Online 直販   */
+  --s5:#8d7ae8;  /* 卸売          */
   --s-online:#0d9fbd;
   --ghost:#4a4a58;
 
@@ -221,7 +222,8 @@ svg{display:block;width:100%;height:auto}
 .dlab{fill:var(--text-primary);font-family:var(--font-heading);font-size:11.5px;font-weight:600;
   font-variant-numeric:tabular-nums}
 .dlab2{fill:var(--text-muted);font-family:var(--font-body);font-size:10px;font-variant-numeric:tabular-nums}
-.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.f4{fill:var(--s4)}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.f4{fill:var(--s4)}.f5{fill:var(--s5)}
+.fwh{fill:var(--s5)}
 .fon{fill:var(--s-online)}.fghost{fill:var(--ghost)}
 .hit{fill:transparent;cursor:pointer}
 .wkend{fill:rgba(255,255,255,.028)}
@@ -365,6 +367,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div class="legend">
           <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
           <span><i class="sw" style="background:rgba(255,90,77,.18);border:1px solid var(--crit)"></i><span data-i18n="月・火(店舗休業日)">月・火(店舗休業日)</span></span>
         </div>
       </figcaption>
@@ -387,6 +390,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div class="legend">
           <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-monthbar" style="min-width:420px"></div></div>
@@ -406,6 +410,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div class="legend">
           <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-weekbar" style="min-width:620px"></div></div>
@@ -472,6 +477,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div class="legend">
           <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
         </div>
       </figcaption>
       <div class="scroller"><div id="c-segweek" style="min-width:620px"></div></div>
@@ -503,6 +509,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div class="legend">
           <span><i class="sw" style="background:var(--s1)"></i><span data-i18n="店舗(POS)">店舗(POS)</span></span>
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
+          <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
         </div>
       </figcaption>
       <div class="filterrow">
@@ -665,6 +672,7 @@ const STR = {
   '読み取り':['読み取り','Insights'],
 
   '店舗(POS)':['店舗(POS)','Store (POS)'], 'オンライン':['オンライン','Online'],
+  '卸売':['卸売','Wholesale'],
   '月・火(店舗休業日)':['月・火(店舗休業日)','Mon/Tue (store closed)'],
   '月':['月','Month'], '週':['週','Week'], '期間':['期間','Period'],
   '売上':['売上','Sales'], '注文数':['注文数','Orders'], '注文':['注文','Orders'],
@@ -817,6 +825,7 @@ $('#hero').innerHTML =
    <div class="hero-stats">
      ${[[TR('店舗'), rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + ' ' + TR('注文')],
         [TR('オンライン'), rm(cur.on), pct(cur.on,cur.rev) + ' · ' + cur.on_orders + ' ' + TR('注文')],
+        ...(cur.wh > 0 ? [[TR('卸売'), rm(cur.wh), pct(cur.wh,cur.rev) + ' · ' + cur.wh_orders + ' ' + TR('注文')]] : []),
         [TR('客単価'), rm(cur.aov), cur.orders + TR('注文の平均')]]
        .map(([l,v,sub])=>`<div class="st"><span class="l">${esc(l)}</span>
           <span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('')}
@@ -827,12 +836,14 @@ function periodTable(elId, rows, head, opt){
   opt = opt || {};
   const el = document.getElementById(elId);
   const sum = k => rows.reduce((a,r)=>a+r[k],0);
+  const anyWh = rows.some(r=>r.wh > 0);      // 卸売が無い期間では列ごと出さない
   const shareCell = (v, tot) =>
     `${n1(v)} <span style="color:var(--text-muted);font-size:.9em">${pct(v,tot)}</span>`;
   el.innerHTML =
    `<thead><tr>
       <th>${head}</th><th>${TR('期間')}</th>
       <th class="n">${TR('売上')}</th><th class="n">${TR('店舗')}</th><th class="n">${TR('オンライン')}</th>
+      ${anyWh?`<th class="n">${TR('卸売')}</th>`:''}
       <th class="n">${TR('注文数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${TR('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${TR('点数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${TR('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${TR('シューズ点数')}<br><span style="font-weight:400;text-transform:none">(VFF)</span></th>
@@ -843,6 +854,7 @@ function periodTable(elId, rows, head, opt){
       <td class="n"><b>${n1(r.rev)}</b></td>
       <td class="n">${shareCell(r.off, r.rev)}</td>
       <td class="n">${shareCell(r.on, r.rev)}</td>
+      ${anyWh?`<td class="n">${r.wh?shareCell(r.wh, r.rev):'—'}</td>`:''}
       <td class="n">${r.orders}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_orders})</span>`:''}</td>
       <td class="n">${r.units}${opt.withStore?sub(r.off_units):''}</td>
       <td class="n">${r.shoe_units}${sub(r.vff_units)}</td>
@@ -851,6 +863,7 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
       <td class="n">${shareCell(sum('on'), sum('rev'))}</td>
+      ${anyWh?`<td class="n">${shareCell(sum('wh'), sum('rev'))}</td>`:''}
       <td class="n">${sum('orders')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_orders')})</span>`:''}</td>
       <td class="n">${sum('units')}${opt.withStore?sub(sum('off_units')):''}</td>
       <td class="n">${sum('shoe_units')}${sub(sum('vff_units'))}</td>
@@ -951,9 +964,11 @@ function periodBar(hostId, rows, opts){
 
   rows.forEach((r,i)=>{
     const cx = ML + step*i + step/2, x = cx - bw/2;
-    const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph;
-    if (r.off>0) s.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,hOff, r.on>0?0:5), class:'f1'}));
-    if (r.on>0)  s.appendChild(svgEl('path',{d:barV(x,y(r.rev),bw,hOn-(r.off>0?2:0),5), class:'fon'}));
+    const hOff = (r.off/max)*ph, hOn = (r.on/max)*ph, hWh = (r.wh/max)*ph;
+    const topIsWh = r.wh > 0, topIsOn = !topIsWh && r.on > 0;
+    if (r.off>0) s.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,hOff,(r.on>0||r.wh>0)?0:5), class:'f1'}));
+    if (r.on>0)  s.appendChild(svgEl('path',{d:barV(x,y(r.off+r.on),bw,hOn-(r.off>0?2:0),topIsOn?5:0), class:'fon'}));
+    if (r.wh>0)  s.appendChild(svgEl('path',{d:barV(x,y(r.rev),bw,hWh-((r.off+r.on)>0?2:0),5), class:'fwh'}));
     const v1 = svgEl('text',{x:cx,y:y(r.rev)-8,'text-anchor':'middle',class:'dlab'});
     v1.setAttribute('style','font-size:14px'); v1.textContent = rm(r.rev); s.appendChild(v1);
     const l1 = svgEl('text',{x:cx,y:H-MB+22,'text-anchor':'middle',class:'axb'});
@@ -969,6 +984,7 @@ function periodBar(hostId, rows, opts){
       <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
       <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
       <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+      ${r.wh>0?`<div class="r"><span>　卸売</span><span>${rm2(r.wh)}</span></div>`:''}
       <div class="r"><span>注文</span><span>${r.orders}</span></div>
       <div class="r"><span>点数(シューズのみ)</span><span>${r.units}(${r.shoe_units})</span></div>
       <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>`);
@@ -991,13 +1007,13 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   function draw(){
     const m = D.monthly.find(x=>x.id===sel.value);
     const rows = D.daily.filter(r=>r.date >= m.start && r.date <= m.end);
-    const sum = rows.reduce((a,r)=>a+r.off+r.on,0);
+    const sum = rows.reduce((a,r)=>a+r.off+r.on+r.wh,0);
     cnt.textContent = `${rows.length}日 · ${rm2(sum)}`;
 
     const host = $('#c-daily');
     const W = 1000, H = 300, ML = 60, MR = 12, MT = 14, MB = 56;
     const pw = W-ML-MR, ph = H-MT-MB;
-    const max = niceMax(Math.max(1, ...rows.map(r=>r.off+r.on))*1.1);
+    const max = niceMax(Math.max(1, ...rows.map(r=>r.off+r.on+r.wh))*1.1);
     const y = v => MT + ph - (v/max)*ph;
     const sv = mkSvg(host, W, H);
     const step = pw/rows.length, bw = Math.min(22, step*0.62);
@@ -1016,10 +1032,11 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     sv.appendChild(svgEl('line',{x1:ML,x2:W-MR,y1:y(0),y2:y(0),class:'axis'}));
 
     rows.forEach((r,i)=>{
-      const x = ML + step*i + (step-bw)/2, tot = r.off+r.on;
+      const x = ML + step*i + (step-bw)/2, tot = r.off+r.on+r.wh;
       const closed = CLOSED.has(r.date);
-      if (r.off>0) sv.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,(r.off/max)*ph, r.on>0?0:3), class:'f1'}));
-      if (r.on>0)  sv.appendChild(svgEl('path',{d:barV(x,y(tot),bw,(r.on/max)*ph-(r.off>0?2:0),3), class:'fon'}));
+      if (r.off>0) sv.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,(r.off/max)*ph,(r.on>0||r.wh>0)?0:3), class:'f1'}));
+      if (r.on>0)  sv.appendChild(svgEl('path',{d:barV(x,y(r.off+r.on),bw,(r.on/max)*ph-(r.off>0?2:0),r.wh>0?0:3), class:'fon'}));
+      if (r.wh>0)  sv.appendChild(svgEl('path',{d:barV(x,y(tot),bw,(r.wh/max)*ph-((r.off+r.on)>0?2:0),3), class:'fwh'}));
       const lab = svgEl('text',{x:ML+step*i+step/2, y:H-MB+18,'text-anchor':'middle', class:'ax'});
       if (closed) lab.setAttribute('style','fill:var(--crit);font-weight:700');
       lab.textContent = +r.date.slice(8); sv.appendChild(lab);
@@ -1032,6 +1049,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
           ? `<div class="r"><span>売上</span><b>${rm2(tot)}</b></div>
              <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
              <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
+             ${r.wh>0?`<div class="r"><span>　卸売</span><span>${rm2(r.wh)}</span></div>`:''}
              <div class="r"><span>注文</span><span>${r.orders}</span></div>
              <div class="r"><span>点数(シューズのみ)</span><span>${r.units}(${r.shoe_units})</span></div>`
           : `<div class="r"><span>売上</span><span>なし</span></div>`)
@@ -1043,15 +1061,15 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   draw();
 
   const rows = D.daily;
-  const best = rows.reduce((a,r)=> (r.off+r.on) > (a.off+a.on) ? r : a);
+  const best = rows.reduce((a,r)=> (r.off+r.on+r.wh) > (a.off+a.on+a.wh) ? r : a);
 
   $('#daily-note').textContent =
-    `${M.days}日中 ${rows.filter(r=>r.off+r.on>0).length}日に売上があります。`;
+    `${M.days}日中 ${rows.filter(r=>r.off+r.on+r.wh>0).length}日に売上があります。`;
 })();
 
 /* ═══ 4b. 日次テーブル(数値) ═════════════════════════ */
 (function(){
-  const rows = D.daily.filter(r=>r.off+r.on>0);
+  const rows = D.daily.filter(r=>r.off+r.on+r.wh>0);
   const S = k => rows.reduce((a,r)=>a+r[k],0);
   $('#t-daily').innerHTML =
    `<thead><tr><th>${TR('日付')}</th><th>${TR('曜日')}</th><th class="n">${TR('売上')}</th>
@@ -1060,7 +1078,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
      <th class="n">${TR('伝票数')}</th><th class="n">${TR('明細行')}</th>
      <th class="n">${TR('点数')}</th><th class="n">${TR('客単価')}</th></tr></thead>
     <tbody>${rows.map(r=>{
-      const tot = r.off + r.on, wk = wdOf(r.date), mt = wk==='月'||wk==='火';
+      const tot = r.off + r.on + r.wh, wk = wdOf(r.date), mt = wk==='月'||wk==='火';
       return `<tr>
         <td class="num"${mt?' style="color:var(--accent-lime);font-weight:600"':''}>${esc(r.date)}</td>
         <td${mt?' style="color:var(--accent-lime);font-weight:600"':''}>${wk}</td>
@@ -1089,8 +1107,8 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
   sel.value = 'all';
-  const CLS = ['f1','f2','f3','f4'];
-  const VAR = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)'];
+  const CLS = ['f1','f2','f3','f4','f5'];
+  const VAR = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)'];
 
   function draw(){
     const src = D.channels_by_month[sel.value] || D.channels;

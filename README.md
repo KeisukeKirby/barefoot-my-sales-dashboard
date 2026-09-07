@@ -68,6 +68,9 @@ WEEKS = [
   金額は注文合計(`total` = 商品合計 + 送料 − 値引き)
 - **オフライン(店舗)** — `marketplace` = Barefoot Malaysia POS
 - **オンライン** — Shopee / Lazada / 自社直販(`marketplace` 空欄)
+- **卸売** — システム上の区分が無いため `aggregate.py` の `WHOLESALE` に注文IDを列挙する。
+  法人名(`billing_company`)が入っていて未指定の注文があると集計時に警告が出るので、
+  卸売ならIDを追加する。1件で通常の15倍の金額が動くため、混ぜると客単価も点数も歪む
 - **失注** — Cancelled または Returned。売上には含めず別台帳で全件追跡
 - **未入金** — `payment_status` = Unpaid。売上にもキャッシュにも計上しない
 - **点数** — シューズ・ソックスの数量合計。送料などのサービス行は除外し、返品行(数量 −1)は差し引く
