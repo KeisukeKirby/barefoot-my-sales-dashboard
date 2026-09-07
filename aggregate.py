@@ -25,6 +25,27 @@ for path in SRCS:
             merged[d['order_id']] = {'src': path, 'lines': []}
         merged[d['order_id']]['lines'].append(d)
 
+# --- エクスポートに載らなかった注文の手動補完 ---------------------------------
+# order_id 134 は全エクスポートで欠番だった(133 → 135)。管理画面の注文詳細から
+# 起こしている。後日エクスポートに現れたらそちらが優先される(下の取り込み条件)。
+MANUAL_ORDERS = [
+    dict(order_id='134', invoice_no='',                       # Lazada 経由は伝票番号なし
+         order_creation_date='2026-08-31 11:07',
+         order_status='Completed', payment_status='Paid',
+         marketplace='Barefoot Malaysia - Lazada',
+         product_sku='VFF0008(UNK,W38)',                      # 色は注文詳細から判別できず
+         product_name='Vibram Fivefingers V-Soul Model, Pilates/Yoga Shoes '
+                      'Training Shoes for Women-EU:38',
+         product_price='650.00', product_quantity='1', product_total='650.00',
+         total='650.00', billing_firstname='J*g'),
+]
+for mo in MANUAL_ORDERS:
+    if mo['order_id'] in merged:                              # エクスポート優先
+        continue
+    row = {k: '' for k in (header or [])}
+    row.update(mo)
+    merged[mo['order_id']] = {'src': '(manual)', 'lines': [row]}
+
 # 書式が外れたセルは日付が Excel のシリアル値で降ってくる。起点は Excel 標準の
 # 1899-12-30。order_id 103-110 の10行を実データと突き合わせて日時とも一致を確認済み
 # (2026-08-31)。当たった注文は警告に出し、書式付きで再エクスポートできるようにする。
@@ -73,7 +94,9 @@ MODEL = [
 ]
 COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lime','TT/BK':'Total Black',
              'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',
-             'ZB/WT':'Zebra White','LM':'Lemon'}
+             'ZB/WT':'Zebra White','LM':'Lemon','UNK':'(色不明)',
+             'F/IV/GN':'Fig/Ivory/Green','TT/IV':'Total Ivory','GY':'Gray',
+             'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean'}
 
 def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
