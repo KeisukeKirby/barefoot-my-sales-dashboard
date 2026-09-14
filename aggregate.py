@@ -83,6 +83,8 @@ MODEL = [
     ('VFF0002', 'V-Run',      'Vibram FiveFingers', 'shoes'),
     ('VFF0008', 'V-Soul',     'Vibram FiveFingers', 'shoes'),
     ('VFF0009', 'KSO EVO',    'Vibram FiveFingers', 'shoes'),
+    ('VFF0021', 'Groundsplay LS', 'Vibram FiveFingers', 'shoes'),
+    ('VFF0022', 'Breezandal', 'Vibram FiveFingers', 'shoes'),
     ('VFF0023', 'V-Alpha',    'Vibram FiveFingers', 'shoes'),
     ('VFF0024', 'Trailope',   'Vibram FiveFingers', 'shoes'),
     ('VFF0026', 'Spidrwalk',  'Vibram FiveFingers', 'shoes'),
@@ -96,7 +98,7 @@ COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lim
              'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',
              'ZB/WT':'Zebra White','LM':'Lemon','UNK':'(色不明)',
              'F/IV/GN':'Fig/Ivory/Green','TT/IV':'Total Ivory','GY':'Gray',
-             'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean'}
+             'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean','IV/GR':'Ivory/Green'}
 
 def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
@@ -169,12 +171,21 @@ for L in lines:
     orders.setdefault(L['order_id'], []).append(L)
 
 def is_test(v):  return all(L['cat'] == 'test' for L in v)
+# 入金済みで出荷前の途中ステータス。以前は「それ以外は全部キャンセル」で判定していたため、
+# 支払い済みの注文がキャンセル扱いになっていた。売上定義(Completed/Shipped)には入れず別枠にする。
+PENDING = ('Pending Process', 'Processed', 'Ready To Ship')
+unknown_status = set()
+
+
 def bucket(v):
     a = v[0]
     if is_test(v): return 'test'
     if a['status'] in ('Completed', 'Shipped') and a['pay'] == 'Paid': return 'sales'
     if a['status'] == 'Returned': return 'returned'
-    return 'cancelled'
+    if a['status'] == 'Cancelled': return 'cancelled'
+    if a['status'] not in PENDING:
+        unknown_status.add(a['status'])            # 見知らぬステータスは黙って丸めない
+    return 'pending'
 
 O = []
 for oid, v in orders.items():
@@ -200,6 +211,7 @@ sales = [o for o in O if o['bucket'] == 'sales']
 canc  = [o for o in O if o['bucket'] == 'cancelled']
 retn  = [o for o in O if o['bucket'] == 'returned']
 test  = [o for o in O if o['bucket'] == 'test']
+pend  = [o for o in O if o['bucket'] == 'pending']
 unpaid = [o for o in O if o['pay'] == 'Unpaid']
 
 out = dict(orders=O, meta=dict(
@@ -221,6 +233,13 @@ if company_orders:
         print(u'  order_id %s  %s' % (k, v))
     print('!' * 72)
 
+if unknown_status:
+    print()
+    print('!' * 72)
+    print(u'知らない order_status があります(売上に入れず処理中として扱いました): ' + ', '.join(sorted(unknown_status)))
+    print(u'売上に含めるべきステータスなら bucket() を見直してください。')
+    print('!' * 72)
+
 if serial_hits:
     ids = sorted(set(serial_hits), key=lambda x: int(x) if str(x).isdigit() else 0)
     print()
@@ -231,7 +250,7 @@ if serial_hits:
 
 R = lambda x: round(x, 2)
 print('=== BUCKETS (orders / revenue RM / units) ===')
-for nm, g in [('売上(Completed+Shipped/Paid)', sales), ('キャンセル', canc), ('返品', retn), ('テスト', test)]:
+for nm, g in [('売上(Completed+Shipped/Paid)', sales), ('キャンセル', canc), ('返品', retn), ('処理中(入金済・出荷前)', pend), ('テスト', test)]:
     print(f'{nm:32} {len(g):>3}件  RM {R(sum(o["total"] for o in g)):>10,.2f}  {sum(o["units"] for o in g):>3}足')
 print(f'{"うちUnpaid(未入金)":32} {len(unpaid):>3}件  RM {R(sum(o["total"] for o in unpaid)):>10,.2f}  {sum(o["units"] for o in unpaid):>3}足')
 print()

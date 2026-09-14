@@ -87,6 +87,7 @@ WEEKS = [
     (u'W5', u'第5週',  '2026-08-17', '2026-08-23'),
     (u'W6', u'第6週',  '2026-08-24', '2026-08-30'),
     (u'W7', u'第7週',  '2026-08-31', '2026-09-06'),
+    (u'W8', u'第8週',  '2026-09-07', '2026-09-13'),
 ]
 MONTHS = [
     (u'2026-07', u'2026年7月', '2026-07-17', '2026-07-31', u'開業月(7/17〜)'),
@@ -298,7 +299,7 @@ sales_rows = [dict(dt=o['dt'], invoice=o['invoice'], channel=o['channel'], seg=o
               for o in sorted(sales, key=lambda x: x['dt'])]
 
 # 明細は1本にまとめ、画面側でプルダウン絞り込みする
-KIND = {'sales': u'売上', 'cancelled': u'キャンセル', 'returned': u'返品'}
+KIND = {'sales': u'売上', 'cancelled': u'キャンセル', 'returned': u'返品', 'pending': u'処理中'}
 all_rows = [dict(dt=o['dt'], invoice=o['invoice'] or u'—', channel=o['channel'], seg=o['seg'],
                  status=o['status'], pay=o['pay'], kind=KIND.get(o['bucket'], o['bucket']),
                  bucket=o['bucket'], total=R2(o['total']), units=o['units'],

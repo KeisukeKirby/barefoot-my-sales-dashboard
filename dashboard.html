@@ -569,6 +569,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <option value="all" data-i18n="すべて">すべて</option>
         <option value="cancelled" data-i18n="キャンセルのみ">キャンセルのみ</option>
         <option value="returned" data-i18n="返品のみ">返品のみ</option>
+        <option value="pending" data-i18n="処理中のみ">処理中のみ</option>
         <option value="unpaid" data-i18n="未入金のみ">未入金のみ</option>
       </select>
       <label for="f-ch" data-i18n="チャネル">チャネル</label>
@@ -697,6 +698,7 @@ const STR = {
   '表示':['表示','Show'], '売上のみ':['売上のみ','Sales only'], 'すべて':['すべて','All'],
   'キャンセルのみ':['キャンセルのみ','Cancelled only'], '返品のみ':['返品のみ','Returned only'],
   '未入金のみ':['未入金のみ','Unpaid only'],
+  '処理中のみ':['処理中のみ','Processing only'], '処理中':['処理中','Processing'],
   '進行中':['進行中','in progress'], '確認済':['確認済','Verified'], '推定':['推定','Estimate'],
   'レディース':['レディース','Women'], 'メンズ':['メンズ','Men'],
   'ユニセックス(足袋)':['ユニセックス(足袋)','Unisex (tabi)'],
@@ -1424,6 +1426,7 @@ simpleTable('t-pay','決済方法', D.payments);
     all:       () => true,
     cancelled: r => r.bucket === 'cancelled',
     returned:  r => r.bucket === 'returned',
+    pending:   r => r.bucket === 'pending',
     unpaid:    r => r.pay === 'Unpaid',
   };
   const selKind = $('#f-kind'), selCh = $('#f-ch'), count = $('#f-count');
@@ -1446,7 +1449,7 @@ simpleTable('t-pay','決済方法', D.payments);
         <td class="num" style="font-size:12px">${esc(r.dt)}</td>
         <td class="num" style="font-size:12px">${esc(r.invoice)}</td>
         <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?TR('店舗'):TR('オンライン')}</span></td>
-        <td><span class="chip ${r.bucket==='sales'?'mute':'crit'}">${esc(r.kind)}</span></td>
+        <td><span class="chip ${(r.bucket==='sales'||r.bucket==='pending')?'mute':'crit'}">${esc(r.kind)}</span></td>
         <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
         <td style="font-size:12px">${esc(r.channel)}</td>
         <td><span class="wrapok">${esc(r.items)}</span></td>
