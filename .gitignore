@@ -4,6 +4,8 @@ agg.json
 # 元データは置かない
 *.xlsx
 ~$*
+# 統合済みの生データ。顧客名・電話・住所を含む。リポジトリは public なので絶対にコミットしない
+raw_orders.json
 
 __pycache__/
 *.pyc

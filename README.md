@@ -32,6 +32,17 @@ python aggregate.py "<Orders.xlsx>" ["<追加のOrders.xlsx>" ...] && python bui
 含んでいた。過去分のファイルもあわせて渡すこと。`aggregate.py` が `order_id` で統合し、
 同じ注文が複数ファイルにあれば後ろのファイルを採用する。
 
+**元の xlsx は移動・削除されることがある**(9/14 分は Downloads から消え、ごみ箱から取り出した)。
+`aggregate.py` は実行のたびに統合済みの生データを `raw_orders.json` に保存するので、次回からは
+過去分の xlsx の代わりにこれを先頭に渡せばよい。
+
+```bash
+python aggregate.py raw_orders.json "<新しいOrders.xlsx>" && python build_payload.py && python build.py
+```
+
+`raw_orders.json` は顧客名・電話・住所を含む。`.gitignore` 済みで、リポジトリは public なので
+絶対にコミットしないこと。
+
 書式が外れたセルは日付が Excel のシリアル値(`46261.5090` など)で降ってくるため、
 `fix_date()` で文字列に戻している。起点は Excel 標準の **1899-12-30**。
 order_id 103-110 の10行を実データと突き合わせて日時とも一致を確認済み(2026-08-31)。
@@ -59,8 +70,9 @@ WEEKS = [
 
 ### エクスポートに載らない注文を足す
 
-order_id 134 のように、どのエクスポートにも現れない注文がある。管理画面の注文詳細から
-`aggregate.py` の `MANUAL_ORDERS` に書き起こす。後日エクスポートに現れたらそちらが優先
+order_id 134 / 161 のように、どのエクスポートにも現れない注文がある。管理画面の注文詳細から
+`aggregate.py` の `MANUAL_ORDERS` に書き起こす。明細が複数ある注文は `lines=[_ml(...), ...]` で書く。
+161 は画面に明細単価が出ていなかったため注文合計を点数で均等割りしており、モデル別の金額だけは推定値。後日エクスポートに現れたらそちらが優先
 される(手動分は `order_id` が未登録のときだけ取り込む)ので、消さずに残しておいてよい。
 
 ### 商品マスタを足す
@@ -70,7 +82,8 @@ order_id 134 のように、どのエクスポートにも現れない注文が�
 
 ## 集計の定義
 
-- **売上実績** — `order_status` が Completed または Shipped、かつ `payment_status` が Paid の注文。
+- **売上実績** — `payment_status` が Paid で、`order_status` が Completed / Shipped または出荷前
+  (Pending Process / Processed / Ready To Ship)の注文。
   金額は注文合計(`total` = 商品合計 + 送料 − 値引き)
 - **オフライン(店舗)** — `marketplace` = Barefoot Malaysia POS
 - **オンライン** — Shopee / Lazada / 自社直販(`marketplace` 空欄)
@@ -78,10 +91,12 @@ order_id 134 のように、どのエクスポートにも現れない注文が�
   法人名(`billing_company`)が入っていて未指定の注文があると集計時に警告が出るので、
   卸売ならIDを追加する。1件で通常の15倍の金額が動くため、混ぜると客単価も点数も歪む
 - **失注** — Cancelled または Returned。売上には含めず別台帳で全件追跡
-- **処理中** — `Pending Process` / `Processed` / `Ready To Ship`。入金済みで出荷前。売上には入れず、
-  注文明細の「処理中のみ」で確認する。以前は Completed/Shipped/Returned 以外を全部キャンセルと
-  判定していたため、支払い済みの注文(order 133)がキャンセル扱いになっていた。知らないステータスが
-  来たら集計時に警告が出る
+- **処理中** — `Pending Process` / `Processed` / `Ready To Ship`。入金済み(Paid)なら売上に数える
+  (2026-09-14 オーナー判断)。未入金のものだけが「処理中」に残り、注文明細の「処理中のみ」で確認する。
+  以前は Completed/Shipped/Returned 以外を全部キャンセルと判定していて、order 133 がキャンセル扱い
+  になっていた。知らないステータスが来たら集計時に警告が出る
+- **客単価 / 卸単価** — 客単価は卸売を除いた店舗+オンラインの売上 ÷ 注文数。卸売は1件で桁が違い
+  平均を歪めるため、卸売の売上 ÷ 点数を卸単価として別に出す
 - **未入金** — `payment_status` = Unpaid。売上にもキャッシュにも計上しない
 - **点数** — シューズ・ソックスの数量合計。送料などのサービス行は除外し、返品行(数量 −1)は差し引く
 - **モデル別売上** — 商品行(`product_total`)ベース。注文単位の値引き・送料を含まないため純売上とは一致しない

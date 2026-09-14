@@ -13,21 +13,49 @@ if missing:
 
 # エクスポートは差分で出てくることがあるため、複数ファイルを order_id で統合する。
 # 同じ order_id が複数ファイルにあれば後のファイル(新しい方)を採用。
-merged, header = {}, None
-for path in SRCS:
+# raw_orders.json(前回までに統合した生データ)もソースとして渡せる。元の xlsx が
+# 移動・削除されても再集計できるようにするため(9/14 分の xlsx が実際に消えた)。
+ARCHIVE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'raw_orders.json')
+
+
+def read_source(path):
+    if path.lower().endswith('.json'):
+        arch = json.load(open(path, encoding='utf-8'))
+        return arch['header'], arch['rows'], arch.get('sources', [])
     rows = xlsxread.read(path)
     h = rows[0]
+    return (h, [dict(zip(h, r + [''] * (len(h) - len(r)))) for r in rows[1:]],
+            [os.path.basename(path)])
+
+
+merged, header, sources = {}, None, []
+for path in SRCS:
+    h, drows, srcnames = read_source(path)
     header = header or h
-    for r in rows[1:]:
-        d = dict(zip(h, r + [''] * (len(h) - len(r))))
+    sources += [x for x in srcnames if x not in sources]
+    for d in drows:
         merged.setdefault(d['order_id'], {'src': path, 'lines': []})
         if merged[d['order_id']]['src'] != path:       # 別ファイルの同一注文は差し替え
             merged[d['order_id']] = {'src': path, 'lines': []}
         merged[d['order_id']]['lines'].append(d)
 
+# 統合した生データを保存する。顧客名・住所を含むので .gitignore 済み。絶対にコミットしない。
+# 手動補完分は含めない(エクスポート由来の行だけを次回のソースにする)。
+json.dump({'header': header, 'sources': sources,
+           'rows': [ln for k in sorted(merged, key=lambda x: int(x) if str(x).isdigit() else 0)
+                    for ln in merged[k]['lines']]},
+          open(ARCHIVE, 'w', encoding='utf-8'), ensure_ascii=False)
+
 # --- エクスポートに載らなかった注文の手動補完 ---------------------------------
 # order_id 134 は全エクスポートで欠番だった(133 → 135)。管理画面の注文詳細から
 # 起こしている。後日エクスポートに現れたらそちらが優先される(下の取り込み条件)。
+def _ml(sku, name, qty, unit='481.65'):
+    """手動補完用の明細行。"""
+    return dict(product_sku=sku, product_name='Vibram FiveFingers ' + name,
+                product_price=unit, product_quantity=str(qty),
+                product_total='%.2f' % (float(unit) * qty))
+
+
 MANUAL_ORDERS = [
     dict(order_id='134', invoice_no='',                       # Lazada 経由は伝票番号なし
          order_creation_date='2026-08-31 11:07',
@@ -38,13 +66,51 @@ MANUAL_ORDERS = [
                       'Training Shoes for Women-EU:38',
          product_price='650.00', product_quantity='1', product_total='650.00',
          total='650.00', billing_firstname='J*g'),
+
+    # order_id 161 も全エクスポートで欠番(160 → 162)。管理画面の注文詳細から起こした卸売。
+    # 画面に明細ごとの単価が出ていないため、注文合計を点数で均等割りしている
+    # (RM 17,339.40 / 36点 = 481.65)。売上・点数・サイズは正確、モデル別の金額だけ推定値。
+    # 色は商品名が途中で切れて読めない明細を UNK にしている。
+    dict(order_id='161', invoice_no='',
+         order_creation_date='2026-09-02 10:00',
+         order_status='Shipped', payment_status='Paid', marketplace='',
+         total='17339.40', billing_firstname='Hock Soon', billing_lastname='Ng',
+         lines=[_ml('VFF0021(BK,M40)',  'Groundsplay LS Model for Men', 2),
+                _ml('VFF0021(BK,M41)',  'Groundsplay LS Model for Men', 3),
+                _ml('VFF0021(BK,M42)',  'Groundsplay LS Model for Men', 4),
+                _ml('VFF0021(BK,M43)',  'Groundsplay LS Model for Men', 2),
+                _ml('VFF0021(BK,M44)',  'Groundsplay LS Model for Men', 1),
+                _ml('VFF0021(BK,M45)',  'Groundsplay LS Model for Men', 1),
+                _ml('VFF0021(UNK,W37)', 'Groundsplay LS Model for Women', 1),
+                _ml('VFF0021(UNK,W38)', 'Groundsplay LS Model for Women', 3),
+                _ml('VFF0021(UNK,W39)', 'Groundsplay LS Model for Women', 2),
+                _ml('VFF0026(TT/BK,M40)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-40", 2),
+                _ml('VFF0026(TT/BK,M41)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-41", 2),
+                _ml('VFF0026(TT/BK,M42)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-42", 2),
+                _ml('VFF0026(TT/BK,M43)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-43", 1),
+                _ml('VFF0022(UNK,M40)', 'Breezandal Model for Men', 1),
+                _ml('VFF0022(UNK,M41)', 'Breezandal Model for Men', 2),
+                _ml('VFF0022(UNK,M42)', 'Breezandal Model for Men', 3),
+                _ml('VFF0022(UNK,M43)', 'Breezandal Model for Men', 1),
+                _ml('VFF0022(UNK,M44)', 'Breezandal Model for Men', 1),
+                _ml('VFF0022(UNK,W38)', 'Breezandal Model for Women', 1),
+                _ml('VFF0022(UNK,W39)', 'Breezandal Model for Women', 1)]),
 ]
+_units_161 = sum(int(x['product_quantity']) for x in MANUAL_ORDERS[-1]['lines'])
+_lines_161 = round(sum(float(x['product_total']) for x in MANUAL_ORDERS[-1]['lines']), 2)
+assert _units_161 == 36 and _lines_161 == 17339.40, (_units_161, _lines_161)   # 画面の数字と一致させる
+
 for mo in MANUAL_ORDERS:
     if mo['order_id'] in merged:                              # エクスポート優先
         continue
-    row = {k: '' for k in (header or [])}
-    row.update(mo)
-    merged[mo['order_id']] = {'src': '(manual)', 'lines': [row]}
+    common = {k: v for k, v in mo.items() if k != 'lines'}
+    rows = []
+    for ln in mo.get('lines', [{}]):                          # 明細が無ければ1行の注文
+        row = {k: '' for k in (header or [])}
+        row.update(common)
+        row.update(ln)
+        rows.append(row)
+    merged[mo['order_id']] = {'src': '(manual)', 'lines': rows}
 
 # 書式が外れたセルは日付が Excel のシリアル値で降ってくる。起点は Excel 標準の
 # 1899-12-30。order_id 103-110 の10行を実データと突き合わせて日時とも一致を確認済み
@@ -131,8 +197,9 @@ CH = {'Barefoot Malaysia POS': 'POS(実店舗)', 'Barefoot Malaysia - Shopee': '
       'Barefoot Malaysia - Lazada': 'Lazada', '': 'Online(直販)'}
 
 # 卸売はシステム上の区分が無く POS でも marketplace でもないため、注文IDで指定する。
-# 1件で通常の15倍の金額・24点が動くので、混ぜると客単価も点数も歪む。
-WHOLESALE = {'136'}
+# 1件で通常の15倍以上の金額が動くので、混ぜると客単価も点数も歪む。
+# 136 / 161 はいずれも Hock Soon Ng(Yellowstone Sdn Bhd)宛、2026-09-02。
+WHOLESALE = {'136', '161'}
 
 
 def channel_of(d):
@@ -171,8 +238,8 @@ for L in lines:
     orders.setdefault(L['order_id'], []).append(L)
 
 def is_test(v):  return all(L['cat'] == 'test' for L in v)
-# 入金済みで出荷前の途中ステータス。以前は「それ以外は全部キャンセル」で判定していたため、
-# 支払い済みの注文がキャンセル扱いになっていた。売上定義(Completed/Shipped)には入れず別枠にする。
+# 出荷前の途中ステータス。以前は「それ以外は全部キャンセル」で判定していたため、
+# 支払い済みの注文がキャンセル扱いになっていた。Paid なら売上、未入金なら「処理中」に残す。
 PENDING = ('Pending Process', 'Processed', 'Ready To Ship')
 unknown_status = set()
 
@@ -181,6 +248,9 @@ def bucket(v):
     a = v[0]
     if is_test(v): return 'test'
     if a['status'] in ('Completed', 'Shipped') and a['pay'] == 'Paid': return 'sales'
+    # 入金済みの出荷前注文も売上に数える(2026-09-14 オーナー判断)。後日のエクスポートで
+    # キャンセルに変われば order_id 統合でそちらが優先される。
+    if a['status'] in PENDING and a['pay'] == 'Paid': return 'sales'
     if a['status'] == 'Returned': return 'returned'
     if a['status'] == 'Cancelled': return 'cancelled'
     if a['status'] not in PENDING:
@@ -215,7 +285,7 @@ pend  = [o for o in O if o['bucket'] == 'pending']
 unpaid = [o for o in O if o['pay'] == 'Unpaid']
 
 out = dict(orders=O, meta=dict(
-    src=' + '.join(os.path.basename(x) for x in SRCS),
+    src=' + '.join(sources),                       # アーカイブ経由でも元のファイル名を出す
     rows=len(data), n_orders=len(O),
     period=[min(o['date'] for o in O), max(o['date'] for o in O)],
 ))
@@ -250,7 +320,7 @@ if serial_hits:
 
 R = lambda x: round(x, 2)
 print('=== BUCKETS (orders / revenue RM / units) ===')
-for nm, g in [('売上(Completed+Shipped/Paid)', sales), ('キャンセル', canc), ('返品', retn), ('処理中(入金済・出荷前)', pend), ('テスト', test)]:
+for nm, g in [('売上(Paid: 完了・出荷済・出荷前)', sales), ('キャンセル', canc), ('返品', retn), ('処理中(入金済・出荷前)', pend), ('テスト', test)]:
     print(f'{nm:32} {len(g):>3}件  RM {R(sum(o["total"] for o in g)):>10,.2f}  {sum(o["units"] for o in g):>3}足')
 print(f'{"うちUnpaid(未入金)":32} {len(unpaid):>3}件  RM {R(sum(o["total"] for o in unpaid)):>10,.2f}  {sum(o["units"] for o in unpaid):>3}足')
 print()

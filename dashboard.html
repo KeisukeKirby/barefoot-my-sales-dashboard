@@ -265,6 +265,7 @@ td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
 .chip.pos{background:rgba(255,107,43,.15);color:var(--accent-orange);border-color:rgba(255,107,43,.3)}
 .chip.shopee{background:rgba(0,229,255,.13);color:var(--accent-blue);border-color:rgba(0,229,255,.28)}
 .chip.crit{background:rgba(255,90,77,.15);color:var(--crit);border-color:rgba(255,90,77,.3)}
+.chip.wh{background:rgba(141,122,232,.15);color:#b3a6ff;border-color:rgba(141,122,232,.35)}
 .chip.mute{background:rgba(255,255,255,.05);color:var(--text-secondary);border-color:var(--border-color)}
 
 /* ── Callouts ─────────────────────────────────────────── */
@@ -594,7 +595,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2 data-i18n="集計の定義">集計の定義</h2>
     <div class="callout warnflag" style="border-left-color:var(--accent-orange)">
       <h3 style="--dot:var(--accent-orange)" data-i18n="売上として数える条件">売上として数える条件</h3>
-      <p>入金確認済み(<b>Paid</b>)かつ <b>Completed</b> または <b>Shipped</b> の注文のみを売上実績として集計しています。
+      <p>入金確認済み(<b>Paid</b>)で、<b>Completed</b> / <b>Shipped</b> または出荷前(<b>Pending Process</b> / <b>Processed</b> / <b>Ready To Ship</b>)の注文を売上実績として集計しています。
       キャンセル・返品・未入金は売上から除外し、注文明細のプルダウンで別途確認できます。</p>
     </div>
     <div class="tablebox"><table id="t-def"></table></div>
@@ -673,7 +674,8 @@ const STR = {
   '読み取り':['読み取り','Insights'],
 
   '店舗(POS)':['店舗(POS)','Store (POS)'], 'オンライン':['オンライン','Online'],
-  '卸売':['卸売','Wholesale'],
+  '卸売':['卸売','Wholesale'], '点':['点','unit'], '卸単価':['卸単価','Wholesale / unit'],
+  '卸売を除く':['卸売を除く','excl. wholesale'],
   '月・火(店舗休業日)':['月・火(店舗休業日)','Mon/Tue (store closed)'],
   '月':['月','Month'], '週':['週','Week'], '期間':['期間','Period'],
   '売上':['売上','Sales'], '注文数':['注文数','Orders'], '注文':['注文','Orders'],
@@ -828,7 +830,10 @@ $('#hero').innerHTML =
      ${[[TR('店舗'), rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + ' ' + TR('注文')],
         [TR('オンライン'), rm(cur.on), pct(cur.on,cur.rev) + ' · ' + cur.on_orders + ' ' + TR('注文')],
         ...(cur.wh > 0 ? [[TR('卸売'), rm(cur.wh), pct(cur.wh,cur.rev) + ' · ' + cur.wh_orders + ' ' + TR('注文')]] : []),
-        [TR('客単価'), rm(cur.aov), cur.orders + TR('注文の平均')]]
+        [TR('客単価'), rm(cur.retail_aov),
+          (cur.off_orders + cur.on_orders) + TR('注文の平均') + (cur.wh > 0 ? ' (' + TR('卸売を除く') + ')' : '')],
+        ...(cur.wh > 0 ? [[TR('卸単価'), rm(cur.wh_unit_price),
+          cur.wh_orders + ' ' + TR('注文') + ' · ' + cur.wh_units + (LANG === 'en' ? ' units' : '点')]] : [])]
        .map(([l,v,sub])=>`<div class="st"><span class="l">${esc(l)}</span>
           <span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('')}
    </div>`;
@@ -849,7 +854,8 @@ function periodTable(elId, rows, head, opt){
       <th class="n">${TR('注文数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${TR('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${TR('点数')}${opt.withStore?`<br><span style="font-weight:400;text-transform:none">${TR('(店舗のみ)')}</span>`:''}</th>
       <th class="n">${TR('シューズ点数')}<br><span style="font-weight:400;text-transform:none">(VFF)</span></th>
-      <th class="n">${TR('客単価')}</th></tr></thead>
+      <th class="n">${TR('客単価')}</th>
+      ${anyWh?`<th class="n">${TR('卸単価')}</th>`:''}</tr></thead>
     <tbody>${rows.map(r=>`<tr>
       <td><b>${esc(tl(r.label))}</b>${r.ongoing?` <span class="chip mute">${TR('進行中')}</span>`:''}</td>
       <td class="num" style="font-size:12px;color:var(--text-secondary)">${jd(r.start)}–${jd(r.end)}</td>
@@ -860,7 +866,8 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${r.orders}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${r.off_orders})</span>`:''}</td>
       <td class="n">${r.units}${opt.withStore?sub(r.off_units):''}</td>
       <td class="n">${r.shoe_units}${sub(r.vff_units)}</td>
-      <td class="n">${n1(r.aov)}</td></tr>`).join('')}</tbody>
+      <td class="n">${n1(r.retail_aov)}</td>
+      ${anyWh?`<td class="n">${r.wh_units?n1(r.wh_unit_price):'—'}</td>`:''}</tr>`).join('')}</tbody>
     <tfoot><tr><td>${esc(TR(opt.totalLabel || '合計'))}</td><td></td>
       <td class="n">${n1(sum('rev'))}</td>
       <td class="n">${shareCell(sum('off'), sum('rev'))}</td>
@@ -869,7 +876,8 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${sum('orders')}${opt.withStore?` <span style="color:var(--text-muted);font-size:.9em">(${sum('off_orders')})</span>`:''}</td>
       <td class="n">${sum('units')}${opt.withStore?sub(sum('off_units')):''}</td>
       <td class="n">${sum('shoe_units')}${sub(sum('vff_units'))}</td>
-      <td class="n">${n1(sum('rev')/sum('orders'))}</td></tr></tfoot>`;
+      <td class="n">${n1((sum('off')+sum('on'))/Math.max(1, sum('off_orders')+sum('on_orders')))}</td>
+      ${anyWh?`<td class="n">${n1(sum('wh')/Math.max(1, sum('wh_units')))}</td>`:''}</tr></tfoot>`;
 }
 periodTable('t-week', D.weekly, TR('週'));
 periodTable('t-month', D.monthly, TR('月'), {totalLabel:'2026年 合計', withStore:true});
@@ -989,7 +997,8 @@ function periodBar(hostId, rows, opts){
       ${r.wh>0?`<div class="r"><span>　卸売</span><span>${rm2(r.wh)}</span></div>`:''}
       <div class="r"><span>注文</span><span>${r.orders}</span></div>
       <div class="r"><span>点数(シューズのみ)</span><span>${r.units}(${r.shoe_units})</span></div>
-      <div class="r"><span>客単価</span><span>${rm2(r.aov)}</span></div>`);
+      <div class="r"><span>客単価</span><span>${rm2(r.retail_aov)}</span></div>
+      ${r.wh>0?`<div class="r"><span>卸単価</span><span>${rm2(r.wh_unit_price)}</span></div>`:''}`);
     s.appendChild(hit);
   });
 }
@@ -1093,13 +1102,13 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         <td class="n">${r.invoices||'—'}</td>
         <td class="n">${r.lines||'—'}</td>
         <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
-        <td class="n">${r.orders?n1(tot/r.orders):'—'}</td></tr>`;
+        <td class="n">${(r.off_orders+r.on_orders)?n1((r.off+r.on)/(r.off_orders+r.on_orders)):'—'}</td></tr>`;
     }).join('')}</tbody>
     <tfoot><tr><td>${TR('合計')} ${rows.length}日</td><td></td>
       <td class="n">${n1(S('off')+S('on'))}</td><td class="n">${n1(S('off'))}</td><td class="n">${n1(S('on'))}</td>
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
       <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
-      <td class="n">${n1((S('off')+S('on'))/S('orders'))}</td></tr></tfoot>`;
+      <td class="n">${n1((S('off')+S('on'))/Math.max(1, S('off_orders')+S('on_orders')))}</td></tr></tfoot>`;
 })();
 
 /* ═══ 5. Channel(ドーナツ・期間プルダウン)══════════════ */
@@ -1148,7 +1157,9 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         + '<div class="r"><span>構成比</span><span>'+pct(r.rev,tot)+'</span></div>'
         + '<div class="r"><span>注文</span><span>'+r.orders+'</span></div>'
         + '<div class="r"><span>点数(シューズのみ)</span><span>'+r.units+'('+r.shoe_units+')</span></div>'
-        + '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>');
+        + (r.seg==='卸売'
+            ? '<div class="r"><span>卸単価</span><span>'+rm2(r.rev/Math.max(1, r.units))+'</span></div>'
+            : '<div class="r"><span>客単価</span><span>'+rm2(r.rev/r.orders)+'</span></div>'));
       sv.appendChild(hit);
       ang += sweep;
     });
@@ -1183,10 +1194,13 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
         + '<td class="n">'+(r.rev?pct(r.rev,tot):'—')+'</td>'
         + '<td class="n">'+(r.orders||'—')+'</td>'
         + '<td class="n">'+(r.units? r.units+sub('靴'+r.shoe_units) : '—')+'</td>'
-        + '<td class="n">'+(r.orders?n1(r.rev/r.orders):'—')+'</td></tr>').join('')
+        + '<td class="n">'+(r.seg==='卸売'
+            ? (r.units ? n1(r.rev/r.units)+'<span style="color:var(--text-muted);font-size:.85em"> /'+TR('点')+'</span>' : '—')
+            : (r.orders ? n1(r.rev/r.orders) : '—'))+'</td></tr>').join('')
       + '</tbody><tfoot><tr><td>合計</td><td></td><td class="n">'+n1(T.rev)+'</td><td class="n">100.0%</td>'
       + '<td class="n">'+T.orders+'</td><td class="n">'+T.units+sub('靴'+T.shoe)+'</td>'
-      + '<td class="n">'+n1(T.rev/T.orders)+'</td></tr></tfoot>';
+      + '<td class="n">'+n1(rows.filter(r=>r.seg!=='卸売').reduce((a,r)=>a+r.rev,0)
+          / Math.max(1, rows.filter(r=>r.seg!=='卸売').reduce((a,r)=>a+r.orders,0)))+'</td></tr></tfoot>';
   }
   sel.addEventListener('change', draw);
   draw();
@@ -1397,7 +1411,7 @@ countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
     const hit = svgEl('rect',{x:ML+step*i,y:MT,width:step,height:ph,class:'hit'});
     bindTip(hit,`<b>${r.name}曜日</b><hr><div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
       <div class="r"><span>注文 / 点数</span><span>${r.orders} / ${r.units}</span></div>
-      <div class="r"><span>客単価</span><span>${r.orders?rm2(r.rev/r.orders):'—'}</span></div>`);
+      <div class="r"><span>客単価</span><span>${r.retail_orders?rm2(r.retail_rev/r.retail_orders):'—'}</span></div>`);
     s.appendChild(hit);
   });
   const lg = document.createElement('div');
@@ -1448,7 +1462,7 @@ simpleTable('t-pay','決済方法', D.payments);
       <tbody>${list.map(r=>`<tr>
         <td class="num" style="font-size:12px">${esc(r.dt)}</td>
         <td class="num" style="font-size:12px">${esc(r.invoice)}</td>
-        <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':'mute'}">${r.seg.startsWith('オフライン')?TR('店舗'):TR('オンライン')}</span></td>
+        <td><span class="chip ${r.seg.startsWith('オフライン')?'pos':(r.seg==='卸売'?'wh':'mute')}">${r.seg.startsWith('オフライン')?TR('店舗'):(r.seg==='卸売'?TR('卸売'):TR('オンライン'))}</span></td>
         <td><span class="chip ${(r.bucket==='sales'||r.bucket==='pending')?'mute':'crit'}">${esc(r.kind)}</span></td>
         <td><span class="chip ${r.pay==='Unpaid'?'crit':'mute'}">${esc(r.pay)}</span></td>
         <td style="font-size:12px">${esc(r.channel)}</td>
@@ -1511,7 +1525,8 @@ simpleTable('t-pay','決済方法', D.payments);
 /* ═══ 12. Definitions ═════════════════════════════════ */
 $('#t-def').innerHTML =
  `<thead><tr><th>項目</th><th>定義</th></tr></thead><tbody>
-  <tr><td><b>売上実績</b></td><td><span class="wrapok" style="max-width:70ch">order_status が Completed または Shipped、かつ payment_status が Paid の注文。金額は注文合計(total = 商品合計 + 送料 − 値引き)。</span></td></tr>
+  <tr><td><b>売上実績</b></td><td><span class="wrapok" style="max-width:70ch">payment_status が Paid で、order_status が Completed / Shipped または出荷前(Pending Process / Processed / Ready To Ship)の注文。金額は注文合計(total = 商品合計 + 送料 − 値引き)。</span></td></tr>
+  <tr><td><b>客単価 / 卸単価</b></td><td><span class="wrapok" style="max-width:70ch">客単価は卸売を除いた店舗+オンラインの売上 ÷ 注文数。卸売は1件で金額が桁違いに大きく平均を歪めるため、卸売の売上 ÷ 点数を「卸単価」として別に出しています。</span></td></tr>
   <tr><td><b>オフライン(店舗)</b></td><td><span class="wrapok" style="max-width:70ch">marketplace = Barefoot Malaysia POS。Johor Bahru 店頭での販売。</span></td></tr>
   <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
   <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>

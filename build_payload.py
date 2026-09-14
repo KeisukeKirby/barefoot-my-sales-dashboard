@@ -156,6 +156,12 @@ def period_stats(a, b):
         lines=sum(o['n_lines'] for o in s),       # 明細行数
         unit_price=R2(sum(o['total'] for o in s) / sum(o['units'] for o in s)) if sum(o['units'] for o in s) else 0,
         aov=R2(sum(o['total'] for o in s) / len(s)) if s else 0,
+        # 卸売は1件で桁が違うので客単価から外し、卸は1点あたりの単価で別に見る
+        retail_aov=R2((sum(o['total'] for o in so) + sum(o['total'] for o in sn)) / (len(so) + len(sn)))
+                   if (so or sn) else 0,
+        wh_aov=R2(sum(o['total'] for o in sw) / len(sw)) if sw else 0,
+        wh_unit_price=R2(sum(o['total'] for o in sw) / sum(o['units'] for o in sw))
+                      if sum(o['units'] for o in sw) else 0,
         per_day=R2(sum(o['total'] for o in s) / elapsed) if elapsed else 0,
         biz_days=biz,                              # 経過分の店舗営業日数
         per_biz_day=R2(sum(o['total'] for o in s) / biz) if biz else 0,
@@ -268,12 +274,15 @@ def grp(gs, key):
 states = grp(sales, lambda o: o['state'])
 paym = grp(sales, lambda o: o['pay_method'])
 WD = [u'月', u'火', u'水', u'木', u'金', u'土', u'日']
-dow = [dict(name=WD[i], rev=0.0, orders=0, units=0) for i in range(7)]
+dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0) for i in range(7)]
 for o in sales:
     i = datetime.date(*map(int, o['date'].split('-'))).weekday()
     dow[i]['rev'] = R2(dow[i]['rev'] + o['total'])
     dow[i]['orders'] += 1
     dow[i]['units'] += o['units']
+    if not iswh(o):
+        dow[i]['retail_rev'] = R2(dow[i]['retail_rev'] + o['total'])
+        dow[i]['retail_orders'] += 1
 
 hours = [dict(h=h, n=0, rev=0.0) for h in range(9, 22)]
 hi = {h['h']: h for h in hours}
