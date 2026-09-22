@@ -424,10 +424,10 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-ops" data-pane="store">
     <p class="eyebrow" data-i18n="Store Operations">Store Operations</p>
     <h2 data-i18n="店舗の売れる曜日・時間帯">店舗の売れる曜日・時間帯</h2>
-    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみです。</p>
+    <p class="lede">曜日は店舗+オンライン(卸売を除く)、時間帯は店舗(POS)の注文時刻のみです。</p>
     <div class="split">
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3 data-i18n="曜日別 売上">曜日別 売上</h3></figcaption>
+        <figcaption><h3 data-i18n="曜日別 売上(卸売を除く)">曜日別 売上(卸売を除く)</h3></figcaption>
         <div id="c-dow"></div>
       </figure>
       <figure class="chartbox" style="margin:0">
@@ -653,6 +653,7 @@ const STR = {
   '日次の実績':['日次の実績','Daily Results'], '日次売上(店舗 / オンライン)':['日次売上(店舗 / オンライン)','Daily Sales (Store / Online)'],
   '店舗の売れる曜日・時間帯':['店舗の売れる曜日・時間帯','Store Sales by Day and Hour'],
   '曜日別 売上':['曜日別 売上','Sales by Day of Week'],
+  '曜日別 売上(卸売を除く)':['曜日別 売上(卸売を除く)','Sales by Day of Week (excl. wholesale)'],
   '店舗の時間帯別 注文件数':['店舗の時間帯別 注文件数','Store Orders by Hour'],
   'チャネル別の売上':['チャネル別の売上','Sales by Channel'],
   'チャネル別 売上構成':['チャネル別 売上構成','Sales Mix by Channel'],
@@ -1390,7 +1391,9 @@ countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
 
 /* ═══ 8. Ops ══════════════════════════════════════════ */
 (function(){
-  const rows = D.dow, host = $('#c-dow');
+  // 卸売は1件で曜日の棒を跳ね上げる(9/2 水曜に RM 29,041)ので、店舗+オンラインだけで見る
+  const rows = D.dow.map(r => ({...r, rev: r.retail_rev, orders: r.retail_orders, units: r.retail_units})),
+        host = $('#c-dow');
   const W = 460, H = 210, ML = 44, MR = 10, MT = 20, MB = 40;
   const pw = W-ML-MR, ph = H-MT-MB;
   const max = niceMax(Math.max(...rows.map(r=>r.rev))*1.08);

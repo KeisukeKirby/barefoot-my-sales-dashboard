@@ -275,7 +275,8 @@ def grp(gs, key):
 states = grp(sales, lambda o: o['state'])
 paym = grp(sales, lambda o: o['pay_method'])
 WD = [u'月', u'火', u'水', u'木', u'金', u'土', u'日']
-dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0) for i in range(7)]
+dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0, retail_units=0)
+       for i in range(7)]
 for o in sales:
     i = datetime.date(*map(int, o['date'].split('-'))).weekday()
     dow[i]['rev'] = R2(dow[i]['rev'] + o['total'])
@@ -284,6 +285,7 @@ for o in sales:
     if not iswh(o):
         dow[i]['retail_rev'] = R2(dow[i]['retail_rev'] + o['total'])
         dow[i]['retail_orders'] += 1
+        dow[i]['retail_units'] += o['units']
 
 hours = [dict(h=h, n=0, rev=0.0) for h in range(9, 22)]
 hi = {h['h']: h for h in hours}
