@@ -168,6 +168,13 @@ h3{font-family:var(--font-heading);font-size:1.15rem;font-weight:700;margin:0 0 
 .hero .v small{font-size:.36em;font-weight:500;color:var(--text-secondary);margin-right:.25em}
 
 /* ── Filter row ───────────────────────────────────────── */
+.whx{display:inline-flex;align-items:center;gap:.45rem;margin:.15rem 0 .9rem;padding:.3rem .8rem;
+  border:1px solid var(--border-color);border-radius:999px;background:var(--bg-card);cursor:pointer;
+  font-family:var(--font-heading);font-size:.8rem;color:var(--text-secondary);user-select:none;
+  transition:var(--smooth)}
+.whx:hover{border-color:rgba(141,122,232,.45);color:var(--text-primary)}
+.whx input{accent-color:var(--s5);width:15px;height:15px;margin:0;cursor:pointer}
+.whx.on{border-color:rgba(141,122,232,.55);background:rgba(141,122,232,.12);color:#b3a6ff}
 .filterrow{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.9rem;
   font-family:var(--font-heading);font-size:.85rem;color:var(--text-secondary)}
 .filterrow select{
@@ -424,10 +431,10 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-ops" data-pane="store">
     <p class="eyebrow" data-i18n="Store Operations">Store Operations</p>
     <h2 data-i18n="店舗の売れる曜日・時間帯">店舗の売れる曜日・時間帯</h2>
-    <p class="lede">曜日は店舗+オンライン(卸売を除く)、時間帯は店舗(POS)の注文時刻のみです。</p>
+    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみです。</p>
     <div class="split">
       <figure class="chartbox" style="margin:0">
-        <figcaption><h3 data-i18n="曜日別 売上(卸売を除く)">曜日別 売上(卸売を除く)</h3></figcaption>
+        <figcaption><h3 data-i18n="曜日別 売上">曜日別 売上</h3></figcaption>
         <div id="c-dow"></div>
       </figure>
       <figure class="chartbox" style="margin:0">
@@ -618,10 +625,13 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
 <div id="tip" role="status" aria-live="polite"></div>
 
 <script id="payload" type="application/json">__PAYLOAD__</script>
+<script id="payload-retail" type="application/json">__PAYLOAD_RETAIL__</script>
 <script>
 (function(){
 "use strict";
-const D = JSON.parse(document.getElementById('payload').textContent);
+const DA = JSON.parse(document.getElementById('payload').textContent);         // 卸売を含む
+const DR = JSON.parse(document.getElementById('payload-retail').textContent);  // 卸売を除く
+const D = DA;
 
 /* ── i18n ──────────────────────────────────────────────
    切り替えは localStorage + リロード。各描画ブロックが一度だけ走る作りなので、
@@ -797,6 +807,16 @@ function mkSvg(host, w, h){
   return s;
 }
 
+/* ═══ 0. 卸売を除く切り替え ════════════════════════════
+   各セクションの描画関数を登録しておき、チェックが変わったら
+   そのセクションだけ卸売を除いたデータ(DR)で描き直す。 */
+let XW = {};
+try { XW = JSON.parse(localStorage.getItem('bmsd-xwh') || '{}') || {}; } catch (e) { XW = {}; }
+const REG = {};
+function runSection(id, fn){ const d = XW[id] ? DR : DA; fn(d, d.kpi, d.meta); }
+function section(id, fn){ (REG[id] = REG[id] || []).push(fn); runSection(id, fn); }
+function rerender(id){ (REG[id] || []).forEach(fn => runSection(id, fn)); }
+
 /* ═══ 1. Masthead + KPI ═══════════════════════════════ */
 const K = D.kpi, M = D.meta;
 $('#mast-rev').textContent = 'RM ' + n1(K.total.rev);
@@ -818,6 +838,7 @@ const IC = {
 };
 const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 
+section('s-summary', function(D, K, M){
 const MM = D.monthly;
 const cur = MM[MM.length-1], prev = MM.length>1 ? MM[MM.length-2] : null;
 const mom = prev && prev.rev ? (cur.rev/prev.rev - 1) : null;
@@ -838,6 +859,7 @@ $('#hero').innerHTML =
        .map(([l,v,sub])=>`<div class="st"><span class="l">${esc(l)}</span>
           <span class="v">${esc(v)}</span><span class="s">${esc(sub)}</span></div>`).join('')}
    </div>`;
+});
 
 /* ═══ 2. Period tables ═══════════════════════════════ */
 function periodTable(elId, rows, head, opt){
@@ -880,11 +902,14 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${n1((sum('off')+sum('on'))/Math.max(1, sum('off_orders')+sum('on_orders')))}</td>
       ${anyWh?`<td class="n">${n1(sum('wh')/Math.max(1, sum('wh_units')))}</td>`:''}</tr></tfoot>`;
 }
-periodTable('t-week', D.weekly, TR('週'));
-periodTable('t-month', D.monthly, TR('月'), {totalLabel:'2026年 合計', withStore:true});
+section('s-week', function(D){ periodTable('t-week', D.weekly, TR('週')); });
+section('s-month', function(D){
+  periodTable('t-month', D.monthly, TR('月'), {totalLabel:'2026年 合計', withStore:true});
+});
 
 
 /* ═══ 3. Online / Offline split ═══════════════════════ */
+section('s-split', function(D, K, M){
 const segs = [
   {k:'offline', name:'オフライン(店舗)', sub:'Barefoot Malaysia POS · Johor Bahru', cls:'tone-off', color:'var(--s1)'},
   {k:'online',  name:'オンライン',       sub:'Shopee · Lazada · 自社直販',          cls:'tone-on',  color:'var(--s-online)'}
@@ -910,9 +935,10 @@ $('#sharebar').innerHTML =
 $('#sharelegend').innerHTML = segs.map(s =>
   `<span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:${s.color}"></i>
    ${s.name} <b class="num">${pct(K[s.k].rev,K.total.rev)}</b> <span style="color:var(--text-muted)">${rm2(K[s.k].rev)}</span></span>`).join('');
+});
 
 /* ═══ 3c. 週ごとの 店舗 / オンライン(グループ棒)═══════ */
-(function(){
+section('s-split', function(D, K, M){
   const rows = D.weekly;
   const host = $('#c-segweek');
   const W = 960, H = 320, ML = 66, MR = 16, MT = 18, MB = 66;
@@ -952,7 +978,7 @@ $('#sharelegend').innerHTML = segs.map(s =>
       <div class="r"><span>合計</span><span>${rm2(r.rev)}</span></div>`);
     s.appendChild(hit);
   });
-})();
+});
 
 /* ═══ 3d. 期間別 積み上げ棒(月別 / 週別 共通)══════════ */
 function periodBar(hostId, rows, opts){
@@ -1003,18 +1029,20 @@ function periodBar(hostId, rows, opts){
     s.appendChild(hit);
   });
 }
-periodBar('c-monthbar', D.monthly, {W:620, bw:140});
-periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
+section('s-month', function(D){ periodBar('c-monthbar', D.monthly, {W:620, bw:140}); });
+section('s-week',  function(D){ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96}); });
 
 /* ═══ 4. Daily chart(月ごと・月火は店舗休業日)══════════ */
-(function(){
+section('s-summary', function(D, K, M){
   const CLOSED = new Set(D.closed_days);           // 集計側と同じ休業日リスト
   const sel = $('#f-month'), cnt = $('#f-month-count');
+  const keep = sel.value;                        // 再描画時は選択中の月を保つ
+  sel.innerHTML = '';
   D.monthly.forEach(m=>{
     const o = document.createElement('option');
     o.value = m.id; o.textContent = tl(m.label); sel.appendChild(o);
   });
-  sel.value = D.monthly[D.monthly.length-1].id;
+  sel.value = [...sel.options].some(o=>o.value===keep) ? keep : D.monthly[D.monthly.length-1].id;
 
   function draw(){
     const m = D.monthly.find(x=>x.id===sel.value);
@@ -1069,7 +1097,7 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       sv.appendChild(hit);
     });
   }
-  sel.addEventListener('change', draw);
+  sel.onchange = draw;
   draw();
 
   const rows = D.daily;
@@ -1077,10 +1105,10 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
 
   $('#daily-note').textContent =
     `${M.days}日中 ${rows.filter(r=>r.off+r.on+r.wh>0).length}日に売上があります。`;
-})();
+});
 
 /* ═══ 4b. 日次テーブル(数値) ═════════════════════════ */
-(function(){
+section('s-daily', function(D, K, M){
   const rows = D.daily.filter(r=>r.off+r.on+r.wh>0);
   const S = k => rows.reduce((a,r)=>a+r[k],0);
   $('#t-daily').innerHTML =
@@ -1110,15 +1138,17 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
       <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
       <td class="n">${n1((S('off')+S('on'))/Math.max(1, S('off_orders')+S('on_orders')))}</td></tr></tfoot>`;
-})();
+});
 
 /* ═══ 5. Channel(ドーナツ・期間プルダウン)══════════════ */
-(function(){
+section('s-channel', function(D, K, M){
   const sel = $('#f-ch-month'), cnt = $('#f-ch-count');
+  const keep = sel.value;                        // 再描画時は選択中の期間を保つ
+  sel.innerHTML = '';
   [['all','全期間'], ...D.monthly.map(m=>[m.id, tl(m.label)])].forEach(([v,l])=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
-  sel.value = 'all';
+  sel.value = [...sel.options].some(o=>o.value===keep) ? keep : 'all';
   const CLS = ['f1','f2','f3','f4','f5'];
   const VAR = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)'];
 
@@ -1203,12 +1233,12 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
       + '<td class="n">'+n1(rows.filter(r=>r.seg!=='卸売').reduce((a,r)=>a+r.rev,0)
           / Math.max(1, rows.filter(r=>r.seg!=='卸売').reduce((a,r)=>a+r.orders,0)))+'</td></tr></tfoot>';
   }
-  sel.addEventListener('change', draw);
+  sel.onchange = draw;
   draw();
-})();
+});
 
 /* ═══ 5b. 1日あたりの売上 ═══════════════════════════════ */
-(function(){
+section('s-avg', function(D, K, M){
   const build = (elId, rows, head) => {
     const S = k => rows.reduce((a,r)=>a+r[k],0);
     document.getElementById(elId).innerHTML =
@@ -1230,16 +1260,18 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
   };
   build('t-avg-month', D.monthly, TR('月'));
   build('t-avg-week',  D.weekly,  TR('週'));
-})();
+});
 
 
 /* ═══ 6. Model(月プルダウン)═══════════════════════════ */
-(function(){
+section('s-product', function(D, K, M){
   const sel = $('#f-model-month'), cnt = $('#f-model-count');
+  const keep = sel.value;                        // 再描画時は選択中の期間を保つ
+  sel.innerHTML = '';
   [['all','全期間'], ...D.monthly.map(m=>[m.id, tl(m.label)])].forEach(([v,l])=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
-  sel.value = 'all';
+  sel.value = [...sel.options].some(o=>o.value===keep) ? keep : 'all';
 
   function draw(){
     const src = D.models_by_month[sel.value] || D.models;
@@ -1325,9 +1357,9 @@ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96});
          <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
        </span>`).join('');
   }
-  sel.addEventListener('change', draw);
+  sel.onchange = draw;
   draw();
-})();
+});
 
 /* ═══ 7. Size / Color ═════════════════════════════════ */
 function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
@@ -1352,7 +1384,7 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
     s.appendChild(hit);
   });
 }
-(function(){
+section('s-size', function(D, K, M){
   // 男女比。Marugo 足袋は cm 表記で男女共用のため別枠にする
   const w = D.sizes.women.reduce((a,r)=>a+r.n,0);
   const m = D.sizes.men.reduce((a,r)=>a+r.n,0);
@@ -1371,12 +1403,14 @@ function countChart(hostId, rows, keyF, valF, cls, unit, Wover){
        <b class="num">${pct(r.n,tot)}</b>
        <span style="color:var(--text-muted)">${r.n}${UNIT}</span></span>`).join('')
     + `<span style="color:var(--text-muted)">${TR('合計')} ${tot}${UNIT}</span>`;
-})();
+});
 
-countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
-countChart('c-sizem', D.sizes.men,   r=>r.size, r=>r.n, 'f3', '足');
-countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
-(function(){
+section('s-size', function(D){
+  countChart('c-sizew', D.sizes.women, r=>r.size, r=>r.n, 'f1', '足');
+  countChart('c-sizem', D.sizes.men,   r=>r.size, r=>r.n, 'f3', '足');
+  countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
+});
+section('s-size', function(D, K, M){
   const w = D.sizes.women, m = D.sizes.men, t = D.sizes.tabi;
   const topW = [...w].sort((a,b)=>b.n-a.n).slice(0,3);
   const topM = [...m].sort((a,b)=>b.n-a.n).slice(0,3);
@@ -1387,13 +1421,11 @@ countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
     + ` レディースは EU${topW.map(r=>r.size).join(' · ')} が中心(上位3サイズで ${pct(topW.reduce((a,r)=>a+r.n,0), sw)})、`
     + ` メンズは EU${topM.map(r=>r.size).join(' · ')} に分散しています。`
     + ` カラーは Black が ${bk.n}点で全体の ${pct(bk.n, D.colors.reduce((a,c)=>a+c.n,0))}。`;
-})();
+});
 
 /* ═══ 8. Ops ══════════════════════════════════════════ */
-(function(){
-  // 卸売は1件で曜日の棒を跳ね上げる(9/2 水曜に RM 29,041)ので、店舗+オンラインだけで見る
-  const rows = D.dow.map(r => ({...r, rev: r.retail_rev, orders: r.retail_orders, units: r.retail_units})),
-        host = $('#c-dow');
+section('s-ops', function(D, K, M){
+  const rows = D.dow, host = $('#c-dow');
   const W = 460, H = 210, ML = 44, MR = 10, MT = 20, MB = 40;
   const pw = W-ML-MR, ph = H-MT-MB;
   const max = niceMax(Math.max(...rows.map(r=>r.rev))*1.08);
@@ -1421,8 +1453,10 @@ countChart('c-color', D.colors,      r=>r.name, r=>r.n, 'f1', '点', 980);
   lg.className='legend'; lg.style.marginTop='4px';
   lg.innerHTML = `<span><i class="sw" style="background:var(--s1)"></i>平日</span><span><i class="sw" style="background:var(--s3)"></i>週末</span>`;
   host.appendChild(lg);
-})();
-countChart('c-hour', D.hours.filter(h=>h.h>=10&&h.h<=21), r=>r.h+'時', r=>r.n, 'f1', '件');
+});
+section('s-ops', function(D){
+  countChart('c-hour', D.hours.filter(h=>h.h>=10&&h.h<=21), r=>r.h+'時', r=>r.n, 'f1', '件');
+});
 
 function simpleTable(elId, title, rows, valLabel){
   const tot = rows.reduce((a,r)=>a+r.rev,0);
@@ -1433,10 +1467,10 @@ function simpleTable(elId, title, rows, valLabel){
     <tfoot><tr><td>合計</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
       <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td></tr></tfoot>`;
 }
-simpleTable('t-pay','決済方法', D.payments);
+section('s-ops', function(D){ simpleTable('t-pay','決済方法', D.payments); });
 
 /* ═══ 10. 注文明細(絞り込み付き) ═════════════════════ */
-(function(){
+section('s-ledger', function(D, K, M){
   const rows = D.all_rows;
   const FILTERS = {
     sales:     r => r.bucket === 'sales',
@@ -1447,9 +1481,12 @@ simpleTable('t-pay','決済方法', D.payments);
     unpaid:    r => r.pay === 'Unpaid',
   };
   const selKind = $('#f-kind'), selCh = $('#f-ch'), count = $('#f-count');
+  const keepCh = selCh.value;
+  [...selCh.options].slice(1).forEach(o=>o.remove());   // 先頭の「すべて」は残す
   [...new Set(rows.map(r=>r.channel))].forEach(c=>{
     const o = document.createElement('option'); o.value = c; o.textContent = c; selCh.appendChild(o);
   });
+  selCh.value = [...selCh.options].some(o=>o.value===keepCh) ? keepCh : '';
 
   function render(){
     const f = FILTERS[selKind.value] || FILTERS.all;
@@ -1479,8 +1516,8 @@ simpleTable('t-pay','決済方法', D.payments);
         <td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
         <td class="n">${n1(S('total'))}</td></tr></tfoot>`;
   }
-  selKind.addEventListener('change', render);
-  selCh.addEventListener('change', render);
+  selKind.onchange = render;
+  selCh.onchange = render;
   render();
 
   const up = rows.filter(r=>r.pay==='Unpaid');
@@ -1488,7 +1525,26 @@ simpleTable('t-pay','決済方法', D.payments);
     `未入金は ${up.length}件 / ${rm2(up.reduce((a,r)=>a+r.total,0))}。すべて `
     + `${[...new Set(up.map(r=>r.channel))].join(' / ')} 経由で、全件がキャンセルまたは返品で終わっています(入金実績なし)。`
     + ` 上のプルダウンで「未入金のみ」を選ぶと一覧できます。`;
-})();
+});
+
+/* ═══ 10b. 「卸売を除く」チェック(セクションごと) ══════════ */
+Object.keys(REG).forEach(id=>{
+  const h2 = document.querySelector('#'+id+' h2');
+  if (!h2) return;
+  const lab = document.createElement('label');
+  lab.className = 'whx';
+  lab.innerHTML = '<input type="checkbox"><span>'+esc(TR('卸売を除く'))+'</span>';
+  const cb = lab.querySelector('input');
+  cb.checked = !!XW[id];
+  lab.classList.toggle('on', cb.checked);
+  cb.addEventListener('change', ()=>{
+    XW[id] = cb.checked;
+    lab.classList.toggle('on', cb.checked);
+    try { localStorage.setItem('bmsd-xwh', JSON.stringify(XW)); } catch (e) {}
+    rerender(id);
+  });
+  h2.insertAdjacentElement('afterend', lab);
+});
 
 /* ═══ 11. Findings ════════════════════════════════════ */
 (function(){

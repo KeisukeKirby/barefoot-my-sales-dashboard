@@ -15,5 +15,11 @@ tpl = io.open(TPL, encoding='utf-8').read()
 if '__PAYLOAD__' not in tpl:
     sys.exit('dashboard.html に __PAYLOAD__ プレースホルダがありません')
 pay = io.open(PAY, encoding='utf-8').read()
-io.open(OUT, 'w', encoding='utf-8').write(tpl.replace('__PAYLOAD__', pay))
+# 卸売を除いた版(build_payload.py が一緒に書き出す)
+PAYR = os.path.join(HERE, 'payload_retail.json')
+if '__PAYLOAD_RETAIL__' not in tpl:
+    sys.exit('dashboard.html に __PAYLOAD_RETAIL__ プレースホルダがありません')
+payr = io.open(PAYR, encoding='utf-8').read()
+io.open(OUT, 'w', encoding='utf-8').write(
+    tpl.replace('__PAYLOAD_RETAIL__', payr).replace('__PAYLOAD__', pay))
 print('built', OUT, len(tpl) + len(pay), 'chars  <-', PAY)

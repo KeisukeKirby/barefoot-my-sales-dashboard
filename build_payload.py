@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-import sys, io, json, collections, datetime
+import sys, io, json, collections, datetime, os, subprocess
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 J = json.load(open('agg.json', encoding='utf-8'))
 O = [o for o in J['orders'] if o['bucket'] != 'test']
+# 卸売を除いた版も同じロジックで作る(画面のチェックボックスで切り替える)
+EXCL_WH = os.environ.get('EXCLUDE_WH') == '1'
+if EXCL_WH:
+    O = [o for o in O if o['seg'] != u'卸売']
 sales = [o for o in O if o['bucket'] == 'sales']
 canc = [o for o in O if o['bucket'] == 'cancelled']
 retn = [o for o in O if o['bucket'] == 'returned']
@@ -177,6 +181,8 @@ monthly = [dict(id=i, label=lb, note=nt, **period_stats(a, b)) for i, lb, a, b, 
 
 CH_POS = u'POS(実店舗)'
 CHORDER = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)', u'卸売']
+if EXCL_WH:
+    CHORDER = CHORDER[:-1]
 
 
 def channels_for(subset_sales, subset_lost):
@@ -340,9 +346,16 @@ P = dict(
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
     unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows, all_rows=all_rows,
 )
-open('payload.json', 'w', encoding='utf-8').write(json.dumps(P, ensure_ascii=False, separators=(',', ':')))
-print('payload.json written', len(json.dumps(P, ensure_ascii=False)), 'chars')
+OUTF = 'payload_retail.json' if EXCL_WH else 'payload.json'
+open(OUTF, 'w', encoding='utf-8').write(json.dumps(P, ensure_ascii=False, separators=(',', ':')))
+print(OUTF, 'written', len(json.dumps(P, ensure_ascii=False)), 'chars')
 print(json.dumps(P['kpi'], ensure_ascii=False, indent=1))
 print('weekly:', json.dumps(P['weekly'], ensure_ascii=False, indent=1))
 print('monthly:', json.dumps(P['monthly'], ensure_ascii=False, indent=1))
 print('channels:', json.dumps(P['channels'], ensure_ascii=False, indent=1))
+
+# 通常版を書いたら、続けて卸売を除いた版も作る
+if not EXCL_WH:
+    subprocess.run([sys.executable, os.path.abspath(__file__)],
+                   env=dict(os.environ, EXCLUDE_WH='1'), check=True, stdout=subprocess.DEVNULL)
+    print('payload_retail.json written')
