@@ -674,6 +674,10 @@ try {
 }
 if (LANG !== 'en') LANG = 'ja';
 const STR = {
+  '足数':['足数','Pairs'],
+  '店舗(足)':['店舗(足)','Store (prs)'],
+  'ｵﾝﾗｲﾝ(足)':['ｵﾝﾗｲﾝ(足)','Online (prs)'],
+  '卸売(足)':['卸売(足)','Wholesale (prs)'],
   '売上なし':['売上なし','No sales'],
   '決済方法':['決済方法','Payment method'],
   '行をクリックすると内訳が開きます。':['行をクリックすると内訳が開きます。','Click a row to see what it breaks down into.'],
@@ -770,6 +774,7 @@ function tl(label){
   return label;
 }
 const UNIT = LANG === 'en' ? ' prs' : '足';
+const MODELS = LANG === 'en' ? ' models' : 'モデル';
 document.documentElement.lang = LANG;
 document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = TR(el.dataset.i18n); });
 document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = TR(el.dataset.i18nHtml); });
@@ -1325,7 +1330,7 @@ section('s-product', function(D, K, M){
     const src = D.models_by_month[sel.value] || D.models;
     const rows = src.filter(m=>m.name!=='配送料');
     const tot = rows.reduce((a,r)=>a+r.rev,0);
-    cnt.textContent = `${rows.length}モデル · ${rm2(tot)} · ${rows.reduce((a,r)=>a+r.units,0)}点`;
+    cnt.textContent = `${rows.length}${MODELS} · ${rm2(tot)} · ${rows.reduce((a,r)=>a+r.units,0)}${UNIT}`;
 
     const host = $('#c-model');
     const W = 900, rowH = 34, MT = 8, ML = 176, MR = 132;
@@ -1344,19 +1349,21 @@ section('s-product', function(D, K, M){
       const yT = MT + i*rowH + 6, bh = 20;
       const nm = svgEl('text',{x:ML-12,y:yT+15,'text-anchor':'end',class:'axb'});
       nm.setAttribute('style','font-size:13px'); nm.textContent = r.name; sv.appendChild(nm);
-      const wOff = (r.off/max)*pw, wOn = (r.on/max)*pw;
-      if (r.off>0) sv.appendChild(svgEl('path',{d:barH(ML,yT,wOff,bh, r.on>0?0:4), class:'f1'}));
-      if (r.on>0)  sv.appendChild(svgEl('path',{d:barH(ML+wOff+(r.off>0?2:0),yT,wOn-(r.off>0?2:0),bh,4), class:'fon'}));
+      const wOff = (r.off/max)*pw, wOn = (r.on/max)*pw, wWh = (r.wh/max)*pw;
+      if (r.off>0) sv.appendChild(svgEl('path',{d:barH(ML,yT,wOff,bh, (r.on>0||r.wh>0)?0:4), class:'f1'}));
+      if (r.on>0)  sv.appendChild(svgEl('path',{d:barH(ML+wOff+(r.off>0?2:0),yT,wOn-(r.off>0?2:0),bh,r.wh>0?0:4), class:'fon'}));
+      if (r.wh>0)  sv.appendChild(svgEl('path',{d:barH(ML+wOff+wOn+((r.off>0||r.on>0)?2:0),yT,wWh-((r.off>0||r.on>0)?2:0),bh,4), class:'fwh'}));
       const v1 = svgEl('text',{x:x(r.rev)+8,y:yT+14,class:'dlab'});
-      v1.textContent = `${rm(r.rev)}  ${r.units}点`; sv.appendChild(v1);
+      v1.textContent = `${rm(r.rev)}  ${r.units}${UNIT}`; sv.appendChild(v1);
       const hit = svgEl('rect',{x:0,y:MT+i*rowH,width:W,height:rowH,class:'hit'});
       bindTip(hit, `<b>${esc(r.name)}</b> · ${esc(r.brand)}<hr>
         <div class="r"><span>売上</span><b>${rm2(r.rev)}</b></div>
         <div class="r"><span>構成比</span><span>${pct(r.rev, tot)}</span></div>
         <div class="r"><span>　店舗</span><span>${rm2(r.off)}</span></div>
         <div class="r"><span>　オンライン</span><span>${rm2(r.on)}</span></div>
-        <div class="r"><span>数量</span><span>${r.units} 点</span></div>
-        <div class="r"><span>　店舗 / ｵﾝﾗｲﾝ</span><span>${r.off_units} / ${r.on_units} 点</span></div>
+        ${r.wh>0?`<div class="r"><span>　卸売</span><span>${rm2(r.wh)}</span></div>`:''}
+        <div class="r"><span>数量</span><span>${r.units} ${UNIT}</span></div>
+        <div class="r"><span>　店舗 / ｵﾝﾗｲﾝ${r.wh_units?' / 卸':''}</span><span>${r.off_units} / ${r.on_units}${r.wh_units?' / '+r.wh_units:''} ${UNIT}</span></div>
         <div class="r"><span>平均単価</span><span>${rm2(r.avg)}</span></div>`);
       sv.appendChild(hit);
     });
@@ -1364,24 +1371,31 @@ section('s-product', function(D, K, M){
     const VFF = 'Vibram FiveFingers';
     const draw1 = (elId, list, label) => {
       const t = list.reduce((a,r)=>a+r.rev,0), u = list.reduce((a,r)=>a+r.units,0);
+      const hasWh = list.some(r=>r.wh > 0 || r.wh_units > 0);   // 卸売が無い月は列ごと出さない
       document.getElementById(elId).innerHTML = !list.length
         ? `<thead><tr><th>${esc(label)}</th></tr></thead><tbody><tr><td style="color:var(--text-muted)">この月の販売はありません</td></tr></tbody>`
         : `<thead><tr><th>${TR('モデル')}</th><th class="n">${TR('売上')}</th><th class="n">${TR('構成比')}</th>
-            <th class="n">${TR('数量')}</th><th class="n">${TR('店舗点数')}</th><th class="n">${TR('ｵﾝﾗｲﾝ点数')}</th>
-            <th class="n">${TR('平均単価')}</th><th class="n">${TR('店舗')}</th><th class="n">${TR('オンライン')}</th></tr></thead>
+            <th class="n">${TR('足数')}</th><th class="n">${TR('店舗(足)')}</th><th class="n">${TR('ｵﾝﾗｲﾝ(足)')}</th>
+            ${hasWh?`<th class="n">${TR('卸売(足)')}</th>`:''}
+            <th class="n">${TR('平均単価')}</th><th class="n">${TR('店舗')}</th><th class="n">${TR('オンライン')}</th>
+            ${hasWh?`<th class="n">${TR('卸売')}</th>`:''}</tr></thead>
            <tbody>${list.map(r=>`<tr><td><b>${esc(r.name)}</b></td>
              <td class="n"><b>${n1(r.rev)}</b></td><td class="n">${pct(r.rev,t)}</td>
              <td class="n">${r.units}</td>
              <td class="n">${r.off_units||'—'}</td><td class="n">${r.on_units||'—'}</td>
+             ${hasWh?`<td class="n">${r.wh_units||'—'}</td>`:''}
              <td class="n">${r.avg?n1(r.avg):'—'}</td>
-             <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td></tr>`).join('')}</tbody>
+             <td class="n">${r.off?n1(r.off):'—'}</td><td class="n">${r.on?n1(r.on):'—'}</td>
+             ${hasWh?`<td class="n">${r.wh?n1(r.wh):'—'}</td>`:''}</tr>`).join('')}</tbody>
            <tfoot><tr><td>${esc(label)} 合計</td><td class="n">${n1(t)}</td><td class="n">100.0%</td>
              <td class="n">${u}</td>
              <td class="n">${list.reduce((a,r)=>a+r.off_units,0)}</td>
              <td class="n">${list.reduce((a,r)=>a+r.on_units,0)}</td>
+             ${hasWh?`<td class="n">${list.reduce((a,r)=>a+r.wh_units,0)}</td>`:''}
              <td class="n">—</td>
              <td class="n">${n1(list.reduce((a,r)=>a+r.off,0))}</td>
-             <td class="n">${n1(list.reduce((a,r)=>a+r.on,0))}</td></tr></tfoot>`;
+             <td class="n">${n1(list.reduce((a,r)=>a+r.on,0))}</td>
+             ${hasWh?`<td class="n">${n1(list.reduce((a,r)=>a+r.wh,0))}</td>`:''}</tr></tfoot>`;
     };
     draw1('t-model-vff',   src.filter(r=>r.brand===VFF), VFF);
     draw1('t-model-other', src.filter(r=>r.brand!==VFF), 'その他ブランド・ソックス');
@@ -1402,7 +1416,7 @@ section('s-product', function(D, K, M){
       `<span style="display:inline-flex;align-items:center;gap:7px">
          <i class="sw" style="background:${SW[i%SW.length]}"></i>
          ${esc(r.name)} <b class="num">${pct(r.rev,btot)}</b>
-         <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}点 · ${r.models.length}モデル</span>
+         <span style="color:var(--text-muted)">${rm2(r.rev)} · ${r.units}${UNIT} · ${r.models.length}${MODELS}</span>
        </span>`).join('');
   }
   sel.onchange = draw;

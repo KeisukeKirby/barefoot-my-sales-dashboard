@@ -16,6 +16,7 @@ Barefoot Inc Malaysia(Johor Bahru 店舗 / Shopee / Lazada / 自社直販)の販
 | `xlsxread.py` | xlsx リーダー(zipfile + xml の標準ライブラリのみ。pandas 不要) |
 | `aggregate.py` | 明細行の読み込み・商品分類・注文単位への集約 → `agg.json` |
 | `build_payload.py` | 期間定義に沿った集計 → `payload.json` |
+| `audit.py` | 各集計が全注文を拾えているかの検算 |
 | `parse_sheet.py` / `reconcile_regions.py` / `build_regions.py` | 販売記録シートとの突合 → `regions.json` |
 | `build.py` | テンプレート + payload → `index.html` |
 
@@ -60,6 +61,19 @@ order_id 103-110 の10行を実データと突き合わせて日時とも一致�
 ブラウザ(localStorage)に保存される。客単価はチェックに関係なく常に卸売を除いた値。
 
 `index.html` を commit して push すれば Vercel が自動で再デプロイする。
+
+### 取りこぼしの検算
+
+各集計が全注文を拾えているかは `audit.py` で検算する。日次・週別・月別・チャネル・曜日・
+決済・地域・州・モデル・サイズ・カラー・明細の合計を、売上の 純売上/注文数/点数 と突き合わせ、
+ズレがあれば内容を出して exit 1 する。ビルドのたびに回す。
+
+```bash
+python build_payload.py && python audit.py && python build.py
+```
+
+過去に見つかった取りこぼし: モデル別に送料の行が1点として混ざっていた / OLN0001 が商品マスタに
+無くカラーと数量が落ちていた / モデル別のグラフと表に卸売の列が無かった。
 
 ### 売上ゼロの日を表示する(データ基準日)
 

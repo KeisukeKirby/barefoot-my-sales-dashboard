@@ -160,7 +160,8 @@ MODEL = [
     ('MTB0002', 'Hitoe+',     'Marugo Tabi',        'shoes'),
     ('Marugo Tab', 'tabiRela','Marugo Tabi',        'shoes'),
     ('BFJ0001', 'Barefootinc.Jp Socks', 'Socks',    'socks'),
-    ('QLN0002', 'Oleno Ultimate',       'Socks',    'socks'),
+    ('OLN0001', 'Oleno Ultimate',       'Socks',    'socks'),
+    ('QLN0002', 'Oleno Ultimate Aso',   'Socks',    'socks'),   # 商品名は Ultimate Aso。型番も別
 ]
 COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lime','TT/BK':'Total Black',
              'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',

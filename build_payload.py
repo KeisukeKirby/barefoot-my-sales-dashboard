@@ -236,7 +236,7 @@ def models_for(subset):
                                              off_units=0, on_units=0, wh_units=0, prices=[]))
     for o in subset:
         for it in o['items']:
-            if it['cat'] == 'test':
+            if it['cat'] in ('test', 'fee'):     # 送料は商品ではないのでモデル別には入れない
                 continue
             m = d[it['model']]
             m['rev'] += it['total']
@@ -287,11 +287,14 @@ sizes = dict(women=[dict(size=k, n=v) for k, v in sorted(szW.items())],
              men=[dict(size=k, n=v) for k, v in sorted(szM.items())],
              tabi=[dict(size=k, n=v) for k, v in sorted(szO.items(), key=lambda x: cmkey(x[0]))])
 
+# 色が取れない明細も数える。黙って落とすと合計が点数と合わなくなる。
+NOCOLOR = u'(色の記録なし)'
 cc = collections.Counter()
 for o in sales:
     for it in o['items']:
-        if it['color']:
-            cc[it['color']] += it['qty']
+        if it['cat'] not in ('shoes', 'socks'):
+            continue
+        cc[it['color'] or NOCOLOR] += it['qty']
 colors = [dict(name=k, n=v) for k, v in cc.most_common()]
 
 
