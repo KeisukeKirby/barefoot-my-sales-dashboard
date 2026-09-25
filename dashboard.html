@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Barefoot Malaysia 販売実績</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1548,9 +1549,16 @@ Object.keys(REG).forEach(id=>{
 
 /* ═══ 11. Findings ════════════════════════════════════ */
 (function(){
-  const w = D.weekly, w1 = w[0], w5 = w[w.length-1];
+  // 進行中の週は日数が足りず日商を押し下げるので、完了した週だけで比べる
+  const w = D.weekly.filter(r => !r.ongoing);
+  const w1 = w[0], w5 = w[w.length-1];
   const vsoul = D.models[0];
   const growth = w5.per_day / w1.per_day;
+  // ピーク週と、そこから何週連続で減っているか
+  let peak = 0;
+  w.forEach((r,i)=>{ if (r.per_day > w[peak].per_day) peak = i; });
+  let down = 0;
+  for (let i=peak+1; i<w.length; i++){ if (w[i].per_day < w[i-1].per_day) down++; else break; }
   // 底を打った週から何週連続で増えているか数える
   let lowIdx = 0;
   w.forEach((r,i)=>{ if (r.per_day < w[lowIdx].per_day) lowIdx = i; });
@@ -1562,9 +1570,14 @@ Object.keys(REG).forEach(id=>{
   const topShare = wsz.reduce((a,s)=>a+s.n,0);
   const womenTotal = D.sizes.women.reduce((a,s)=>a+s.n,0);
   const items = [
-    ['fact',`日商は開業週の${growth.toFixed(1)}倍に伸びている`,
-     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(tl(w5.label))} ${rm2(w5.per_day)}(${growth.toFixed(1)}倍)。`
-     + `${esc(tl(w[lowIdx].label))}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`],
+    ['fact', down > 0
+       ? `日商はピークの${esc(tl(w[peak].label))}から${down}週連続で減少`
+       : `日商は開業週の${growth.toFixed(1)}倍に伸びている`,
+     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(tl(w5.label))} ${rm2(w5.per_day)}(開業週比 ${growth.toFixed(1)}倍)。`
+     + (down > 0
+        ? `ピークは${esc(tl(w[peak].label))}の ${rm2(w[peak].per_day)} で、そこから${down}週連続で下げています。`
+        : `${esc(tl(w[lowIdx].label))}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`)
+     + `(進行中の週は日数が揃わないため除外)`],
     ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗`,
      `店舗 ${pct(K.offline.rev,K.total.rev)}(${K.offline.orders}注文 / ${K.offline.units}点)に対しオンラインは ${pct(K.online.rev,K.total.rev)}(${K.online.orders}注文 / ${K.online.units}点)。1注文あたりの点数は店舗 ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンライン ${(K.online.units/K.online.orders).toFixed(2)}点です。`],
     ['fact',`${vsoul.name} 1モデルで売上の${pct(vsoul.rev, D.models.reduce((a,m)=>a+m.rev,0))}`,
