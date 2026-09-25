@@ -387,6 +387,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
           <span><i class="sw" style="background:var(--s-online)"></i><span data-i18n="オンライン">オンライン</span></span>
           <span><i class="sw" style="background:var(--s5)"></i><span data-i18n="卸売">卸売</span></span>
           <span><i class="sw" style="background:rgba(255,90,77,.18);border:1px solid var(--crit)"></i><span data-i18n="月・火(店舗休業日)">月・火(店舗休業日)</span></span>
+          <span><i class="sw" style="background:var(--ghost);height:4px;border-radius:2px"></i><span data-i18n="売上なし">売上なし</span></span>
         </div>
       </figcaption>
       <div class="filterrow">
@@ -673,6 +674,7 @@ try {
 }
 if (LANG !== 'en') LANG = 'ja';
 const STR = {
+  '売上なし':['売上なし','No sales'],
   '決済方法':['決済方法','Payment method'],
   '行をクリックすると内訳が開きます。':['行をクリックすると内訳が開きます。','Click a row to see what it breaks down into.'],
   '購入者の地域':['購入者の地域','Where Buyers Come From'],
@@ -1111,6 +1113,14 @@ section('s-summary', function(D, K, M){
       if (r.off>0) sv.appendChild(svgEl('path',{d:barV(x,y(r.off),bw,(r.off/max)*ph,(r.on>0||r.wh>0)?0:3), class:'f1'}));
       if (r.on>0)  sv.appendChild(svgEl('path',{d:barV(x,y(r.off+r.on),bw,(r.on/max)*ph-(r.off>0?2:0),r.wh>0?0:3), class:'fon'}));
       if (r.wh>0)  sv.appendChild(svgEl('path',{d:barV(x,y(tot),bw,(r.wh/max)*ph-((r.off+r.on)>0?2:0),3), class:'fwh'}));
+      // 売上ゼロの日。棒が無いと「データが無い」と読めてしまうので、ゼロだと分かる印を置く
+      if (tot === 0){
+        sv.appendChild(svgEl('rect',{x, y:y(0)-3, width:bw, height:3, rx:1.5, fill:'var(--ghost)'}));
+        if (!closed){
+          const z = svgEl('text',{x:ML+step*i+step/2, y:y(0)-8,'text-anchor':'middle', class:'dlab2'});
+          z.textContent = '0'; sv.appendChild(z);
+        }
+      }
       const lab = svgEl('text',{x:ML+step*i+step/2, y:H-MB+18,'text-anchor':'middle', class:'ax'});
       if (closed) lab.setAttribute('style','fill:var(--crit);font-weight:700');
       lab.textContent = +r.date.slice(8); sv.appendChild(lab);

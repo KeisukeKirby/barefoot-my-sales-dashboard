@@ -63,8 +63,14 @@ def iswh(o):
     return o['seg'] == u'卸売'                     # 法人向け。1件で桁が違うので必ず分ける
 
 
+# データ基準日。エクスポートは注文のあった日しか教えてくれないので、
+# 「この日まで確認済み(売上ゼロの日を含む)」をここに置く。
+# データの最終日がこれより後ならデータ側を採るので、更新を忘れても短くはならない。
+ASOF = os.environ.get('ASOF', '2026-09-24')      # 2026-09-24 は売上ゼロ(オーナー確認済み)
+
 d0 = datetime.date(*map(int, min(o['date'] for o in O).split('-')))
-d1 = datetime.date(*map(int, max(o['date'] for o in O).split('-')))
+d1 = max(datetime.date(*map(int, max(o['date'] for o in O).split('-'))),
+         datetime.date(*map(int, ASOF.split('-'))))
 days = (d1 - d0).days + 1
 alldates = [(d0 + datetime.timedelta(n)).isoformat() for n in range(days)]
 
@@ -403,7 +409,7 @@ loff = [o for o in lost if o['channel'] == CH_POS]
 lon = [o for o in lost if o['channel'] != CH_POS]
 
 P = dict(
-    meta=dict(source=J['meta'].get('src') or J['meta'].get('source'),
+    meta=dict(source=J['meta'].get('src') or J['meta'].get('source'), asof=ASOF,
               period=[d0.isoformat(), d1.isoformat()], days=days,
               lines=J['meta']['rows'], n_orders_raw=J['meta']['n_orders'], n_orders=len(O)),
     kpi=dict(total=block(sales), offline=block(off), online=block(on), wholesale=block(wh),
