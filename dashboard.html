@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <section id="s-ops" data-pane="store">
     <p class="eyebrow" data-i18n="Store Operations">Store Operations</p>
     <h2 data-i18n="店舗の売れる曜日・時間帯">店舗の売れる曜日・時間帯</h2>
-    <p class="lede">曜日は全チャネル、時間帯は店舗(POS)の注文時刻のみです。</p>
+    <p class="lede">曜日は全チャネル。卸売は1件でその曜日だけ山になるため<b>既定で除いています</b>(上のチェックで戻せます)。時間帯は店舗(POS)の注文時刻のみです。</p>
     <div class="split">
       <figure class="chartbox" style="margin:0">
         <figcaption><h3 data-i18n="曜日別 売上">曜日別 売上</h3></figcaption>
@@ -846,8 +846,12 @@ function mkSvg(host, w, h){
 /* ═══ 0. 卸売を除く切り替え ════════════════════════════
    各セクションの描画関数を登録しておき、チェックが変わったら
    そのセクションだけ卸売を除いたデータ(DR)で描き直す。 */
+// 曜日・時間帯は卸売1件で日の山が作られて売れ筋の曜日が読めなくなるので、既定で除いておく。
+// 画面で切り替えた結果は localStorage に残り、そちらが既定より優先される。
+const XW_DEFAULT = {'s-ops': true};
 let XW = {};
 try { XW = JSON.parse(localStorage.getItem('bmsd-xwh') || '{}') || {}; } catch (e) { XW = {}; }
+XW = Object.assign({}, XW_DEFAULT, XW);
 const REG = {};
 function runSection(id, fn){ const d = XW[id] ? DR : DA; fn(d, d.kpi, d.meta); }
 function section(id, fn){ (REG[id] = REG[id] || []).push(fn); runSection(id, fn); }
