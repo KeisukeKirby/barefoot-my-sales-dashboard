@@ -17,3 +17,12 @@ __pycache__/
 .env.*
 orders.json
 raw_response.json
+
+# 販売記録スプレッドシートの作業ファイル。顧客名・住所・電話を含むので絶対に入れない
+sheet_raw.txt
+sheet.json
+region_map.json
+unmatched.json
+
+# From 欄の人名判定リスト(公開しない)
+regions_staff.txt

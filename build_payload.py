@@ -15,6 +15,25 @@ unpaid = [o for o in O if o['pay'] == 'Unpaid']
 R2 = lambda x: round(x + 1e-9, 2)
 JOIN = ' / '
 
+# 販売記録スプレッドシート(Drive)と突き合わせた地域。無い注文は「記録なし」。
+try:
+    _RG = json.load(open('regions.json', encoding='utf-8'))
+    REGION, REGION_ORDER = _RG['regions'], _RG['meta']['order']
+    REGION_BUILT = _RG['meta']['built']
+except (IOError, OSError, ValueError):
+    REGION, REGION_ORDER, REGION_BUILT = {}, [], None
+NOREG = u'記録なし'
+
+
+def region(o):
+    r = REGION.get(o['order_id'])
+    return r['grp'] if r else NOREG
+
+
+def region_en(o):
+    r = REGION.get(o['order_id'])
+    return r['en'] if r else 'Not in sheet'
+
 
 def items_str(o, skip_fee=False):
     out = []
@@ -280,6 +299,17 @@ def grp(gs, key):
 
 
 states = grp(sales, lambda o: o['state'])
+_ren = {}
+for o in sales:
+    _ren.setdefault(region(o), region_en(o))
+regions = grp(sales, region)
+for x in regions:
+    x['en'] = _ren.get(x['name'], x['name'])
+_ri = {n: i for i, n in enumerate(REGION_ORDER + [NOREG])}
+regions.sort(key=lambda x: _ri.get(x['name'], 99))
+regions_meta = dict(built=REGION_BUILT, known=len([o for o in sales if o['order_id'] in REGION]),
+                    total=len(sales),
+                    known_rev=R2(sum(o['total'] for o in sales if o['order_id'] in REGION)))
 paym = grp(sales, lambda o: o['pay_method'])
 WD = [u'月', u'火', u'水', u'木', u'金', u'土', u'日']
 dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0, retail_units=0)
@@ -314,7 +344,8 @@ lost_rows = [dict(dt=o['dt'], invoice=o['invoice'], channel=o['channel'], status
              for o in sorted(lost, key=lambda x: x['dt'])]
 sales_rows = [dict(dt=o['dt'], invoice=o['invoice'], channel=o['channel'], seg=o['seg'],
                    status=o['status'], total=R2(o['total']), units=o['units'], state=o['state'],
-                   pay_method=o['pay_method'], items=items_str(o, skip_fee=True))
+                   pay_method=o['pay_method'], region=region(o), region_en=region_en(o),
+                   items=items_str(o, skip_fee=True))
               for o in sorted(sales, key=lambda x: x['dt'])]
 
 # 明細は1本にまとめ、画面側でプルダウン絞り込みする
@@ -324,6 +355,7 @@ all_rows = [dict(dt=o['dt'], invoice=o['invoice'] or u'—', channel=o['channel'
                  bucket=o['bucket'], total=R2(o['total']), units=o['units'],
                  shoe_units=o['shoe_units'], vff_units=o['vff_units'], state=o['state'],
                  lines=o['n_lines'], pay_method=o['pay_method'],
+                 region=region(o), region_en=region_en(o),
                  items=items_str(o, skip_fee=True))
             for o in sorted(O, key=lambda x: x['dt'])]
 
@@ -343,7 +375,7 @@ P = dict(
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),
     daily=daily, weekly=weekly, monthly=monthly, closed_days=closed_days, channels=chan, channels_by_month=channels_by_month, models=models,
     models_by_month=models_by_month, sizes=sizes, colors=colors,
-    states=states, payments=paym, dow=dow, hours=hours,
+    states=states, regions=regions, regions_meta=regions_meta, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
     unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows, all_rows=all_rows,
 )

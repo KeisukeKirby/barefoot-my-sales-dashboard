@@ -61,7 +61,7 @@ MANUAL_ORDERS = [
          order_creation_date='2026-08-31 11:07',
          order_status='Completed', payment_status='Paid',
          marketplace='Barefoot Malaysia - Lazada',
-         product_sku='VFF0008(UNK,W38)',                      # 色は注文詳細から判別できず
+         product_sku='VFF0008(BR,W38)',                       # 色は 2026-09-25 にオーナーから brown と確認
          product_name='Vibram Fivefingers V-Soul Model, Pilates/Yoga Shoes '
                       'Training Shoes for Women-EU:38',
          product_price='650.00', product_quantity='1', product_total='650.00',
@@ -70,7 +70,9 @@ MANUAL_ORDERS = [
     # order_id 161 も全エクスポートで欠番(160 → 162)。管理画面の注文詳細から起こした卸売。
     # 画面に明細ごとの単価が出ていないため、注文合計を点数で均等割りしている
     # (RM 17,339.40 / 36点 = 481.65)。売上・点数・サイズは正確、モデル別の金額だけ推定値。
-    # 色は商品名が途中で切れて読めない明細を UNK にしている。
+    # 色: 2026-09-25 にもらった注文詳細の画像でも商品名が途中で切れているため、
+    # Spidrwalk は表記どおり Total Black、Breezandal はサムネイルと販売記録の色表記から
+    # 男性 BK / 女性 IV/GR と判断した。Groundsplay LS のレディースだけは特定できず UNK。
     dict(order_id='161', invoice_no='',
          order_creation_date='2026-09-02 10:00',
          order_status='Shipped', payment_status='Paid', marketplace='',
@@ -88,13 +90,13 @@ MANUAL_ORDERS = [
                 _ml('VFF0026(TT/BK,M41)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-41", 2),
                 _ml('VFF0026(TT/BK,M42)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-42", 2),
                 _ml('VFF0026(TT/BK,M43)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-43", 1),
-                _ml('VFF0022(UNK,M40)', 'Breezandal Model for Men', 1),
-                _ml('VFF0022(UNK,M41)', 'Breezandal Model for Men', 2),
-                _ml('VFF0022(UNK,M42)', 'Breezandal Model for Men', 3),
-                _ml('VFF0022(UNK,M43)', 'Breezandal Model for Men', 1),
-                _ml('VFF0022(UNK,M44)', 'Breezandal Model for Men', 1),
-                _ml('VFF0022(UNK,W38)', 'Breezandal Model for Women', 1),
-                _ml('VFF0022(UNK,W39)', 'Breezandal Model for Women', 1)]),
+                _ml('VFF0022(BK,M40)',  'Breezandal Model for Men', 1),
+                _ml('VFF0022(BK,M41)',  'Breezandal Model for Men', 2),
+                _ml('VFF0022(BK,M42)',  'Breezandal Model for Men', 3),
+                _ml('VFF0022(BK,M43)',  'Breezandal Model for Men', 1),
+                _ml('VFF0022(BK,M44)',  'Breezandal Model for Men', 1),
+                _ml('VFF0022(IV/GR,W38)', 'Breezandal Model for Women', 1),
+                _ml('VFF0022(IV/GR,W39)', 'Breezandal Model for Women', 1)]),
 ]
 _units_161 = sum(int(x['product_quantity']) for x in MANUAL_ORDERS[-1]['lines'])
 _lines_161 = round(sum(float(x['product_total']) for x in MANUAL_ORDERS[-1]['lines']), 2)

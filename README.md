@@ -16,6 +16,7 @@ Barefoot Inc Malaysia(Johor Bahru 店舗 / Shopee / Lazada / 自社直販)の販
 | `xlsxread.py` | xlsx リーダー(zipfile + xml の標準ライブラリのみ。pandas 不要) |
 | `aggregate.py` | 明細行の読み込み・商品分類・注文単位への集約 → `agg.json` |
 | `build_payload.py` | 期間定義に沿った集計 → `payload.json` |
+| `parse_sheet.py` / `reconcile_regions.py` / `build_regions.py` | 販売記録シートとの突合 → `regions.json` |
 | `build.py` | テンプレート + payload → `index.html` |
 
 チャートは手書きの inline SVG。ビルドに Node も npm も不要で、必要なのは Python 3 だけ。
@@ -79,6 +80,32 @@ order_id 134 / 161 のように、どのエクスポートにも現れない注�
 `aggregate.py` の `MANUAL_ORDERS` に書き起こす。明細が複数ある注文は `lines=[_ml(...), ...]` で書く。
 161 は画面に明細単価が出ていなかったため注文合計を点数で均等割りしており、モデル別の金額だけは推定値。後日エクスポートに現れたらそちらが優先
 される(手動分は `order_id` が未登録のときだけ取り込む)ので、消さずに残しておいてよい。
+
+### 購入者の地域(販売記録スプレッドシートとの突合)
+
+SiteGiant には購入者の地域が無いので、Google Drive の
+`Sales record for Malaysia.xlsx`(店舗側が手でつけている台帳)の **From 欄** を
+日付・チャネル・金額・商品・時刻で突き合わせて注文に紐づけている。
+
+```bash
+# 1. シートの中身を sheet_raw.txt に落とす(Drive から取得)
+# 2. 行に切り直す → sheet.json
+SHEET_WORKDIR=<作業フォルダ> python parse_sheet.py
+# 3. 取込データと突合 → region_map.json、未結合の一覧を標準出力へ
+SHEET_WORKDIR=<作業フォルダ> python reconcile_regions.py
+# 4. 公開用に order_id と地域だけ抜き出す → regions.json
+SHEET_WORKDIR=<作業フォルダ> python build_regions.py
+```
+
+`sheet_raw.txt` / `sheet.json` / `region_map.json` / `unmatched.json` は顧客名・住所・電話を
+含むので `.gitignore` 済み。リポジトリに入れるのは `regions.json`(order_id と地域のみ。
+従業員・親族の名前は「関係者」にまとめて落とす)だけ。
+
+突合は自動でつかないものだけ `reconcile_regions.py` の `MANUAL` に理由付きで書く。
+マーケットプレイスはシートが手取り額、SiteGiant が注文合計なので金額が数%ずれる。
+同額の注文が同じ日に並ぶと取り違えるため、モデルとサイズも点数に入れている。
+
+**地域は国籍ではない。** From 欄は店頭で聞き取った自己申告で、国籍の列はシートに無い。
 
 ### 商品マスタを足す
 

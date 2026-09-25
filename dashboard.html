@@ -446,6 +446,16 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="tablebox"><table id="t-pay"></table></div>
   </section>
 
+  <section id="s-region" data-pane="store">
+    <p class="eyebrow" data-i18n="Customer Origin">Customer Origin</p>
+    <h2 data-i18n="購入者の地域">購入者の地域</h2>
+    <p class="lede" id="region-lede"></p>
+    <div class="sharebar" id="regionbar"></div>
+    <div class="sharelegend" id="regionlegend" style="margin-bottom:1.4rem"></div>
+    <div class="tablebox"><table id="t-region"></table></div>
+    <p class="note" id="region-note"></p>
+  </section>
+
   <section id="s-channel" data-pane="store">
     <p class="eyebrow" data-i18n="Channel">Channel</p>
     <h2 data-i18n="チャネル別の売上">チャネル別の売上</h2>
@@ -648,6 +658,12 @@ try {
 }
 if (LANG !== 'en') LANG = 'ja';
 const STR = {
+  '購入者の地域':['購入者の地域','Where Buyers Come From'],
+  '地域':['地域','Origin'],
+  '構成比':['構成比','Share'],
+  '注文数':['注文数','Orders'],
+  '客単価':['客単価','Avg / order'],
+  '合計':['合計','Total'],
   'Sales Report':['Sales Report','Sales Report'],
   'Barefoot Malaysia Sdn Bhd Sales Report':['Barefoot Malaysia Sdn Bhd Sales Report','Barefoot Malaysia Sdn Bhd Sales Report'],
   'Monthly':['Monthly','Monthly'], 'Weekly':['Weekly','Weekly'],
@@ -1470,6 +1486,51 @@ function simpleTable(elId, title, rows, valLabel){
 }
 section('s-ops', function(D){ simpleTable('t-pay','決済方法', D.payments); });
 
+/* 関連: 購入者の地域(販売記録スプレッドシートの From 欄との突合結果)*/
+section('s-region', function(D, K, M){
+  const rows = D.regions, meta = D.regions_meta || {};
+  const tot = rows.reduce((a,r)=>a+r.rev,0);
+  const CL = {'シンガポール':'var(--s2)', 'ジョホール(地元)':'var(--s1)',
+              'クアラルンプール':'var(--s5)', 'セランゴール':'var(--s3)',
+              'その他マレーシア':'var(--s4)', 'その他海外':'var(--accent-lime)',
+              '関係者':'var(--warn)', '不明':'var(--ghost)', '記録なし':'var(--text-muted)'};
+  const nm = r => LANG === 'en' ? (r.en || r.name) : r.name;
+  const col = r => CL[r.name] || 'var(--ghost)';
+
+  $('#regionbar').innerHTML = rows.map(r =>
+    `<i style="width:${(r.rev/tot*100).toFixed(2)}%;background:${col(r)}"></i>`).join('');
+  $('#regionlegend').innerHTML = rows.map(r =>
+    `<span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:${col(r)}"></i>
+     ${esc(nm(r))} <b class="num">${pct(r.rev, tot)}</b>
+     <span style="color:var(--text-muted)">${rm2(r.rev)}</span></span>`).join('');
+
+  $('#t-region').innerHTML =
+   `<thead><tr><th>${TR('地域')}</th><th class="n">${TR('売上')}</th><th class="n">${TR('構成比')}</th>
+     <th class="n">${TR('注文数')}</th><th class="n">${TR('点数')}</th><th class="n">${TR('客単価')}</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td><span class="sw" style="background:${col(r)};margin-right:8px"></span>${esc(nm(r))}</td>
+      <td class="n">${n1(r.rev)}</td><td class="n">${pct(r.rev, tot)}</td>
+      <td class="n">${r.orders}</td><td class="n">${r.units}</td>
+      <td class="n">${rm2(r.rev/r.orders)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${TR('合計')}</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
+      <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td>
+      <td class="n">${rows.reduce((a,r)=>a+r.units,0)}</td>
+      <td class="n">${rm2(tot/rows.reduce((a,r)=>a+r.orders,0))}</td></tr></tfoot>`;
+
+  const cov = meta.total ? (meta.known / meta.total * 100) : 0;
+  $('#region-lede').textContent = LANG === 'en'
+    ? `Matched against the "Sales record for Malaysia" sheet: ${meta.known} of ${meta.total} orders `
+      + `(${cov.toFixed(1)}%, ${pct(meta.known_rev, K.total.rev)} of net sales) carry an origin.`
+    : `販売記録スプレッドシートと突合して、${meta.total}注文のうち ${meta.known}注文`
+      + `(${cov.toFixed(1)}%、純売上の ${pct(meta.known_rev, K.total.rev)})に地域がついています。`;
+  $('#region-note').textContent = LANG === 'en'
+    ? 'Origin comes from the "From" column of the sales record sheet, which staff fill in from what the customer says. '
+      + 'It is where the customer came from, not their nationality. Orders with no matching sheet row are shown as "Not in sheet".'
+    : '地域は販売記録シートの From 欄で、店頭で聞き取った自己申告です。'
+      + '国籍ではなく「どこから来たか」を表します。'
+      + 'シート側に対応する行がない注文は「記録なし」です。';
+});
+
 /* ═══ 10. 注文明細(絞り込み付き) ═════════════════════ */
 section('s-ledger', function(D, K, M){
   const rows = D.all_rows;
@@ -1498,7 +1559,7 @@ section('s-ledger', function(D, K, M){
     $('#t-sales').innerHTML =
      `<thead><tr><th>${TR('受注日時')}</th><th>${TR('伝票')}</th><th>${TR('区分')}</th>
        <th>${TR('状態')}</th><th>${TR('入金')}</th><th>${TR('チャネル')}</th>
-       <th>${TR('col商品')}</th><th>${TR('州')}</th><th>${TR('決済')}</th>
+       <th>${TR('col商品')}</th><th>${TR('州')}</th><th>${TR('地域')}</th><th>${TR('決済')}</th>
        <th class="n">${TR('明細')}</th><th class="n">${TR('点数')}</th><th class="n">${TR('金額')}</th></tr></thead>
       <tbody>${list.map(r=>`<tr>
         <td class="num" style="font-size:12px">${esc(r.dt)}</td>
@@ -1509,11 +1570,12 @@ section('s-ledger', function(D, K, M){
         <td style="font-size:12px">${esc(r.channel)}</td>
         <td><span class="wrapok">${esc(r.items)}</span></td>
         <td style="font-size:12px;color:var(--text-secondary)">${esc(r.state)}</td>
+        <td style="font-size:12px;color:var(--text-secondary)">${esc(LANG==='en' ? (r.region_en||'') : (r.region||''))}</td>
         <td style="font-size:12px;color:var(--text-secondary)">${esc(r.pay_method)}</td>
         <td class="n">${r.lines}</td>
         <td class="n">${r.units? uCell(r.units, r.shoe_units) : '—'}</td>
         <td class="n"><b>${n1(r.total)}</b></td></tr>`).join('')}</tbody>
-      <tfoot><tr><td>${TR('合計')} ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      <tfoot><tr><td>${TR('合計')} ${list.length}件</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         <td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
         <td class="n">${n1(S('total'))}</td></tr></tfoot>`;
   }
@@ -1602,6 +1664,7 @@ $('#t-def').innerHTML =
   <tr><td><b>オフライン(店舗)</b></td><td><span class="wrapok" style="max-width:70ch">marketplace = Barefoot Malaysia POS。Johor Bahru 店頭での販売。</span></td></tr>
   <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
   <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>
+  <tr><td><b>地域</b></td><td><span class="wrapok" style="max-width:70ch">販売記録スプレッドシート(店舗側の台帳)の From 欄。店頭で聞き取った自己申告で、国籍ではなく「どこから来たか」。日付・チャネル・金額・商品・時刻で注文と突き合わせている。シートに対応する行がない注文は「記録なし」。従業員・親族の購入は「関係者」にまとめている。</span></td></tr>
   <tr><td><b>伝票数</b></td><td><span class="wrapok" style="max-width:70ch">invoice_no が発行された注文数。Shopee / Lazada 経由の注文には伝票番号が付かないため、注文数より少なくなります(差分は注文数列に灰色で <b>+n</b> と併記)。POS の注文は全件に伝票番号があります。</span></td></tr>
   <tr><td><b>明細行</b></td><td><span class="wrapok" style="max-width:70ch">注文に含まれる商品行の数。1注文で複数モデルを買うと増えます。</span></td></tr>
   <tr><td><b>点数</b></td><td><span class="wrapok" style="max-width:70ch">シューズ・ソックスの数量合計。送料などのサービス行は除外。返品行(数量 −1)は差し引いています。</span></td></tr>

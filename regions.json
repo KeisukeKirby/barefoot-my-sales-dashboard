@@ -1,0 +1,938 @@
+{
+ "meta": {
+  "source": "Sales record for Malaysia.xlsx (Google Drive)",
+  "built": "2026-09-25",
+  "note": "シートの From 欄(来店客の自己申告)。国籍ではない",
+  "order": [
+   "シンガポール",
+   "ジョホール(地元)",
+   "クアラルンプール",
+   "セランゴール",
+   "その他マレーシア",
+   "その他海外",
+   "関係者",
+   "不明"
+  ]
+ },
+ "regions": {
+  "88": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#44"
+  },
+  "79": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#35",
+   "raw": "JB"
+  },
+  "31": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "July2026#25",
+   "raw": "Singapore"
+  },
+  "147": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#12",
+   "raw": "SG"
+  },
+  "158": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#21",
+   "raw": "SG"
+  },
+  "162": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#25",
+   "raw": "JB"
+  },
+  "170": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#32",
+   "raw": "SG"
+  },
+  "187": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#47",
+   "raw": "SG"
+  },
+  "40": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#4"
+  },
+  "65": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#21"
+  },
+  "71": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#27",
+   "raw": "SG"
+  },
+  "73": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#29",
+   "raw": "SG"
+  },
+  "75": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#31",
+   "raw": "JB"
+  },
+  "115": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#76",
+   "raw": "SG"
+  },
+  "127": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#82",
+   "raw": "KL"
+  },
+  "138": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#3",
+   "raw": "SG"
+  },
+  "23": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "July2026#20",
+   "raw": "Singapore"
+  },
+  "46": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#5"
+  },
+  "85": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#41",
+   "raw": "SG"
+  },
+  "90": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#46",
+   "raw": "JB"
+  },
+  "96": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#52",
+   "raw": "SG"
+  },
+  "114": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#77",
+   "raw": "SG"
+  },
+  "145": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#10",
+   "raw": "JB"
+  },
+  "165": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#26",
+   "raw": "SG"
+  },
+  "188": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#48",
+   "raw": "SG"
+  },
+  "10": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#7",
+   "raw": "JB"
+  },
+  "11": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#9",
+   "raw": "JB"
+  },
+  "12": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#10",
+   "raw": "JB"
+  },
+  "15": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "July2026#13",
+   "raw": "Singapore"
+  },
+  "16": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#14",
+   "raw": "JB"
+  },
+  "47": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#6"
+  },
+  "50": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#8",
+   "raw": "SG"
+  },
+  "55": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#13",
+   "raw": "KL"
+  },
+  "58": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#15",
+   "raw": "SG"
+  },
+  "63": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#19",
+   "raw": "SG"
+  },
+  "76": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#32",
+   "raw": "SG"
+  },
+  "80": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#36",
+   "raw": "JB"
+  },
+  "81": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#37",
+   "raw": "JB"
+  },
+  "82": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#38",
+   "raw": "SG"
+  },
+  "83": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#39",
+   "raw": "SG"
+  },
+  "84": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#40",
+   "raw": "SG"
+  },
+  "86": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#42",
+   "raw": "SG"
+  },
+  "87": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#43",
+   "raw": "SG"
+  },
+  "89": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#45",
+   "raw": "SG"
+  },
+  "92": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#48",
+   "raw": "SG"
+  },
+  "105": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#59",
+   "raw": "KL"
+  },
+  "137": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#2",
+   "raw": "JB"
+  },
+  "141": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#6",
+   "raw": "SG"
+  },
+  "142": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#7",
+   "raw": "SG"
+  },
+  "143": {
+   "grp": "その他海外",
+   "en": "Other overseas",
+   "src": "Sep2026#8",
+   "raw": "London"
+  },
+  "144": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#9",
+   "raw": "SG"
+  },
+  "146": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#11",
+   "raw": "SG"
+  },
+  "148": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#13",
+   "raw": "SG"
+  },
+  "150": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#15",
+   "raw": "SG"
+  },
+  "152": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#16",
+   "raw": "SG"
+  },
+  "156": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#20",
+   "raw": "JB"
+  },
+  "159": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#22",
+   "raw": "SG"
+  },
+  "160": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#23",
+   "raw": "SG"
+  },
+  "167": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#27",
+   "raw": "SG"
+  },
+  "168": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#28",
+   "raw": "SG"
+  },
+  "173": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#33",
+   "raw": "SG"
+  },
+  "175": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#35",
+   "raw": "SG"
+  },
+  "184": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#44",
+   "raw": "SG"
+  },
+  "185": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#45",
+   "raw": "SG"
+  },
+  "186": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#46",
+   "raw": "SG"
+  },
+  "34": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "July2026#26",
+   "raw": "Singapore"
+  },
+  "48": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#7"
+  },
+  "51": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#9",
+   "raw": "SG"
+  },
+  "56": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#12",
+   "raw": "JB"
+  },
+  "59": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#16",
+   "raw": "JB"
+  },
+  "60": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#17",
+   "raw": "SG"
+  },
+  "62": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#18",
+   "raw": "SG"
+  },
+  "64": {
+   "grp": "不明",
+   "en": "Unknown",
+   "src": "Aug2026#20"
+  },
+  "72": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#28",
+   "raw": "JB"
+  },
+  "74": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#30",
+   "raw": "JB"
+  },
+  "77": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#33",
+   "raw": "SG"
+  },
+  "91": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#47",
+   "raw": "JB"
+  },
+  "109": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#63",
+   "raw": "KL"
+  },
+  "135": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#1",
+   "raw": "SG"
+  },
+  "153": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#17",
+   "raw": "JB"
+  },
+  "183": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#43",
+   "raw": "SG"
+  },
+  "17": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#15",
+   "raw": "JB"
+  },
+  "53": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#10",
+   "raw": "Selangor"
+  },
+  "124": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#79",
+   "raw": "SG"
+  },
+  "149": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#14",
+   "raw": "SG"
+  },
+  "18": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#16",
+   "raw": "JB"
+  },
+  "19": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "July2026#17",
+   "raw": "Singapore"
+  },
+  "22": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "July2026#19",
+   "raw": "KL"
+  },
+  "52": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#11",
+   "raw": "Selangor"
+  },
+  "68": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#25"
+  },
+  "69": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#26"
+  },
+  "95": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#49",
+   "raw": "Selangor"
+  },
+  "94": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Aug2026#50",
+   "raw": "Penang"
+  },
+  "97": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#51",
+   "raw": "JB"
+  },
+  "103": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#55",
+   "raw": "JB"
+  },
+  "102": {
+   "grp": "その他海外",
+   "en": "Other overseas",
+   "src": "Aug2026#56",
+   "raw": "EU"
+  },
+  "101": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#57",
+   "raw": "KL"
+  },
+  "104": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#58",
+   "raw": "KL"
+  },
+  "106": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#60",
+   "raw": "KL"
+  },
+  "107": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#61",
+   "raw": "KL"
+  },
+  "108": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#62",
+   "raw": "KL"
+  },
+  "110": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#64",
+   "raw": "KL"
+  },
+  "111": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#67",
+   "raw": "JB"
+  },
+  "112": {
+   "grp": "その他海外",
+   "en": "Other overseas",
+   "src": "Aug2026#68",
+   "raw": "EU"
+  },
+  "122": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#69",
+   "raw": "JB"
+  },
+  "121": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#70",
+   "raw": "JB"
+  },
+  "118": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#73",
+   "raw": "SG"
+  },
+  "117": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#74",
+   "raw": "SG"
+  },
+  "116": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#75",
+   "raw": "SG"
+  },
+  "113": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#78",
+   "raw": "SG"
+  },
+  "125": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#80",
+   "raw": "SG"
+  },
+  "126": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#81",
+   "raw": "SG"
+  },
+  "128": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#83",
+   "raw": "JB"
+  },
+  "129": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#84",
+   "raw": "JB"
+  },
+  "130": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#85",
+   "raw": "JB"
+  },
+  "131": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#86",
+   "raw": "SG"
+  },
+  "132": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#87",
+   "raw": "SG"
+  },
+  "134": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#89",
+   "raw": "Selangor"
+  },
+  "140": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Sep2026#4",
+   "raw": "Selangor"
+  },
+  "139": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#5",
+   "raw": "KL"
+  },
+  "154": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#18",
+   "raw": "KL"
+  },
+  "155": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#19",
+   "raw": "KL"
+  },
+  "181": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#41",
+   "raw": "Johor"
+  },
+  "182": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#42",
+   "raw": "JB"
+  },
+  "27": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "July2026#24",
+   "raw": "KL"
+  },
+  "166": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#29",
+   "raw": "KL"
+  },
+  "164": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Sep2026#30",
+   "raw": "Negeri Sembilan"
+  },
+  "13": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#12",
+   "raw": "JB"
+  },
+  "25": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "July2026#21",
+   "raw": "KL"
+  },
+  "26": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "July2026#23",
+   "raw": "Selangor"
+  },
+  "39": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#3",
+   "raw": "KL"
+  },
+  "61": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#22",
+   "raw": "KL"
+  },
+  "66": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#23",
+   "raw": "KL"
+  },
+  "67": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#24",
+   "raw": "Selangor"
+  },
+  "100": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#53",
+   "raw": "SG"
+  },
+  "119": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#71",
+   "raw": "SG"
+  },
+  "120": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Aug2026#72",
+   "raw": "SG"
+  },
+  "133": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Aug2026#88",
+   "raw": "Penang"
+  },
+  "174": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#34",
+   "raw": "KL"
+  },
+  "171": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Sep2026#36",
+   "raw": "Selangor"
+  },
+  "176": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Sep2026#37",
+   "raw": "Selangor"
+  },
+  "179": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Sep2026#40",
+   "raw": "Selangor"
+  },
+  "24": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "July2026#22",
+   "raw": "Selangor"
+  },
+  "36": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#1",
+   "raw": "Selangor"
+  },
+  "78": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#34"
+  },
+  "177": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#38",
+   "raw": "SG"
+  },
+  "163": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#31",
+   "raw": "KL"
+  },
+  "20": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "July2026#18",
+   "raw": "Selangor"
+  },
+  "35": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "July2026#27",
+   "raw": "Selangor"
+  },
+  "180": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#39",
+   "raw": "KL"
+  },
+  "38": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#2",
+   "raw": "KL"
+  },
+  "57": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#14",
+   "raw": "Selangor"
+  },
+  "14": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#12",
+   "raw": "JB"
+  },
+  "136": {
+   "grp": "不明",
+   "en": "Unknown",
+   "src": "Aug2026#54"
+  },
+  "161": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#24",
+   "raw": "KL"
+  }
+ }
+}
