@@ -22,7 +22,7 @@ try:
     REGION_BUILT = _RG['meta']['built']
 except (IOError, OSError, ValueError):
     REGION, REGION_ORDER, REGION_BUILT = {}, [], None
-NOREG = u'記録なし'
+NOREG = u'不明'          # シートに行が無い注文も、From が読めない注文とまとめて「不明」
 
 
 def region(o):
@@ -32,7 +32,7 @@ def region(o):
 
 def region_en(o):
     r = REGION.get(o['order_id'])
-    return r['en'] if r else 'Not in sheet'
+    return r['en'] if r else 'Unknown'
 
 
 def items_str(o, skip_fee=False):
@@ -310,7 +310,44 @@ regions.sort(key=lambda x: _ri.get(x['name'], 99))
 regions_meta = dict(built=REGION_BUILT, known=len([o for o in sales if o['order_id'] in REGION]),
                     total=len(sales),
                     known_rev=R2(sum(o['total'] for o in sales if o['order_id'] in REGION)))
-paym = grp(sales, lambda o: o['pay_method'])
+# --- 決済方法はまず大分類。画面でクリックすると内訳が開く ---
+# 新しい決済方法が出てきたらここに追加する。未登録は「その他」に落ちて集計時に警告が出る。
+PAYGRP = [
+    (u'QR決済', 'QR payment',
+     ['RHB Duitnow', 'DuitNow QR', 'GN_TNG_EBANK']),
+    (u'カード', 'Card',
+     ['Credit/Debit Card', 'Credit / Debit Card', 'Credit Card Installment',
+      'Credit Card payments', 'MIXEDCARD', 'Apple Pay']),
+    (u'現金', 'Cash', ['cash', 'Cash', 'CASH']),
+    (u'銀行振込・ネットバンキング', 'Bank transfer / online banking',
+     ['RHB bank transfer', 'Online Banking', 'MOLPAY_MAYBANK_ONLINE']),
+]
+PAYOTHER = (u'その他・未記録', 'Other / not recorded')
+PAYOTHER_OK = ['Barefoot Malaysia']      # 「その他」で良いと分かっているもの
+_pg = {m: (ja, en) for ja, en, ms in PAYGRP for m in ms}
+_unknown_pay = set()
+
+
+def paygroup(o):
+    m = (o['pay_method'] or '').strip()
+    if m in _pg:
+        return _pg[m]
+    if m and m not in PAYOTHER_OK:
+        _unknown_pay.add(m)
+    return PAYOTHER
+
+
+paym = []
+for ja, en in [(g[0], g[1]) for g in PAYGRP] + [PAYOTHER]:
+    gs = [o for o in sales if paygroup(o)[0] == ja]
+    if not gs:
+        continue
+    sub = grp(gs, lambda o: (o['pay_method'] or '').strip() or u'(未記録)')
+    paym.append(dict(name=ja, en=en, rev=R2(sum(o['total'] for o in gs)), orders=len(gs),
+                     units=sum(o['units'] for o in gs), items=sub))
+paym.sort(key=lambda x: -x['rev'])
+if _unknown_pay:
+    print(u'!! PAYGRP に無い決済方法(「その他」に入っています):', sorted(_unknown_pay))
 WD = [u'月', u'火', u'水', u'木', u'金', u'土', u'日']
 dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0, retail_units=0)
        for i in range(7)]

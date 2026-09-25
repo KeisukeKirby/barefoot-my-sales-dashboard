@@ -276,6 +276,15 @@ td .wrapok{white-space:normal;display:block;max-width:34ch;line-height:1.45}
 .chip.wh{background:rgba(141,122,232,.15);color:#b3a6ff;border-color:rgba(141,122,232,.35)}
 .chip.mute{background:rgba(255,255,255,.05);color:var(--text-secondary);border-color:var(--border-color)}
 
+/* ── 開閉する行(決済方法の内訳) ────────────── */
+tr.grow{cursor:pointer}
+tr.grow:focus-visible{outline:2px solid var(--accent-blue);outline-offset:-2px}
+tr.grow .tw{display:inline-block;width:1.1em;color:var(--text-muted);transition:transform .2s}
+tr.grow.open .tw{transform:rotate(90deg);color:var(--accent-orange)}
+tr.sub{display:none;background:rgba(255,255,255,.015)}
+tr.sub.open{display:table-row}
+tr.sub td{font-size:.82rem}
+
 /* ── Callouts ─────────────────────────────────────────── */
 .callout{
   background:linear-gradient(135deg,rgba(22,22,29,.9),rgba(30,30,40,.9));
@@ -443,7 +452,6 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         <div id="c-hour"></div>
       </figure>
     </div>
-    <div class="tablebox"><table id="t-pay"></table></div>
   </section>
 
   <section id="s-region" data-pane="store">
@@ -454,6 +462,13 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="sharelegend" id="regionlegend" style="margin-bottom:1.4rem"></div>
     <div class="tablebox"><table id="t-region"></table></div>
     <p class="note" id="region-note"></p>
+  </section>
+
+  <section id="s-pay" data-pane="store">
+    <p class="eyebrow" data-i18n="Payment">Payment</p>
+    <h2 data-i18n="決済方法">決済方法</h2>
+    <p class="lede" data-i18n="行をクリックすると内訳が開きます。">行をクリックすると内訳が開きます。</p>
+    <div class="tablebox"><table id="t-pay"></table></div>
   </section>
 
   <section id="s-channel" data-pane="store">
@@ -658,6 +673,8 @@ try {
 }
 if (LANG !== 'en') LANG = 'ja';
 const STR = {
+  '決済方法':['決済方法','Payment method'],
+  '行をクリックすると内訳が開きます。':['行をクリックすると内訳が開きます。','Click a row to see what it breaks down into.'],
   '購入者の地域':['購入者の地域','Where Buyers Come From'],
   '地域':['地域','Origin'],
   '構成比':['構成比','Share'],
@@ -1484,7 +1501,44 @@ function simpleTable(elId, title, rows, valLabel){
     <tfoot><tr><td>合計</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
       <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td></tr></tfoot>`;
 }
-section('s-ops', function(D){ simpleTable('t-pay','決済方法', D.payments); });
+/* 決済方法: 大分類を出して、クリックで内訳を開く */
+const PAYOPEN = new Set();       // 開いている大分類。再描画しても残す
+section('s-pay', function(D, K, M){
+  const rows = D.payments, tot = rows.reduce((a,r)=>a+r.rev,0);
+  const nm = r => LANG === 'en' ? (r.en || r.name) : r.name;
+  const tbl = $('#t-pay');
+  tbl.innerHTML =
+   `<thead><tr><th>${TR('決済方法')}</th><th class="n">${TR('売上')}</th>
+     <th class="n">${TR('構成比')}</th><th class="n">${TR('注文数')}</th></tr></thead>
+    <tbody>${rows.map(r=>`
+      <tr class="grow${PAYOPEN.has(r.name)?' open':''}" data-g="${esc(r.name)}" tabindex="0"
+          role="button" aria-expanded="${PAYOPEN.has(r.name)}">
+        <td><span class="tw">▸</span><b>${esc(nm(r))}</b>
+            <span class="chip mute">${r.items.length}</span></td>
+        <td class="n">${n1(r.rev)}</td><td class="n">${pct(r.rev, tot)}</td>
+        <td class="n">${r.orders}</td></tr>
+      ${r.items.map(c=>`
+      <tr class="sub${PAYOPEN.has(r.name)?' open':''}" data-p="${esc(r.name)}">
+        <td style="padding-left:3rem;color:var(--text-secondary)">${esc(c.name)}</td>
+        <td class="n">${n1(c.rev)}</td><td class="n">${pct(c.rev, tot)}</td>
+        <td class="n">${c.orders}</td></tr>`).join('')}`).join('')}</tbody>
+    <tfoot><tr><td>${TR('合計')}</td><td class="n">${n1(tot)}</td><td class="n">100.0%</td>
+      <td class="n">${rows.reduce((a,r)=>a+r.orders,0)}</td></tr></tfoot>`;
+
+  function toggle(tr){
+    const g = tr.dataset.g, open = !tr.classList.contains('open');
+    tr.classList.toggle('open', open);
+    tr.setAttribute('aria-expanded', open);
+    if (open) PAYOPEN.add(g); else PAYOPEN.delete(g);
+    tbl.querySelectorAll(`tr.sub[data-p="${CSS.escape(g)}"]`).forEach(x=>x.classList.toggle('open', open));
+  }
+  tbl.querySelectorAll('tr.grow').forEach(tr=>{
+    tr.addEventListener('click', ()=>toggle(tr));
+    tr.addEventListener('keydown', e=>{
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(tr); }
+    });
+  });
+});
 
 /* 関連: 購入者の地域(販売記録スプレッドシートの From 欄との突合結果)*/
 section('s-region', function(D, K, M){
@@ -1525,10 +1579,10 @@ section('s-region', function(D, K, M){
       + `(${cov.toFixed(1)}%、純売上の ${pct(meta.known_rev, K.total.rev)})に地域がついています。`;
   $('#region-note').textContent = LANG === 'en'
     ? 'Origin comes from the "From" column of the sales record sheet, which staff fill in from what the customer says. '
-      + 'It is where the customer came from, not their nationality. Orders with no matching sheet row are shown as "Not in sheet".'
+      + 'It is where the customer came from, not their nationality. Orders with no matching sheet row, and orders whose From is blank or not a place name, are grouped as "Unknown".'
     : '地域は販売記録シートの From 欄で、店頭で聞き取った自己申告です。'
       + '国籍ではなく「どこから来たか」を表します。'
-      + 'シート側に対応する行がない注文は「記録なし」です。';
+      + 'シート側に行がない注文や、From が空欄・地名でない注文は「不明」にまとめています。';
 });
 
 /* ═══ 10. 注文明細(絞り込み付き) ═════════════════════ */
@@ -1664,7 +1718,7 @@ $('#t-def').innerHTML =
   <tr><td><b>オフライン(店舗)</b></td><td><span class="wrapok" style="max-width:70ch">marketplace = Barefoot Malaysia POS。Johor Bahru 店頭での販売。</span></td></tr>
   <tr><td><b>オンライン</b></td><td><span class="wrapok" style="max-width:70ch">Shopee / Lazada / 自社直販(marketplace 空欄・MY domestic 配送の2件)。</span></td></tr>
   <tr><td><b>未入金</b></td><td><span class="wrapok" style="max-width:70ch">payment_status = Unpaid。今回のデータでは全件が Cancelled / Returned で終了しており、入金実績はありません。</span></td></tr>
-  <tr><td><b>地域</b></td><td><span class="wrapok" style="max-width:70ch">販売記録スプレッドシート(店舗側の台帳)の From 欄。店頭で聞き取った自己申告で、国籍ではなく「どこから来たか」。日付・チャネル・金額・商品・時刻で注文と突き合わせている。シートに対応する行がない注文は「記録なし」。従業員・親族の購入は「関係者」にまとめている。</span></td></tr>
+  <tr><td><b>地域</b></td><td><span class="wrapok" style="max-width:70ch">販売記録スプレッドシート(店舗側の台帳)の From 欄。店頭で聞き取った自己申告で、国籍ではなく「どこから来たか」。日付・チャネル・金額・商品・時刻で注文と突き合わせている。シートに対応する行がない注文や From 欄から地域が読めない注文は「不明」にまとめている。従業員・親族の購入は「関係者」にまとめている。</span></td></tr>
   <tr><td><b>伝票数</b></td><td><span class="wrapok" style="max-width:70ch">invoice_no が発行された注文数。Shopee / Lazada 経由の注文には伝票番号が付かないため、注文数より少なくなります(差分は注文数列に灰色で <b>+n</b> と併記)。POS の注文は全件に伝票番号があります。</span></td></tr>
   <tr><td><b>明細行</b></td><td><span class="wrapok" style="max-width:70ch">注文に含まれる商品行の数。1注文で複数モデルを買うと増えます。</span></td></tr>
   <tr><td><b>点数</b></td><td><span class="wrapok" style="max-width:70ch">シューズ・ソックスの数量合計。送料などのサービス行は除外。返品行(数量 −1)は差し引いています。</span></td></tr>
