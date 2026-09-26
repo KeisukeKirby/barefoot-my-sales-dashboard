@@ -75,13 +75,13 @@ days = (d1 - d0).days + 1
 alldates = [(d0 + datetime.timedelta(n)).isoformat() for n in range(days)]
 
 dsale = collections.defaultdict(lambda: dict(off=0.0, on=0.0, wh=0.0, o_off=0, o_on=0, o_wh=0,
-                                             units=0, shoe=0, vff=0))
+                                             units=0, shoe=0, vff=0, whu=0))
 for o in sales:
     k = dsale[o['date']]
     if isoff(o):
         k['off'] += o['total']; k['o_off'] += 1
     elif iswh(o):
-        k['wh'] += o['total']; k['o_wh'] += 1
+        k['wh'] += o['total']; k['o_wh'] += 1; k['whu'] += o['units']
     else:
         k['on'] += o['total']; k['o_on'] += 1
     k['units'] += o['units']
@@ -103,6 +103,7 @@ daily = [dict(date=d, off=R2(dsale[d]['off']), on=R2(dsale[d]['on']), wh=R2(dsal
               orders=dsale[d]['o_off'] + dsale[d]['o_on'] + dsale[d]['o_wh'],
               off_orders=dsale[d]['o_off'], on_orders=dsale[d]['o_on'], wh_orders=dsale[d]['o_wh'],
               units=dsale[d]['units'], shoe_units=dsale[d]['shoe'], vff_units=dsale[d]['vff'],
+              wh_units=dsale[d]['whu'],
               lines=dline.get(d, 0), invoices=dinv.get(d, 0),
               lost=R2(dlost.get(d, 0)), lostn=dlostn.get(d, 0)) for d in alldates]
 
@@ -316,6 +317,14 @@ for x in regions:
     x['en'] = _ren.get(x['name'], x['name'])
 _ri = {n: i for i, n in enumerate(REGION_ORDER + [NOREG])}
 regions.sort(key=lambda x: _ri.get(x['name'], 99))
+# 地域も月で切り替えられるようにする
+regions_by_month = {'all': regions}
+for _mid, _lab, _a, _b, _nt in MONTHS:
+    _g = grp([o for o in sales if _a <= o['date'] <= _b], region)
+    for _x in _g:
+        _x['en'] = _ren.get(_x['name'], _x['name'])
+    _g.sort(key=lambda x: _ri.get(x['name'], 99))
+    regions_by_month[_mid] = _g
 regions_meta = dict(built=REGION_BUILT, known=len([o for o in sales if o['order_id'] in REGION]),
                     total=len(sales),
                     known_rev=R2(sum(o['total'] for o in sales if o['order_id'] in REGION)))
@@ -358,7 +367,8 @@ paym.sort(key=lambda x: -x['rev'])
 if _unknown_pay:
     print(u'!! PAYGRP に無い決済方法(「その他」に入っています):', sorted(_unknown_pay))
 WD = [u'月', u'火', u'水', u'木', u'金', u'土', u'日']
-dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0, retail_units=0)
+dow = [dict(name=WD[i], rev=0.0, orders=0, units=0, retail_rev=0.0, retail_orders=0, retail_units=0,
+                off=0.0, off_orders=0, off_units=0)
        for i in range(7)]
 for o in sales:
     i = datetime.date(*map(int, o['date'].split('-'))).weekday()
@@ -369,6 +379,10 @@ for o in sales:
         dow[i]['retail_rev'] = R2(dow[i]['retail_rev'] + o['total'])
         dow[i]['retail_orders'] += 1
         dow[i]['retail_units'] += o['units']
+    if isoff(o):                                  # 店舗セクションは店頭の売れ方だけを見る
+        dow[i]['off'] = R2(dow[i]['off'] + o['total'])
+        dow[i]['off_orders'] += 1
+        dow[i]['off_units'] += o['units']
 
 hours = [dict(h=h, n=0, rev=0.0) for h in range(9, 22)]
 hi = {h['h']: h for h in hours}
@@ -421,7 +435,7 @@ P = dict(
              active_days=len([d for d in daily if d['off'] + d['on'] > 0])),
     daily=daily, weekly=weekly, monthly=monthly, closed_days=closed_days, channels=chan, channels_by_month=channels_by_month, models=models,
     models_by_month=models_by_month, sizes=sizes, colors=colors,
-    states=states, regions=regions, regions_meta=regions_meta, payments=paym, dow=dow, hours=hours,
+    states=states, regions=regions, regions_by_month=regions_by_month, regions_meta=regions_meta, payments=paym, dow=dow, hours=hours,
     basket=[dict(n=k, orders=v) for k, v in sorted(basket.items())],
     unpaid_rows=unpaid_rows, lost_rows=lost_rows, sales_rows=sales_rows, all_rows=all_rows,
 )
