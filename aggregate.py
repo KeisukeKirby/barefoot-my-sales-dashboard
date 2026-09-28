@@ -294,9 +294,15 @@ out = dict(orders=O, meta=dict(
 ))
 json.dump(out, open('agg.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 
+# 法人名が入っているが卸売ではないと確認済みの注文。毎回警告が出ると新しいものに気づけない
+COMPANY_OK = {
+    '151': u'キャンセル済み。オーナー確認でダッシュボードからは無視(2026-09-07)',
+    '192': u'Colonist.io。V-Run 1足を通常価格で自社直販。数量も金額も小売(2026-09-28)',
+}
 company_orders = {}
 for d in data:
-    if d.get('billing_company', '').strip() and d['order_id'] not in WHOLESALE:
+    if (d.get('billing_company', '').strip() and d['order_id'] not in WHOLESALE
+            and d['order_id'] not in COMPANY_OK):
         company_orders[d['order_id']] = d['billing_company'].strip()
 if company_orders:
     print()

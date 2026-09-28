@@ -66,7 +66,7 @@ def iswh(o):
 # データ基準日。エクスポートは注文のあった日しか教えてくれないので、
 # 「この日まで確認済み(売上ゼロの日を含む)」をここに置く。
 # データの最終日がこれより後ならデータ側を採るので、更新を忘れても短くはならない。
-ASOF = os.environ.get('ASOF', '2026-09-24')      # 2026-09-24 は売上ゼロ(オーナー確認済み)
+ASOF = os.environ.get('ASOF', '2026-09-27')      # MY0925-0927 のエクスポートで 9/27 まで確認済み
 
 d0 = datetime.date(*map(int, min(o['date'] for o in O).split('-')))
 d1 = max(datetime.date(*map(int, max(o['date'] for o in O).split('-'))),

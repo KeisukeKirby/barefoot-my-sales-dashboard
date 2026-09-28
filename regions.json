@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "Sales record for Malaysia.xlsx (Google Drive)",
-  "built": "2026-09-25",
+  "built": "2026-09-28",
   "note": "シートの From 欄(来店客の自己申告)。国籍ではない",
   "order": [
    "シンガポール",
@@ -20,6 +20,12 @@
    "en": "Staff / family",
    "src": "Aug2026#44"
   },
+  "127": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#82",
+   "raw": "KL"
+  },
   "79": {
    "grp": "ジョホール(地元)",
    "en": "Johor (local)",
@@ -31,6 +37,12 @@
    "en": "Singapore",
    "src": "July2026#25",
    "raw": "Singapore"
+  },
+  "90": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Aug2026#46",
+   "raw": "JB"
   },
   "147": {
    "grp": "シンガポール",
@@ -61,6 +73,18 @@
    "en": "Singapore",
    "src": "Sep2026#47",
    "raw": "SG"
+  },
+  "190": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#49",
+   "raw": "SG"
+  },
+  "195": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#54",
+   "raw": "JB"
   },
   "40": {
    "grp": "関係者",
@@ -96,12 +120,6 @@
    "src": "Aug2026#76",
    "raw": "SG"
   },
-  "127": {
-   "grp": "クアラルンプール",
-   "en": "Kuala Lumpur",
-   "src": "Aug2026#82",
-   "raw": "KL"
-  },
   "138": {
    "grp": "シンガポール",
    "en": "Singapore",
@@ -124,12 +142,6 @@
    "en": "Singapore",
    "src": "Aug2026#41",
    "raw": "SG"
-  },
-  "90": {
-   "grp": "ジョホール(地元)",
-   "en": "Johor (local)",
-   "src": "Aug2026#46",
-   "raw": "JB"
   },
   "96": {
    "grp": "シンガポール",
@@ -398,6 +410,42 @@
    "grp": "シンガポール",
    "en": "Singapore",
    "src": "Sep2026#46",
+   "raw": "SG"
+  },
+  "191": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#50",
+   "raw": "SG"
+  },
+  "193": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#52",
+   "raw": "SG"
+  },
+  "194": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#53",
+   "raw": "SG"
+  },
+  "196": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Sep2026#55",
+   "raw": "JB"
+  },
+  "197": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#56",
+   "raw": "SG"
+  },
+  "198": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Sep2026#57",
    "raw": "SG"
   },
   "34": {
@@ -749,6 +797,12 @@
    "en": "Johor (local)",
    "src": "Sep2026#42",
    "raw": "JB"
+  },
+  "192": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Sep2026#51",
+   "raw": "Selangor"
   },
   "27": {
    "grp": "クアラルンプール",
