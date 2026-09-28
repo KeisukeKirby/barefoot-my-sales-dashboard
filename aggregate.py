@@ -46,6 +46,20 @@ json.dump({'header': header, 'sources': sources,
                     for ln in merged[k]['lines']]},
           open(ARCHIVE, 'w', encoding='utf-8'), ensure_ascii=False)
 
+# --- 交換伝票の畳み込み -------------------------------------------------------
+# サイズ交換は「返品(数量 -1)+ 新しいサイズ(数量 +1)」の別伝票で起票される。
+# そのままだと注文が1件増えてしまうので、元の注文に明細を寄せて1件にまとめる。
+# 金額と点数は元から差し引き後になっているので、寄せるとサイズも交換後が残る。
+FOLD_INTO = {
+    '172': '169',   # INV-144 は INV-142(V-Soul W41)を W40 に交換した処理(2026-09-28 オーナー確認)
+}
+for _src, _dst in FOLD_INTO.items():
+    if _src in merged and _dst in merged:
+        for _ln in merged[_src]['lines']:
+            _ln['order_id'] = _dst          # この後 order_id で束ね直すので書き換える
+        merged[_dst]['lines'].extend(merged[_src]['lines'])
+        del merged[_src]
+
 # --- エクスポートに載らなかった注文の手動補完 ---------------------------------
 # order_id 134 は全エクスポートで欠番だった(133 → 135)。管理画面の注文詳細から
 # 起こしている。後日エクスポートに現れたらそちらが優先される(下の取り込み条件)。
@@ -98,8 +112,45 @@ MANUAL_ORDERS = [
                 _ml('VFF0022(IV/GR,W38)', 'Breezandal Model for Women', 1),
                 _ml('VFF0022(IV/GR,W39)', 'Breezandal Model for Women', 1)]),
 ]
-_units_161 = sum(int(x['product_quantity']) for x in MANUAL_ORDERS[-1]['lines'])
-_lines_161 = round(sum(float(x['product_total']) for x in MANUAL_ORDERS[-1]['lines']), 2)
+# 販売記録シートにあって SiteGiant に起票されていない販売。
+# 2026-09-28 にオーナーがダッシュボードに計上してよいと判断した3件。
+# order_id はシート側の出典が分かる形にしている(SiteGiant には存在しない番号)。
+MANUAL_ORDERS += [
+    dict(order_id='SH-J8', invoice_no='',                 # July シート #8
+         order_creation_date='2026-07-17 12:03',
+         order_status='Completed', payment_status='Paid', marketplace='',
+         billing_state='Kedah', billing_city='Sungai Petani',
+         total='562.00', billing_method='GDEX',
+         lines=[dict(product_sku='VFF0008(BK,W39)',
+                     product_name='Vibram Fivefingers V-Soul Model, Pilates/Yoga Shoes '
+                                  'Training Shoes for Women-EU:39',
+                     product_price='552.00', product_quantity='1', product_total='552.00'),
+                dict(product_sku='', product_name='Courier Fee',
+                     product_price='10.00', product_quantity='1', product_total='10.00')]),
+
+    # 8/27 のポップアップ2件。シートに時刻が無いので 18:30 としている(時間帯別グラフだけ影響)
+    dict(order_id='SH-A65', invoice_no='',                # Aug シート #65
+         order_creation_date='2026-08-27 18:30',
+         order_status='Completed', payment_status='Paid',
+         marketplace='Barefoot Malaysia POS',
+         billing_state='Johor', billing_city='Johor Bahru', total='617.50',
+         product_sku='VFF0008(BK,W41)',
+         product_name='Vibram Fivefingers V-Soul Model, Pilates/Yoga Shoes '
+                      'Training Shoes for Women, Color Black-EU:41',
+         product_price='617.50', product_quantity='1', product_total='617.50'),
+
+    dict(order_id='SH-A66', invoice_no='',                # Aug シート #66
+         order_creation_date='2026-08-27 18:30',
+         order_status='Completed', payment_status='Paid',
+         marketplace='Barefoot Malaysia POS',
+         billing_state='Johor', billing_city='Johor Bahru', total='779.00',
+         product_sku='VFF0024(BK,M40)',
+         product_name='Vibram FiveFingers Trailope Model for Men, Color Black-40',
+         product_price='779.00', product_quantity='1', product_total='779.00'),
+]
+
+_units_161 = sum(int(x['product_quantity']) for x in MANUAL_ORDERS[1]['lines'])
+_lines_161 = round(sum(float(x['product_total']) for x in MANUAL_ORDERS[1]['lines']), 2)
 assert _units_161 == 36 and _lines_161 == 17339.40, (_units_161, _lines_161)   # 画面の数字と一致させる
 
 for mo in MANUAL_ORDERS:

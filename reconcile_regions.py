@@ -204,7 +204,8 @@ json.dump(REG, io.open(os.path.join(WORK, 'region_map.json'), 'w', encoding='utf
 
 un_sheet = [r for r in IN if not r.get('_m')]
 un_ord = sorted([o for o in orders if o['order_id'] not in used],
-                key=lambda x: (x['date'], int(x['order_id'])))
+                key=lambda x: (x['date'],
+                              int(x['order_id']) if x['order_id'].isdigit() else 0))
 json.dump(dict(sheet=[{k: r[k] for k in ('sheet', 'no', 'd', 'ch', 'frm', 'prod', 'amts')} for r in un_sheet],
                orders=[dict(oid=o['order_id'], dt=o['dt'], bucket=o['bucket'], ch=o['channel'],
                             inv=o['invoice'], total=o['total'],

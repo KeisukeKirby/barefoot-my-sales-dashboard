@@ -179,6 +179,12 @@
    "src": "July2026#7",
    "raw": "JB"
   },
+  "SH-J8": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "July2026#8",
+   "raw": "Kedah"
+  },
   "11": {
    "grp": "ジョホール(地元)",
    "en": "Johor (local)",
@@ -664,6 +670,18 @@
    "grp": "クアラルンプール",
    "en": "Kuala Lumpur",
    "src": "Aug2026#64",
+   "raw": "KL"
+  },
+  "SH-A65": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#65",
+   "raw": "KL"
+  },
+  "SH-A66": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Aug2026#66",
    "raw": "KL"
   },
   "111": {

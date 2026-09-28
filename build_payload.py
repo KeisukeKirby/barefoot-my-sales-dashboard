@@ -41,7 +41,10 @@ def items_str(o, skip_fee=False):
         if skip_fee and i['cat'] == 'fee':
             continue
         s = i['size'] or ''
-        out.append((i['model'] + ' ' + s).strip())
+        nm = (i['model'] + ' ' + s).strip()
+        if i['qty'] < 0:
+            nm += u'(返品)'          # 返品・交換で戻ってきた行。点数からは差し引き済み
+        out.append(nm)
     return JOIN.join(out)
 
 
