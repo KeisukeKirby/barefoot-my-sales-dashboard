@@ -18,6 +18,9 @@ def split_boundary(b, nx2):
         return b[:-3].strip(), 'No.'
     if nx2 == 'TOTAL':
         return b, ''
+    m = re.search(r'(\S+ ' + TITLE + r')$', b)   # 前の行の末尾 + 次のシートの見出し
+    if m:
+        return b[:m.start()].strip(), m.group(1)
     if b.endswith(TITLE):
         return '', b
     if b.isdigit():
@@ -71,7 +74,11 @@ def main():
               ensure_ascii=False, indent=1)
 
     print('rows=%d  data=%d' % (R, len(out)))
-    for s in ('July2026', 'Aug2026', 'Sep2026'):
+    seen = []
+    for x in out:                       # シートは出てきた順に出す
+        if x['sheet'] not in seen:
+            seen.append(x['sheet'])
+    for s in seen:
         n = [x for x in out if x['sheet'] == s]
         w = round(sum(money(x['walkin']) or 0 for x in n), 2)
         o = round(sum(money(x['online']) or 0 for x in n), 2)
