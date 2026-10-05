@@ -253,7 +253,7 @@ CH = {'Barefoot Malaysia POS': 'POS(実店舗)', 'Barefoot Malaysia - Shopee': '
 # 卸売はシステム上の区分が無く POS でも marketplace でもないため、注文IDで指定する。
 # 1件で通常の15倍以上の金額が動くので、混ぜると客単価も点数も歪む。
 # 136 / 161 はいずれも Hock Soon Ng(Yellowstone Sdn Bhd)宛、2026-09-02。
-WHOLESALE = {'136', '161'}
+WHOLESALE = {'136', '161', '205'}   # 205 も Yellowstone Sdn Bhd(2026-10-02 受注・未入金)
 
 
 def channel_of(d):
@@ -295,6 +295,8 @@ def is_test(v):  return all(L['cat'] == 'test' for L in v)
 # 出荷前の途中ステータス。以前は「それ以外は全部キャンセル」で判定していたため、
 # 支払い済みの注文がキャンセル扱いになっていた。Paid なら売上、未入金なら「処理中」に残す。
 PENDING = ('Pending Process', 'Processed', 'Ready To Ship')
+# 出荷前の既知のステータス。未入金のまま残るので売上には入らない
+PRESALE = PENDING + ('Open',)
 unknown_status = set()
 
 
@@ -307,7 +309,7 @@ def bucket(v):
     if a['status'] in PENDING and a['pay'] == 'Paid': return 'sales'
     if a['status'] == 'Returned': return 'returned'
     if a['status'] == 'Cancelled': return 'cancelled'
-    if a['status'] not in PENDING:
+    if a['status'] not in PRESALE:
         unknown_status.add(a['status'])            # 見知らぬステータスは黙って丸めない
     return 'pending'
 
