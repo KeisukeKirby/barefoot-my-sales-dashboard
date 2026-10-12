@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "Sales record for Malaysia.xlsx (Google Drive)",
-  "built": "2026-10-05",
+  "built": "2026-10-12",
   "note": "シートの From 欄(来店客の自己申告)。国籍ではない",
   "order": [
    "シンガポール",
@@ -15,6 +15,52 @@
   ]
  },
  "regions": {
+  "13": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#12",
+   "raw": "JB"
+  },
+  "14": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "July2026#12",
+   "raw": "JB"
+  },
+  "20": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "July2026#18",
+   "raw": "Selangor"
+  },
+  "57": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Aug2026#14",
+   "raw": "Selangor"
+  },
+  "78": {
+   "grp": "関係者",
+   "en": "Staff / family",
+   "src": "Aug2026#34"
+  },
+  "136": {
+   "grp": "不明",
+   "en": "Unknown",
+   "src": "Aug2026#54"
+  },
+  "161": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Sep2026#24",
+   "raw": "KL"
+  },
+  "222": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Oct2026#5",
+   "raw": "KL"
+  },
   "88": {
    "grp": "関係者",
    "en": "Staff / family",
@@ -96,6 +142,12 @@
    "grp": "シンガポール",
    "en": "Singapore",
    "src": "Oct2026#8",
+   "raw": "SG"
+  },
+  "225": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#21",
    "raw": "SG"
   },
   "40": {
@@ -490,6 +542,24 @@
    "src": "Oct2026#12",
    "raw": "Johor"
   },
+  "214": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#14",
+   "raw": "SG"
+  },
+  "227": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#22",
+   "raw": "SG"
+  },
+  "232": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#26",
+   "raw": "SG"
+  },
   "34": {
    "grp": "シンガポール",
    "en": "Singapore",
@@ -584,6 +654,12 @@
    "src": "Sep2026#43",
    "raw": "SG"
   },
+  "230": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#25",
+   "raw": "SG"
+  },
   "17": {
    "grp": "ジョホール(地元)",
    "en": "Johor (local)",
@@ -613,6 +689,30 @@
    "en": "Singapore",
    "src": "Oct2026#7",
    "raw": "SG"
+  },
+  "217": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Oct2026#17",
+   "raw": "Selangor"
+  },
+  "218": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Oct2026#18",
+   "raw": "Penang"
+  },
+  "220": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Oct2026#19",
+   "raw": "Selangor"
+  },
+  "221": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Oct2026#20",
+   "raw": "Selangor"
   },
   "18": {
    "grp": "ジョホール(地元)",
@@ -906,12 +1006,6 @@
    "src": "Oct2026#10",
    "raw": "SG"
   },
-  "13": {
-   "grp": "ジョホール(地元)",
-   "en": "Johor (local)",
-   "src": "July2026#12",
-   "raw": "JB"
-  },
   "25": {
    "grp": "クアラルンプール",
    "en": "Kuala Lumpur",
@@ -1008,6 +1102,18 @@
    "src": "Oct2026#6",
    "raw": "KL"
   },
+  "215": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Oct2026#15",
+   "raw": "KL"
+  },
+  "216": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Oct2026#16",
+   "raw": "Penang"
+  },
   "24": {
    "grp": "セランゴール",
    "en": "Selangor",
@@ -1020,11 +1126,6 @@
    "src": "Aug2026#1",
    "raw": "Selangor"
   },
-  "78": {
-   "grp": "関係者",
-   "en": "Staff / family",
-   "src": "Aug2026#34"
-  },
   "177": {
    "grp": "シンガポール",
    "en": "Singapore",
@@ -1036,12 +1137,6 @@
    "en": "Kuala Lumpur",
    "src": "Sep2026#31",
    "raw": "KL"
-  },
-  "20": {
-   "grp": "セランゴール",
-   "en": "Selangor",
-   "src": "July2026#18",
-   "raw": "Selangor"
   },
   "35": {
    "grp": "セランゴール",
@@ -1067,33 +1162,16 @@
    "src": "Aug2026#2",
    "raw": "KL"
   },
-  "205": {
-   "grp": "クアラルンプール",
-   "en": "Kuala Lumpur",
-   "src": "Oct2026#5",
-   "raw": "KL"
-  },
-  "57": {
+  "228": {
    "grp": "セランゴール",
    "en": "Selangor",
-   "src": "Aug2026#14",
+   "src": "Oct2026#23",
    "raw": "Selangor"
   },
-  "14": {
-   "grp": "ジョホール(地元)",
-   "en": "Johor (local)",
-   "src": "July2026#12",
-   "raw": "JB"
-  },
-  "136": {
-   "grp": "不明",
-   "en": "Unknown",
-   "src": "Aug2026#54"
-  },
-  "161": {
+  "229": {
    "grp": "クアラルンプール",
    "en": "Kuala Lumpur",
-   "src": "Sep2026#24",
+   "src": "Oct2026#24",
    "raw": "KL"
   }
  }

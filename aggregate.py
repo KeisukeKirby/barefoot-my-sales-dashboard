@@ -218,7 +218,8 @@ COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lim
              'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',
              'ZB/WT':'Zebra White','LM':'Lemon','UNK':'(色不明)',
              'F/IV/GN':'Fig/Ivory/Green','TT/IV':'Total Ivory','GY':'Gray',
-             'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean','IV/GR':'Ivory/Green'}
+             'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean','IV/GR':'Ivory/Green',
+             'IV/DL':'Ivory/Deep Lake'}
 
 def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
@@ -253,7 +254,7 @@ CH = {'Barefoot Malaysia POS': 'POS(実店舗)', 'Barefoot Malaysia - Shopee': '
 # 卸売はシステム上の区分が無く POS でも marketplace でもないため、注文IDで指定する。
 # 1件で通常の15倍以上の金額が動くので、混ぜると客単価も点数も歪む。
 # 136 / 161 はいずれも Hock Soon Ng(Yellowstone Sdn Bhd)宛、2026-09-02。
-WHOLESALE = {'136', '161', '205'}   # 205 も Yellowstone Sdn Bhd(2026-10-02 受注・未入金)
+WHOLESALE = {'136', '161', '205', '222'}   # 205・222 は Yellowstone Sdn Bhd
 
 
 def channel_of(d):
@@ -351,6 +352,8 @@ json.dump(out, open('agg.json', 'w', encoding='utf-8'), ensure_ascii=False, inde
 COMPANY_OK = {
     '151': u'キャンセル済み。オーナー確認でダッシュボードからは無視(2026-09-07)',
     '192': u'Colonist.io。V-Run 1足を通常価格で自社直販。数量も金額も小売(2026-09-28)',
+    '223': u'自社名義。RM72 のソックス1足でキャンセル済み(2026-10-08)',
+    '224': u'自社名義。223 と同じ内容でキャンセル済み(2026-10-08)',
 }
 company_orders = {}
 for d in data:

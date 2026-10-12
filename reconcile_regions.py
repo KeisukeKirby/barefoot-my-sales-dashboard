@@ -45,6 +45,8 @@ MANUAL = {
                                'チャネルが食い違う'),
     ('July2026', '12'): ('13', 'V-Run M42 + Oleno ASO の RM773.50 を SiteGiant では oid 13(RM680)と '
                                'oid 14(RM93.50)の2注文に分けて起票。地域は両方に当てる'),
+    ('Oct2026', '5'): ('222', '卸売 RM5,518.50。SiteGiant では未入金の 205 を 10/8 に 222 として'
+                               '起こし直している(V-Run のサイズが W37→W40)。入金済みの 222 に当てる'),
 }
 MANUAL_EXTRA = {('July2026', '12'): '14'}   # 1行が2注文に分かれるケース
 
@@ -164,6 +166,23 @@ def score(r, o):
 
 MIN = 6
 pairs, used, cand = [], set(), []
+
+# 先に手当てを確定させる。自動突合に取られてしまうと上書きできないため。
+for r in IN:
+    key = (r['sheet'], r['no'])
+    if key not in MANUAL:
+        continue
+    oid, why = MANUAL[key]
+    if oid not in BY:
+        print('!! 手当ての order_id が見つかりません: %s #%s -> %s' % (r['sheet'], r['no'], oid))
+        continue
+    r['_m'] = oid
+    used.add(oid)
+    pairs.append((r, BY[oid], None, '手当て: ' + why))
+    if key in MANUAL_EXTRA:
+        used.add(MANUAL_EXTRA[key])
+        pairs.append((r, BY[MANUAL_EXTRA[key]], None, '手当て(2注文に分割): ' + why))
+
 for r in IN:
     for o in orders:
         sc = score(r, o)
@@ -177,21 +196,6 @@ for sc, r, o in cand:
     used.add(o['order_id'])
     pairs.append((r, o, sc, '自動(score %d)' % sc))
 
-# 手当て
-for r in IN:
-    key = (r['sheet'], r['no'])
-    if key in MANUAL:
-        oid, why = MANUAL[key]
-        if r.get('_m') and r['_m'] != oid:
-            print('!! 手当てと自動突合が衝突: %s #%s (自動 %s / 手当て %s)' % (r['sheet'], r['no'], r['_m'], oid))
-            continue
-        if not r.get('_m'):
-            r['_m'] = oid
-            used.add(oid)
-            pairs.append((r, BY[oid], None, '手当て: ' + why))
-        if key in MANUAL_EXTRA:
-            used.add(MANUAL_EXTRA[key])
-            pairs.append((r, BY[MANUAL_EXTRA[key]], None, '手当て(2注文に分割): ' + why))
 
 REG = {}
 for r, o, sc, how in pairs:
