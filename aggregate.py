@@ -86,7 +86,8 @@ MANUAL_ORDERS = [
     # (RM 17,339.40 / 36点 = 481.65)。売上・点数・サイズは正確、モデル別の金額だけ推定値。
     # 色: 2026-09-25 にもらった注文詳細の画像でも商品名が途中で切れているため、
     # Spidrwalk は表記どおり Total Black、Breezandal はサムネイルと販売記録の色表記から
-    # 男性 BK / 女性 IV/GR と判断した。Groundsplay LS のレディースだけは特定できず UNK。
+    # 男性 BK / 女性 IV/GR と判断した。
+    # Groundsplay LS のレディース6足は 2026-10-12 にオーナーから Ivory/Deep Lake と確認。
     dict(order_id='161', invoice_no='',
          order_creation_date='2026-09-02 10:00',
          order_status='Shipped', payment_status='Paid', marketplace='',
@@ -97,9 +98,9 @@ MANUAL_ORDERS = [
                 _ml('VFF0021(BK,M43)',  'Groundsplay LS Model for Men', 2),
                 _ml('VFF0021(BK,M44)',  'Groundsplay LS Model for Men', 1),
                 _ml('VFF0021(BK,M45)',  'Groundsplay LS Model for Men', 1),
-                _ml('VFF0021(UNK,W37)', 'Groundsplay LS Model for Women', 1),
-                _ml('VFF0021(UNK,W38)', 'Groundsplay LS Model for Women', 3),
-                _ml('VFF0021(UNK,W39)', 'Groundsplay LS Model for Women', 2),
+                _ml('VFF0021(IV/DL,W37)', 'Groundsplay LS Model for Women', 1),
+                _ml('VFF0021(IV/DL,W38)', 'Groundsplay LS Model for Women', 3),
+                _ml('VFF0021(IV/DL,W39)', 'Groundsplay LS Model for Women', 2),
                 _ml('VFF0026(TT/BK,M40)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-40", 2),
                 _ml('VFF0026(TT/BK,M41)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-41", 2),
                 _ml('VFF0026(TT/BK,M42)', "Spidrwalk Men's Water and Outdoor Shoes, Color Total Black-42", 2),
