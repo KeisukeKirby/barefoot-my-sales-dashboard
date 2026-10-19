@@ -26,6 +26,11 @@ Barefoot Inc Malaysia(Johor Bahru 店舗 / Shopee / Lazada / 自社直販)の販
 
 管理画面から Orders をエクスポートした xlsx を用意して、上から順に実行する。
 
+> **実績を更新するときは、購入者の地域も毎回やる。**
+> 2026-10-19 に Keisuke が指示。エクスポートを取り込んだら、そのまま
+> [販売記録シート](#購入者の地域販売スプレッドシートとの突合)を読み直して `regions.json` まで更新すること。
+> 忘れても `build_payload.py` が「地域がありません」と警告を出す。
+
 ```bash
 python aggregate.py "<Orders.xlsx>" ["<追加のOrders.xlsx>" ...] && python build_payload.py && python build.py
 ```
@@ -131,6 +136,11 @@ order_id 134 / 161 のように、どのエクスポートにも現れない注�
 SiteGiant には購入者の地域が無いので、Google Drive の
 `Sales record for Malaysia.xlsx`(店舗側が手でつけている台帳)の **From 欄** を
 日付・チャネル・金額・商品・時刻で突き合わせて注文に紐づけている。
+**実績を更新したら毎回これも回す**（注文は増えるのに地域が古いままだと、
+地域別から直近の売上が丸こと洩れる）。
+
+Drive のファイルID: `1vnEY7dHckpuRsJ_5p30d-uc0HwDtHNHT`
+（月ごとにシートが分かれている。読むときは全シートが1本のテキストで返る）
 
 ```bash
 # 1. シートの中身を sheet_raw.txt に落とす(Drive から取得)
@@ -141,6 +151,18 @@ SHEET_WORKDIR=<作業フォルダ> python reconcile_regions.py
 # 4. 公開用に order_id と地域だけ抜き出す → regions.json
 SHEET_WORKDIR=<作業フォルダ> python build_regions.py
 ```
+
+手順 1 の書き方は、既存の `sheet_raw.txt` に新しい行を差し込む。シートの末尾には
+`27,,,,,,,,,,,,,,` のような空行が並んでいるので、そこを実データで置き換え、
+最後の `,TOTAL,...` 行も新しい値に直す。ファイル全体が改行なしの1行になっている
+のが前提（`parse_sheet.py` が 15 セル単位で切り直す）。
+
+シートの記述と SiteGiant が食い違うときは **SiteGiant を正** として、シートからは
+From 欄（地域）だけを取る。シート側の金額はマーケットプレイスの手数料引き後だったり、
+色・サイズの書き違いがあったりする。
+
+自動で突合できない行は `reconcile_regions.py` の `MANUAL` に理由付きで書く。
+「シート側の未結合 0 行」になるまでやる。
 
 `sheet_raw.txt` / `sheet.json` / `region_map.json` / `unmatched.json` は顧客名・住所・電話を
 含むので `.gitignore` 済み。リポジトリに入れるのは `regions.json`(order_id と地域のみ。

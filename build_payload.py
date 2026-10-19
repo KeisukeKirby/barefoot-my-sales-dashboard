@@ -339,6 +339,18 @@ for _mid, _lab, _a, _b, _nt in MONTHS:
 regions_meta = dict(built=REGION_BUILT, known=len([o for o in sales if o['order_id'] in REGION]),
                     total=len(sales),
                     known_rev=R2(sum(o['total'] for o in sales if o['order_id'] in REGION)))
+# 販売記録シートの取り込み直し忘れを残らず出す。地域がついた注文の最終日より
+# 後の注文が丸こと地域未設定なら、シートがこのエクスポートに追いついていない。
+_rg_dates = [o['date'] for o in sales if o['order_id'] in REGION]
+if _rg_dates:
+    _rg_max = max(_rg_dates)
+    _rg_new = sorted(o['order_id'] for o in sales
+                     if o['order_id'] not in REGION and o['date'] > _rg_max)
+    if _rg_new:
+        print(u'!! %s より後の注文 %d 件に地域がありません: %s'
+              % (_rg_max, len(_rg_new), ', '.join(_rg_new)))
+        print(u'   Drive の販売記録シートを読み直して sheet_raw.txt を更新し、'
+              u'parse_sheet → reconcile_regions → build_regions を回してください。')
 # --- 決済方法はまず大分類。画面でクリックすると内訳が開く ---
 # 新しい決済方法が出てきたらここに追加する。未登録は「その他」に落ちて集計時に警告が出る。
 PAYGRP = [
