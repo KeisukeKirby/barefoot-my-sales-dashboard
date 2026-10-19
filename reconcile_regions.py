@@ -154,7 +154,8 @@ def score(r, o):
     else: s -= 2
     s += (3, 1, 0, 0)[dd]
     s += 2 * siz + mod
-    if r['ch_n'] == o['channel']: s += 3
+    # 'Lazada (LazMall)' のようなストア枠の違いは、シートには書かれないので落とす
+    if r['ch_n'] == o['channel'].split(' (')[0]: s += 3
     else: s -= 2                      # 店頭POSで起票したオンライン注文などがある
     if tm is not None:
         s += 3 if tm == 0 else (2 if tm <= 20 else (1 if tm <= 60 else 0))

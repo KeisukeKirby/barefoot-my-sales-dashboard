@@ -69,7 +69,7 @@ def iswh(o):
 # データ基準日。エクスポートは注文のあった日しか教えてくれないので、
 # 「この日まで確認済み(売上ゼロの日を含む)」をここに置く。
 # データの最終日がこれより後ならデータ側を採るので、更新を忘れても短くはならない。
-ASOF = os.environ.get('ASOF', '2026-10-11')      # 10/12 のエクスポートで 10/11 まで確認済み
+ASOF = os.environ.get('ASOF', '2026-10-18')      # 10/19 のエクスポートで 10/18 まで確認済み
 
 d0 = datetime.date(*map(int, min(o['date'] for o in O).split('-')))
 d1 = max(datetime.date(*map(int, max(o['date'] for o in O).split('-'))),
@@ -125,6 +125,7 @@ WEEKS = [
     (u'W10', u'第10週', '2026-09-21', '2026-09-27'),
     (u'W11', u'第11週', '2026-09-28', '2026-10-04'),
     (u'W12', u'第12週', '2026-10-05', '2026-10-11'),
+    (u'W13', u'第13週', '2026-10-12', '2026-10-18'),
 ]
 MONTHS = [
     (u'2026-07', u'2026年7月', '2026-07-17', '2026-07-31', u'開業月(7/17〜)'),
@@ -213,9 +214,13 @@ weekly = [dict(id=i, label=lb, **period_stats(a, b)) for i, lb, a, b in WEEKS]
 monthly = [dict(id=i, label=lb, note=nt, **period_stats(a, b)) for i, lb, a, b, nt in MONTHS]
 
 CH_POS = u'POS(実店舗)'
-CHORDER = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)', u'卸売']
-if EXCL_WH:
-    CHORDER = CHORDER[:-1]
+# 並べたい順。固定リストだけで回していたため、新しいマーケットプレイス
+# (Lazada の LazMall)がテーブルから丸ごと落ちた。残りはデータ側から拾う。
+CHKNOWN = [CH_POS, 'Shopee', 'Lazada', u'Online(直販)', u'卸売']
+CHSEG = {o['channel']: o['seg'] for o in O}
+CHORDER = [c for c in CHKNOWN if c in CHSEG]
+CHORDER += sorted(set(CHSEG) - set(CHORDER),
+                  key=lambda c: -sum(o['total'] for o in sales if o['channel'] == c))
 
 
 def channels_for(subset_sales, subset_lost):
@@ -223,7 +228,7 @@ def channels_for(subset_sales, subset_lost):
     for c in CHORDER:
         sc = [o for o in subset_sales if o['channel'] == c]
         lc = [o for o in subset_lost if o['channel'] == c]
-        out.append(dict(name=c, seg=(u'オフライン' if c == CH_POS else (u'卸売' if c == u'卸売' else u'オンライン')),
+        out.append(dict(name=c, seg=CHSEG[c].replace(u'(店舗)', ''),
                         lost_orders=len(lc), lost_rev=R2(sum(o['total'] for o in lc)),
                         invoices=sum(1 for o in sc if o['invoice'].strip()),
                         lines=sum(o['n_lines'] for o in sc), **block(sc)))
@@ -338,16 +343,20 @@ regions_meta = dict(built=REGION_BUILT, known=len([o for o in sales if o['order_
 # 新しい決済方法が出てきたらここに追加する。未登録は「その他」に落ちて集計時に警告が出る。
 PAYGRP = [
     (u'QR決済', 'QR payment',
-     ['RHB Duitnow', 'DuitNow QR', 'GN_TNG_EBANK']),
+     ['RHB Duitnow', 'DuitNow QR', 'DUITNOW', 'GN_TNG_EBANK']),
     (u'カード', 'Card',
      ['Credit/Debit Card', 'Credit / Debit Card', 'Credit Card Installment',
       'Credit Card payments', 'MIXEDCARD', 'Apple Pay']),
     (u'現金', 'Cash', ['cash', 'Cash', 'CASH']),
     (u'銀行振込・ネットバンキング', 'Bank transfer / online banking',
-     ['RHB bank transfer', 'Online Banking', 'MOLPAY_MAYBANK_ONLINE']),
+     ['RHB bank transfer', 'Online Banking', 'MOLPAY_MAYBANK_ONLINE',
+      'MOLPAY_CIMB_BANK_ONLINE']),
+    # マーケットプレイスの後払い。入金はプラットフォームが立て替える
+    (u'後払い(BNPL)', 'Buy now, pay later', ['SPayLater', 'PAY_LATER']),
 ]
 PAYOTHER = (u'その他・未記録', 'Other / not recorded')
-PAYOTHER_OK = ['Barefoot Malaysia']      # 「その他」で良いと分かっているもの
+# 「その他」で良いと分かっているもの。GDEX は配送業者名で決済方法が不明なまま
+PAYOTHER_OK = ['Barefoot Malaysia', 'GDEX']
 _pg = {m: (ja, en) for ja, en, ms in PAYGRP for m in ms}
 _unknown_pay = set()
 

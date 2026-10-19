@@ -249,8 +249,11 @@ def classify(d):
                 color = cn.group(1).strip()
     return (model, brand, cat, color, size)
 
+# LazMall は Lazada の公式ストア枠。配送も追跡番号も Lazada と同じなので、
+# 親プラットフォームが分かる名前にして行は分けておく(2026-10-18 の order 239 が初出)。
 CH = {'Barefoot Malaysia POS': 'POS(実店舗)', 'Barefoot Malaysia - Shopee': 'Shopee',
-      'Barefoot Malaysia - Lazada': 'Lazada', '': 'Online(直販)'}
+      'Barefoot Malaysia - Lazada': 'Lazada',
+      'Barefoot Malaysia - LazMall': 'Lazada (LazMall)', '': 'Online(直販)'}
 
 # 卸売はシステム上の区分が無く POS でも marketplace でもないため、注文IDで指定する。
 # 1件で通常の15倍以上の金額が動くので、混ぜると客単価も点数も歪む。

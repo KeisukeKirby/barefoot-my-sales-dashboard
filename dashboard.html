@@ -1889,29 +1889,25 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   const w1 = w[0], w5 = w[w.length-1];
   const vsoul = D.models[0];
   const growth = w5.per_day / w1.per_day;
-  // ピーク週と、そこから何週連続で減っているか
+  // 日商が最も高かった週
   let peak = 0;
   w.forEach((r,i)=>{ if (r.per_day > w[peak].per_day) peak = i; });
-  let down = 0;
-  for (let i=peak+1; i<w.length; i++){ if (w[i].per_day < w[i-1].per_day) down++; else break; }
-  // 底を打った週から何週連続で増えているか数える
-  let lowIdx = 0;
-  w.forEach((r,i)=>{ if (r.per_day < w[lowIdx].per_day) lowIdx = i; });
-  let streak = 0;
-  for (let i=lowIdx+1; i<w.length; i++){ if (w[i].per_day > w[i-1].per_day) streak++; else break; }
   // 売れ筋レディースサイズ上位3
   const wsz = [...D.sizes.women].sort((a,b)=>b.n-a.n).slice(0,3);
   const topSizes = wsz.map(s=>s.size).sort();
   const topShare = wsz.reduce((a,s)=>a+s.n,0);
   const womenTotal = D.sizes.women.reduce((a,s)=>a+s.n,0);
+  // 見出しは「直近の完了週 vs その前の週」。ピークからの連続下落数だけを見ていたときは、
+  // 持ち直して再び落ちても「ピークからN週連続で減少」のままで、直近の動きが出なかった。
+  const wPrev = w[w.length-2] || w1;
+  const chg = wPrev.per_day ? (w5.per_day / wPrev.per_day - 1) * 100 : 0;
+  const trail = w.slice(-4).map(r=>`${esc(tl(r.label))} ${rm2(r.per_day)}`).join(' → ');
   const items = [
-    ['fact', down > 0
-       ? `日商はピークの${esc(tl(w[peak].label))}から${down}週連続で減少`
-       : `日商は開業週の${growth.toFixed(1)}倍に伸びている`,
-     `日平均で見ると開業週 ${rm2(w1.per_day)} → ${esc(tl(w5.label))} ${rm2(w5.per_day)}(開業週比 ${growth.toFixed(1)}倍)。`
-     + (down > 0
-        ? `ピークは${esc(tl(w[peak].label))}の ${rm2(w[peak].per_day)} で、そこから${down}週連続で下げています。`
-        : `${esc(tl(w[lowIdx].label))}の ${rm2(w[lowIdx].per_day)} が底で、そこから${streak}週連続で増加しています。`)
+    ['fact',
+     `直近の${esc(tl(w5.label))}は日商が前週比 ${chg>=0?'+':''}${chg.toFixed(0)}%`,
+     `日平均の推移は ${trail}。`
+     + `ピークは${esc(tl(w[peak].label))}の ${rm2(w[peak].per_day)}、開業週は ${rm2(w1.per_day)} で、`
+     + `直近週は開業週比 ${growth.toFixed(1)}倍・ピーク比 ${(w5.per_day/w[peak].per_day).toFixed(2)}倍です。`
      + `(進行中の週は日数が揃わないため除外)`],
     ['fact',`売上の${(K.offline.rev/K.total.rev*10).toFixed(0)}割は店舗`,
      `店舗 ${pct(K.offline.rev,K.total.rev)}(${K.offline.orders}注文 / ${K.offline.units}点)に対しオンラインは ${pct(K.online.rev,K.total.rev)}(${K.online.orders}注文 / ${K.online.units}点)。1注文あたりの点数は店舗 ${(K.offline.units/K.offline.orders).toFixed(2)}点、オンライン ${(K.online.units/K.online.orders).toFixed(2)}点です。`],
