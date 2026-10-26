@@ -116,7 +116,7 @@ def omin(o):
 
 rows = json.load(io.open(os.path.join(WORK, 'sheet.json'), encoding='utf-8'))
 orders = [o for o in json.load(io.open(os.path.join(PROJ, 'agg.json'), encoding='utf-8'))['orders']
-          if o['bucket'] != 'test']
+          if o['bucket'] not in ('test', 'void')]
 BY = {o['order_id']: o for o in orders}
 
 for r in rows:

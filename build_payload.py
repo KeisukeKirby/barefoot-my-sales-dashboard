@@ -2,7 +2,8 @@
 import sys, io, json, collections, datetime, os, subprocess
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 J = json.load(open('agg.json', encoding='utf-8'))
-O = [o for o in J['orders'] if o['bucket'] != 'test']
+# test と void(オーナー確認で記録から外した伝票)はどの集計にも入れない
+O = [o for o in J['orders'] if o['bucket'] not in ('test', 'void')]
 # 卸売を除いた版も同じロジックで作る(画面のチェックボックスで切り替える)
 EXCL_WH = os.environ.get('EXCLUDE_WH') == '1'
 if EXCL_WH:

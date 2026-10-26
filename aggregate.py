@@ -302,11 +302,22 @@ def is_test(v):  return all(L['cat'] == 'test' for L in v)
 PENDING = ('Pending Process', 'Processed', 'Ready To Ship')
 # 出荷前の既知のステータス。未入金のまま残るので売上には入らない
 PRESALE = PENDING + ('Open',)
+
+# オーナー確認で「記録に入れない」と決まった伝票。テストと同じく全集計から外す。
+# キャンセルバケツに入れると失注として数えてしまうので、別のバケツにしている。
+VOID = {
+    '205': u'10/2 の卸売 RM5,518.50。SiteGiant でキャンセル済みで、'
+           u'10/8 の 222 が正しい記録(2026-10-26 オーナー確認)。'
+           u'エクスポートではまだ Open のまま出てくる',
+    '226': u'RM0 の INV-195(BFJ Gray S 1足)。プレゼントなので記録に入れない'
+           u'(2026-10-26 オーナー確認)',
+}
 unknown_status = set()
 
 
 def bucket(v):
     a = v[0]
+    if a['order_id'] in VOID: return 'void'
     if is_test(v): return 'test'
     if a['status'] in ('Completed', 'Shipped') and a['pay'] == 'Paid': return 'sales'
     # 入金済みの出荷前注文も売上に数える(2026-09-14 オーナー判断)。後日のエクスポートで
@@ -342,8 +353,10 @@ sales = [o for o in O if o['bucket'] == 'sales']
 canc  = [o for o in O if o['bucket'] == 'cancelled']
 retn  = [o for o in O if o['bucket'] == 'returned']
 test  = [o for o in O if o['bucket'] == 'test']
+void  = [o for o in O if o['bucket'] == 'void']
 pend  = [o for o in O if o['bucket'] == 'pending']
-unpaid = [o for o in O if o['pay'] == 'Unpaid']
+# 無効伝票は未入金の台帳にも残したくない(205 がそれ)
+unpaid = [o for o in O if o['pay'] == 'Unpaid' and o['bucket'] not in ('test', 'void')]
 
 out = dict(orders=O, meta=dict(
     src=' + '.join(sources),                       # アーカイブ経由でも元のファイル名を出す
@@ -389,13 +402,18 @@ if serial_hits:
 
 R = lambda x: round(x, 2)
 print('=== BUCKETS (orders / revenue RM / units) ===')
-for nm, g in [('売上(Paid: 完了・出荷済・出荷前)', sales), ('キャンセル', canc), ('返品', retn), ('処理中(入金済・出荷前)', pend), ('テスト', test)]:
+for nm, g in [('売上(Paid: 完了・出荷済・出荷前)', sales), ('キャンセル', canc), ('返品', retn), ('処理中(入金済・出荷前)', pend), ('無効(記録に入れない)', void), ('テスト', test)]:
     print(f'{nm:32} {len(g):>3}件  RM {R(sum(o["total"] for o in g)):>10,.2f}  {sum(o["units"] for o in g):>3}足')
 print(f'{"うちUnpaid(未入金)":32} {len(unpaid):>3}件  RM {R(sum(o["total"] for o in unpaid)):>10,.2f}  {sum(o["units"] for o in unpaid):>3}足')
 print()
 rev = sum(o['total'] for o in sales); un = sum(o['units'] for o in sales)
 print(f'純売上 RM {rev:,.2f} / 注文 {len(sales)} / AOV RM {rev/len(sales):,.2f} / 販売数 {un} / 単価 RM {rev/un:,.2f}')
-print(f'キャンセル率(件数) {len(canc)/(len(O)-len(test))*100:.1f}%  返品率 {len(retn)/(len(O)-len(test))*100:.1f}%')
+_den = len(O) - len(test) - len(void)
+print(f'キャンセル率(件数) {len(canc)/_den*100:.1f}%  返品率 {len(retn)/_den*100:.1f}%')
+if void:
+    print()
+    for o in void:
+        print(u'無効伝票 order %s: %s' % (o['order_id'], VOID[o['order_id']]))
 
 # 未登録SKUは cat='other' に落ち、数量にカウントされない。黙って消えると
 # 「点数が合わない」形でしか気づけないので、ここで必ず目に入るようにする。

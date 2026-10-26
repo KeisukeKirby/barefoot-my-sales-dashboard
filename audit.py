@@ -11,7 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 P = json.load(io.open(sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, 'payload.json'),
                       encoding='utf-8'))
 A = json.load(io.open(os.path.join(HERE, 'agg.json'), encoding='utf-8'))['orders']
-A = [o for o in A if o['bucket'] != 'test']
+A = [o for o in A if o['bucket'] not in ('test', 'void')]
 SALES = [o for o in A if o['bucket'] == 'sales']
 
 K = P['kpi']['total']
