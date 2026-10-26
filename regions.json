@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "Sales record for Malaysia.xlsx (Google Drive)",
-  "built": "2026-10-19",
+  "built": "2026-10-26",
   "note": "シートの From 欄(来店客の自己申告)。国籍ではない",
   "order": [
    "シンガポール",
@@ -149,6 +149,18 @@
    "en": "Singapore",
    "src": "Oct2026#21",
    "raw": "SG"
+  },
+  "246": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#39",
+   "raw": "SG"
+  },
+  "250": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Oct2026#43",
+   "raw": "Johor"
   },
   "40": {
    "grp": "関係者",
@@ -572,6 +584,42 @@
    "src": "Oct2026#31",
    "raw": "SG"
   },
+  "241": {
+   "grp": "その他海外",
+   "en": "Other overseas",
+   "src": "Oct2026#34",
+   "raw": "Italy"
+  },
+  "242": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#35",
+   "raw": "SG"
+  },
+  "244": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#37",
+   "raw": "SG"
+  },
+  "247": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#40",
+   "raw": "SG"
+  },
+  "248": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#41",
+   "raw": "SG"
+  },
+  "249": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Oct2026#42",
+   "raw": "SG"
+  },
   "34": {
    "grp": "シンガポール",
    "en": "Singapore",
@@ -671,6 +719,12 @@
    "en": "Singapore",
    "src": "Oct2026#25",
    "raw": "SG"
+  },
+  "240": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Oct2026#33",
+   "raw": "KL"
   },
   "17": {
    "grp": "ジョホール(地元)",
@@ -1209,6 +1263,18 @@
    "en": "Kuala Lumpur",
    "src": "Oct2026#24",
    "raw": "KL"
+  },
+  "243": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Oct2026#36",
+   "raw": "Sabah"
+  },
+  "245": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Oct2026#38",
+   "raw": "Selangor"
   }
  }
 }

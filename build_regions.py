@@ -27,15 +27,17 @@ GROUP = {
     'Negeri Sembilan': ('その他マレーシア', 'Other Malaysia'),
     'Perak': ('その他マレーシア', 'Other Malaysia'),
     'Kedah': ('その他マレーシア', 'Other Malaysia'),
+    'Sabah': ('その他マレーシア', 'Other Malaysia'),
     'EU': ('その他海外', 'Other overseas'),
     'London': ('その他海外', 'Other overseas'),
+    'Italy': ('その他海外', 'Other overseas'),
     'Local': ('不明', 'Unknown'),          # 「地元」の意味か判然としないため不明扱い
     '': ('不明', 'Unknown'),
 }
 
 # 地名としてそのまま出してよい値
 PLACES = {'SG', 'Singapore', 'JB', 'Johor', 'KL', 'Selangor', 'Penang',
-          'Negeri Sembilan', 'Perak', 'Kedah', 'EU', 'London'}
+          'Negeri Sembilan', 'Perak', 'Kedah', 'Sabah', 'EU', 'London', 'Italy'}
 
 # From 欄には地名の代わりに従業員・親族の名前が入っている行がある。
 # 名前をこの public なリポジトリに書かないため、判定に使う文字列は
