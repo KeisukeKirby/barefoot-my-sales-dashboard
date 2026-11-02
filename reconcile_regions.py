@@ -19,6 +19,8 @@ MON = dict(Jan=1, Feb=2, Mar=3, Apr=4, May=5, Jun=6,
 CHMAP = {
     'walkin': 'POS(実店舗)', 'walk in': 'POS(実店舗)', 'pop up guest': 'POS(実店舗)',
     'shopee': 'Shopee', 'lazada': 'Lazada',
+    'ladada': 'Lazada',          # シートの誤字
+    'lazmall': 'Lazada',         # LazMall は Lazada の公式ストア枠
     'ig': 'Online(直販)', 'fb': 'Online(直販)', 'whatsapp': 'Online(直販)',
     'ws': 'Online(直販)', 'webstore': 'Online(直販)',
     'wholesale': '卸売', 'xnocs': '卸売',
@@ -45,6 +47,10 @@ MANUAL = {
                                'チャネルが食い違う'),
     ('July2026', '12'): ('13', 'V-Run M42 + Oleno ASO の RM773.50 を SiteGiant では oid 13(RM680)と '
                                'oid 14(RM93.50)の2注文に分けて起票。地域は両方に当てる'),
+    ('Oct2026', '47'): ('254', u'シートの日付が 29Sep になっているが Oct シートの 10/28・10/29 の間の行。'
+                                u'Shopee / V-Soul BR W36 / 時刻 12:36 が 10/29 の注文と完全に一致'),
+    ('Oct2026', '48'): ('255', u'同じく日付が 29Sep。Lazada / V-Soul BK W40 + BR W40 が一致。'
+                                u'シートの 10:55 は 22:55 の午前午後違いとみる'),
     ('Oct2026', '5'): ('222', '卸売 RM5,518.50。SiteGiant では未入金の 205 を 10/8 に 222 として'
                                '起こし直している(V-Run のサイズが W37→W40)。入金済みの 222 に当てる'),
 }
@@ -119,10 +125,16 @@ orders = [o for o in json.load(io.open(os.path.join(PROJ, 'agg.json'), encoding=
           if o['bucket'] not in ('test', 'void')]
 BY = {o['order_id']: o for o in orders}
 
+# 日付セルが #### で潰れている行。列幅の表示崩れなので値は読めない。
+DATE_FIX = {
+    ('July2026', '18'): '2026-07-21',   # Payment Details から復元
+    # Payment Details は 16Oct だが、前後の行(25Oct / 27Oct)と SiteGiant の
+    # LazMall 注文 251 はいずれも 10/26。シート側の書き違いとみる
+    ('Oct2026', '44'): '2026-10-26',
+}
+
 for r in rows:
-    d = sheet_date(r['date'])
-    if d is None and r['sheet'] == 'July2026' and r['no'] == '18':
-        d = '2026-07-21'           # 日付セルが #### で潰れている。Payment Details から復元
+    d = sheet_date(r['date']) or DATE_FIX.get((r['sheet'], r['no']))
     r['d'] = d
     r['amts'] = [v for v in (money(r['walkin']), money(r['online']), money(r['price'])) if v]
     r['t'] = hhmm(r['pay'])
