@@ -137,19 +137,25 @@ SiteGiant には購入者の地域が無いので、Google Drive の
 `Sales record for Malaysia.xlsx`(店舗側が手でつけている台帳)の **From 欄** を
 日付・チャネル・金額・商品・時刻で突き合わせて注文に紐づけている。
 **実績を更新したら毎回これも回す**（注文は増えるのに地域が古いままだと、
-地域別から直近の売上が丸こと洩れる）。
+地域別から直近の売上が丸ごと漏れる）。
 
 Drive のファイルID: `1vnEY7dHckpuRsJ_5p30d-uc0HwDtHNHT`
+
 （月ごとにシートが分かれている。読むときは全シートが1本のテキストで返る）
 
+作業ファイルの置き場: `C:/Users/Barefootinc TH/Downloads/Sales Records/MY/_region_work`
+顧客名・住所を含むのでリポジトリには置かない。以前はセッションの作業フォルダに置いていたが、
+フォルダが変わると sheet_raw.txt を全月分書き直すことになるため 2026-11-09 に移した。
+
 ```bash
+W="C:/Users/Barefootinc TH/Downloads/Sales Records/MY/_region_work"
 # 1. シートの中身を sheet_raw.txt に落とす(Drive から取得)
 # 2. 行に切り直す → sheet.json
-SHEET_WORKDIR=<作業フォルダ> python parse_sheet.py
+SHEET_WORKDIR="$W" python parse_sheet.py
 # 3. 取込データと突合 → region_map.json、未結合の一覧を標準出力へ
-SHEET_WORKDIR=<作業フォルダ> python reconcile_regions.py
+SHEET_WORKDIR="$W" python reconcile_regions.py
 # 4. 公開用に order_id と地域だけ抜き出す → regions.json
-SHEET_WORKDIR=<作業フォルダ> python build_regions.py
+SHEET_WORKDIR="$W" python build_regions.py
 ```
 
 手順 1 の書き方は、既存の `sheet_raw.txt` に新しい行を差し込む。シートの末尾には
