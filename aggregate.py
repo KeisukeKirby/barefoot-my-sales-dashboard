@@ -214,17 +214,19 @@ MODEL = [
     ('BFJ0001', 'Barefootinc.Jp Socks', 'Socks',    'socks'),
     ('OLN0001', 'Oleno Ultimate',       'Socks',    'socks'),
     ('QLN0002', 'Oleno Ultimate Aso',   'Socks',    'socks'),   # 商品名は Ultimate Aso。型番も別
+    ('OLN0003', 'Oleno Ultimate TNG',   'Socks',    'socks'),   # 2026-11-08 に初販売
 ]
 COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lime','TT/BK':'Total Black',
              'LI/GN':'Lime Green','FU':'Fuchsia','DL/BK':'Deep Lake','DL':'Deep Lake',
              'ZB/WT':'Zebra White','LM':'Lemon','UNK':'(色不明)',
              'F/IV/GN':'Fig/Ivory/Green','TT/IV':'Total Ivory','GY':'Gray',
              'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean','IV/GR':'Ivory/Green',
-             'IV/DL':'Ivory/Deep Lake'}
+             'IV/DL':'Ivory/Deep Lake','BK/GR':'Black/Gray'}
 
 def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
-    if name in ('test3', 'test4'):        return ('TEST', 'TEST', 'test', None, None)
+    # POS の動作確認伝票。test / test3 / test4 と左右しているので test+数字で拾う
+    if re.fullmatch(r'test\d*', name, re.I):  return ('TEST', 'TEST', 'test', None, None)
     if 'courier fee' in name.lower():     return ('配送料', 'その他', 'fee', None, None)
     for pre, model, brand, cat in MODEL:
         if sku.startswith(pre): break

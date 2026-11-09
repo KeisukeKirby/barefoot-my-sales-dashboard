@@ -3,7 +3,11 @@
 行に切り直して sheet.json を書く。
 
 テキスト化の過程で「行の最終セル」と「次行の No.」が空白1つで連結されているため、
-1行=15セルを前提に境界フィールドを割り直している。
+列数を前提に境界フィールドを割り直している。
+
+列数はシートごとに違う。Nov2026 から備考列が1本増えて 16 列になったので、
+見出し行の空セル数からシートごとに数える。COLS は先頭15列だけ使い、
+16列目以降(備考)は落とす。
 """
 import csv, io, json, os, re
 
@@ -31,6 +35,19 @@ def split_boundary(b, nx2):
     return b, ''
 
 
+def sheet_strides(F):
+    """[(見出しの位置, そのシートの列数)]。見出し行の後ろに並んでいる
+    空セルを数える。その次に来るのはヘッダ行の 'No.' が境界で混じったフィールド。"""
+    out = []
+    for i, f in enumerate(F):
+        if f.endswith(TITLE):
+            j = i + 1
+            while j < len(F) and F[j] == '':
+                j += 1
+            out.append((i, (j - i - 1) + 2))
+    return out
+
+
 def money(s):
     s = (s or '').replace('RM', '').replace(',', '').strip()
     try:
@@ -42,18 +59,29 @@ def money(s):
 def main():
     raw = io.open(os.path.join(HERE, 'sheet_raw.txt'), encoding='utf-8').read()
     F = [f.strip() for f in next(csv.reader([raw]))]
-    R = (len(F) - 1) // 14
-    assert 14 * R + 1 == len(F), (len(F), R)
+    strides = sheet_strides(F)
+    assert strides and strides[0][0] == 0, strides
 
-    rows, carry = [], F[0]
-    for k in range(R):
-        mid = F[14 * k + 1: 14 * k + 14]
-        if k + 1 < R:
-            last, nxt = split_boundary(F[14 * (k + 1)], F[14 * (k + 1) + 1])
-        else:
-            last, nxt = F[-1], ''
-        rows.append(dict(zip(COLS, [carry] + mid + [last])))
+    def mkrow(vals):
+        # 16列目以降(備考)は捨てる。足りない分は空で埋める
+        vals = (list(vals) + [''] * len(COLS))[:len(COLS)]
+        return dict(zip(COLS, vals))
+
+    rows, carry, i, si = [], F[0], 0, 0
+    while i + 1 < len(F):
+        while si + 1 < len(strides) and i >= strides[si + 1][0]:
+            si += 1
+        step = strides[si][1] - 1          # 1行あたりのフィールド数
+        end = i + step
+        if end >= len(F) - 1:
+            # 最終行。次の行がないので境界の割り直しはしない
+            rows.append(mkrow([carry] + F[i + 1:]))
+            break
+        last, nxt = split_boundary(F[end], F[end + 1])
+        rows.append(mkrow([carry] + F[i + 1: end] + [last]))
         carry = nxt
+        i = end
+    R = len(rows)
 
     out, sheet, tot = [], None, {}
     for d in rows:

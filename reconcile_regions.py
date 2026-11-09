@@ -233,7 +233,7 @@ json.dump(dict(sheet=[{k: r[k] for k in ('sheet', 'no', 'd', 'ch', 'frm', 'prod'
 
 print('=== 突合サマリー ===')
 print('シート 全%d行 / 7/17以降 %d行 / 対象外(開業前・日付欠落) %d行' % (len(rows), len(IN), len(OUTSIDE)))
-print('取込データ %d注文(テスト2件除く)' % len(orders))
+print(u'取込データ %d注文(テスト・無効伝票を除く)' % len(orders))
 print('結びついた注文 %d  |  シート側の未結合 %d行  |  注文側の未結合 %d件'
       % (len(REG), len(un_sheet), len(un_ord)))
 
