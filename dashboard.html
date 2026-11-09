@@ -431,6 +431,11 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="lede">開業週は 7/17(金)〜7/26(日) の10日間。以降は月曜起点で区切っています。
        グラフと表は<b>小売(店舗+オンライン)のみ</b>。卸売は下に別で出しています。</p>
 
+    <div class="filterrow">
+      <div class="tabs monthtabs" id="f-week-month" role="tablist" aria-label="月を選ぶ"></div>
+      <span class="count" id="f-week-count"></span>
+    </div>
+
     <figure class="chartbox">
       <figcaption>
         <h3 data-i18n="週別 売上">週別 売上</h3>
@@ -553,6 +558,10 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <h2 data-i18n="日次の実績">日次の実績</h2>
     <p class="lede">売上のあった日のみ、<b>小売(店舗+オンライン)</b>の数字です。卸売は下に別で出しています。
        <b style="color:var(--accent-lime)">月曜・火曜</b>の行は日付と曜日を色分けしています。</p>
+    <div class="filterrow">
+      <div class="tabs monthtabs" id="f-daily-month" role="tablist" aria-label="月を選ぶ"></div>
+      <span class="count" id="f-daily-count"></span>
+    </div>
     <div class="tablebox" style="max-height:560px;overflow-y:auto"><table id="t-daily"></table></div>
     <h3 style="margin:1.8rem 0 .6rem" data-i18n="卸売の実績">卸売の実績</h3>
     <div class="tablebox"><table id="t-daily-wh"></table></div>
@@ -917,6 +926,36 @@ function runSection(id, fn){
 function section(id, fn){ (REG[id] = REG[id] || []).push(fn); runSection(id, fn); }
 function rerender(id){ (REG[id] || []).forEach(fn => runSection(id, fn)); }
 
+/* 月で絞るボタン列。選択は box に持たせ、押すとその節を丸ごと描き直す。
+   要素に持たせているのは「卸売を除く」で描き直しても選択が戻らないようにするため。 */
+function monthTabs(box, D, secId, def){
+  const ids = ['all', ...D.monthly.map(m => m.id)];
+  const cur = ids.includes(box.dataset.month) ? box.dataset.month : def;
+  box.dataset.month = cur;
+  box.innerHTML = '';
+  const add = (id, label) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.id = id; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', id === cur ? 'true' : 'false');
+    b.textContent = label;
+    b.onclick = () => { box.dataset.month = id; rerender(secId); };
+    box.appendChild(b);
+  };
+  add('all', TR('全期間'));
+  D.monthly.forEach(m => add(m.id, tl(m.label) + (m.ongoing ? ' · ' + TR('進行中') : '')));
+  return cur;
+}
+const monthOf = (D, box) => {
+  const cur = box.dataset.month || 'all';
+  return cur === 'all' ? null : D.monthly.find(x => x.id === cur);
+};
+// 月をまたぐ週は開始日の月に入れる(2026-11-09 Keisuke 決定)。
+// 両方に出すと月ごとの合計が重複するため。
+function weekFilter(D, box){
+  const m = monthOf(D, box);
+  return m ? D.weekly.filter(w => w.start >= m.start && w.start <= m.end) : D.weekly;
+}
+
 /* ═══ 1. Masthead + KPI ═══════════════════════════════ */
 const K = D.kpi, M = D.meta;
 $('#mast-rev').textContent = 'RM ' + n1(K.total.rev);
@@ -1002,7 +1041,14 @@ function periodTable(elId, rows, head, opt){
       <td class="n">${n1((sum('off')+sum('on'))/Math.max(1, sum('off_orders')+sum('on_orders')))}</td>
       ${anyWh?`<td class="n">${n1(sum('wh')/Math.max(1, sum('wh_units')))}</td>`:''}</tr></tfoot>`;
 }
-section('s-week', function(D){ periodTable('t-week', D.weekly, TR('週')); });
+section('s-week', function(D){
+  const box = $('#f-week-month');
+  monthTabs(box, D, 's-week', 'all');            // 週別は推移を見るのが主なので既定は全期間
+  const w = weekFilter(D, box);
+  $('#f-week-count').textContent =
+    `${w.length}週 · ${rm2(w.reduce((a, r) => a + r.rev, 0))}`;
+  periodTable('t-week', w, TR('週'));
+});
 // 卸売は小売と桁が違うので、同じ表に混ぜず単体で出す(常に卸売込みのデータを見る)
 function whTable(elId, rows, head, head2, labelF, rangeF){
   const el = document.getElementById(elId);
@@ -1028,7 +1074,8 @@ function whTable(elId, rows, head, head2, labelF, rangeF){
       <td class="n">${n1(S('wh')/Math.max(1, S('wh_units')))}</td></tr></tfoot>`;
 }
 section('s-week', function(){
-  whTable('t-week-wh', DA.weekly, TR('週'), TR('期間'), r=>tl(r.label), r=>`${jd(r.start)}–${jd(r.end)}`);
+  whTable('t-week-wh', weekFilter(DA, $('#f-week-month')),
+          TR('週'), TR('期間'), r=>tl(r.label), r=>`${jd(r.start)}–${jd(r.end)}`);
 });
 section('s-month', function(D){
   periodTable('t-month', D.monthly, TR('月'), {totalLabel:'2026年 合計', withStore:true});
@@ -1157,38 +1204,25 @@ function periodBar(hostId, rows, opts){
   });
 }
 section('s-month', function(D){ periodBar('c-monthbar', D.monthly, {W:620, bw:140}); });
-section('s-week',  function(D){ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96}); });
+section('s-week',  function(D){ periodBar('c-weekbar',  weekFilter(D, $('#f-week-month')), {W:920, bw:96}); });
 
 /* ═══ 4. Daily chart(月ごと・月火は店舗休業日)══════════ */
 section('b-daily', function(D, K, M){
   const CLOSED = new Set(D.closed_days);           // 集計側と同じ休業日リスト
   const box = $('#f-month'), cnt = $('#f-month-count');
-  const ids = D.monthly.map(m=>m.id);
-  // 選択中の月は要素に持たせる。「卸売を除く」でこの節を描き直すときに戻ってしまわないように
-  let cur = ids.includes(box.dataset.month) ? box.dataset.month : ids[ids.length-1];
-  box.dataset.month = cur;
-  box.innerHTML = '';
-  D.monthly.forEach(m=>{
-    const b = document.createElement('button');
-    b.type = 'button'; b.dataset.id = m.id; b.setAttribute('role','tab');
-    b.textContent = tl(m.label) + (m.ongoing ? ' · ' + TR('進行中') : '');
-    b.onclick = ()=>{ cur = m.id; box.dataset.month = cur; mark(); draw(); };
-    box.appendChild(b);
-  });
-  function mark(){
-    [...box.children].forEach(b=>
-      b.setAttribute('aria-selected', b.dataset.id === cur ? 'true' : 'false'));
-  }
-  mark();
+  monthTabs(box, D, 'b-daily', D.monthly[D.monthly.length-1].id);
 
   function draw(){
-    const m = D.monthly.find(x=>x.id===cur);
-    const rows = D.daily.filter(r=>r.date >= m.start && r.date <= m.end);
+    const m = monthOf(D, box);
+    const rows = m ? D.daily.filter(r=>r.date >= m.start && r.date <= m.end) : D.daily;
     const sum = rows.reduce((a,r)=>a+r.off+r.on+r.wh,0);
     cnt.textContent = `${rows.length}日 · ${rm2(sum)}`;
 
     const host = $('#c-daily');
-    const W = 1000, H = 300, ML = 60, MR = 12, MT = 14, MB = 56;
+    const H = 300, ML = 60, MR = 12, MT = 14, MB = 56;
+    // 全期間だと100日を超えるので、日数に合わせて幅を伸ばして横スクロールさせる
+    const W = Math.max(1000, ML + MR + rows.length * 26);
+    host.style.minWidth = W + 'px';
     const pw = W-ML-MR, ph = H-MT-MB;
     const max = niceMax(Math.max(1, ...rows.map(r=>r.off+r.on+r.wh))*1.1);
     const y = v => MT + ph - (v/max)*ph;
@@ -1253,8 +1287,13 @@ section('b-daily', function(D, K, M){
 
 /* ═══ 4b. 日次テーブル(数値) ═════════════════════════ */
 section('s-daily', function(D, K, M){
-  const rows = D.daily.filter(r=>r.off+r.on+r.wh>0);
+  const box = $('#f-daily-month');
+  monthTabs(box, D, 's-daily', D.monthly[D.monthly.length-1].id);
+  const m = monthOf(D, box);
+  const inM = r => !m || (r.date >= m.start && r.date <= m.end);
+  const rows = D.daily.filter(r=>inM(r) && r.off+r.on+r.wh>0);
   const S = k => rows.reduce((a,r)=>a+r[k],0);
+  $('#f-daily-count').textContent = `${rows.length}日 · ${rm2(S('off')+S('on'))}`;
   $('#t-daily').innerHTML =
    `<thead><tr><th>${TR('日付')}</th><th>${TR('曜日')}</th><th class="n">${TR('売上')}</th>
      <th class="n">${TR('店舗')}</th><th class="n">${TR('オンライン')}</th><th class="n">${TR('注文数')}</th>
@@ -1282,7 +1321,7 @@ section('s-daily', function(D, K, M){
       <td class="n">${S('orders')}</td><td class="n">${S('off_orders')}</td><td class="n">${S('on_orders')}</td>
       <td class="n">${S('invoices')}</td><td class="n">${S('lines')}</td><td class="n">${uCell(S('units'), S('shoe_units'))}</td>
       <td class="n">${n1((S('off')+S('on'))/Math.max(1, S('off_orders')+S('on_orders')))}</td></tr></tfoot>`;
-  whTable('t-daily-wh', DA.daily, TR('日付'), TR('曜日'), r=>r.date, r=>wdOf(r.date));
+  whTable('t-daily-wh', DA.daily.filter(inM), TR('日付'), TR('曜日'), r=>r.date, r=>wdOf(r.date));
 });
 
 /* ═══ 5. Channel(ドーナツ・期間プルダウン)══════════════ */
