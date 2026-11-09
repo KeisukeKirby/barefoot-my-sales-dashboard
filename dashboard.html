@@ -252,6 +252,9 @@ svg{display:block;width:100%;height:auto}
 .tabs button[aria-selected="true"]{background:var(--accent-orange);color:#fff;font-weight:600;
   border-color:transparent;box-shadow:0 2px 12px rgba(255,107,43,.3)}
 .tabs button:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px}
+/* 日次グラフの月選択。フィルタ行の中に置くので下余白を落とし、月が増えたら折り返す */
+.monthtabs{margin:0;flex-wrap:wrap}
+.monthtabs button{padding:.45rem .95rem;font-size:.85rem}
 
 /* ── Tables ───────────────────────────────────────────── */
 .tablebox{overflow-x:auto;margin-bottom:.4rem}
@@ -395,8 +398,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
         </div>
       </figcaption>
       <div class="filterrow">
-        <label for="f-month" data-i18n="月">月</label>
-        <select id="f-month"></select>
+        <div class="tabs monthtabs" id="f-month" role="tablist" aria-label="月を選ぶ"></div>
         <span class="count" id="f-month-count"></span>
       </div>
       <div class="scroller"><div id="c-daily" style="min-width:700px"></div></div>
@@ -1160,17 +1162,27 @@ section('s-week',  function(D){ periodBar('c-weekbar',  D.weekly,  {W:920, bw:96
 /* ═══ 4. Daily chart(月ごと・月火は店舗休業日)══════════ */
 section('b-daily', function(D, K, M){
   const CLOSED = new Set(D.closed_days);           // 集計側と同じ休業日リスト
-  const sel = $('#f-month'), cnt = $('#f-month-count');
-  const keep = sel.value;                        // 再描画時は選択中の月を保つ
-  sel.innerHTML = '';
+  const box = $('#f-month'), cnt = $('#f-month-count');
+  const ids = D.monthly.map(m=>m.id);
+  // 選択中の月は要素に持たせる。「卸売を除く」でこの節を描き直すときに戻ってしまわないように
+  let cur = ids.includes(box.dataset.month) ? box.dataset.month : ids[ids.length-1];
+  box.dataset.month = cur;
+  box.innerHTML = '';
   D.monthly.forEach(m=>{
-    const o = document.createElement('option');
-    o.value = m.id; o.textContent = tl(m.label); sel.appendChild(o);
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.id = m.id; b.setAttribute('role','tab');
+    b.textContent = tl(m.label) + (m.ongoing ? ' · ' + TR('進行中') : '');
+    b.onclick = ()=>{ cur = m.id; box.dataset.month = cur; mark(); draw(); };
+    box.appendChild(b);
   });
-  sel.value = [...sel.options].some(o=>o.value===keep) ? keep : D.monthly[D.monthly.length-1].id;
+  function mark(){
+    [...box.children].forEach(b=>
+      b.setAttribute('aria-selected', b.dataset.id === cur ? 'true' : 'false'));
+  }
+  mark();
 
   function draw(){
-    const m = D.monthly.find(x=>x.id===sel.value);
+    const m = D.monthly.find(x=>x.id===cur);
     const rows = D.daily.filter(r=>r.date >= m.start && r.date <= m.end);
     const sum = rows.reduce((a,r)=>a+r.off+r.on+r.wh,0);
     cnt.textContent = `${rows.length}日 · ${rm2(sum)}`;
@@ -1230,7 +1242,6 @@ section('b-daily', function(D, K, M){
       sv.appendChild(hit);
     });
   }
-  sel.onchange = draw;
   draw();
 
   const rows = D.daily;

@@ -56,6 +56,11 @@ MANUAL = {
 }
 MANUAL_EXTRA = {('July2026', '12'): '14'}   # 1行が2注文に分かれるケース
 
+# 売上の行ではないので突合から外す行。付け先の注文が VOID に入っているもの。
+SHEET_SKIP = {
+    ('Nov2026', '2'): u'order 258 の行。253 の交換伝票で、地域(Penang)は 253 側に入っている',
+}
+
 
 def sheet_date(s):
     s = (s or '').strip()
@@ -141,7 +146,8 @@ for r in rows:
     r['ch_n'] = CHMAP.get((r['ch'] or '').strip().lower())
     r['mods'], r['sizes'] = sheet_tokens(r['prod'])
 
-IN = [r for r in rows if r['d'] and r['d'] >= START]
+SKIP = [r for r in rows if (r['sheet'], r['no']) in SHEET_SKIP]
+IN = [r for r in rows if r['d'] and r['d'] >= START and (r['sheet'], r['no']) not in SHEET_SKIP]
 OUTSIDE = [r for r in rows if not (r['d'] and r['d'] >= START)]
 
 
@@ -232,7 +238,9 @@ json.dump(dict(sheet=[{k: r[k] for k in ('sheet', 'no', 'd', 'ch', 'frm', 'prod'
           ensure_ascii=False, indent=1)
 
 print('=== 突合サマリー ===')
-print('シート 全%d行 / 7/17以降 %d行 / 対象外(開業前・日付欠落) %d行' % (len(rows), len(IN), len(OUTSIDE)))
+print(u'シート 全%d行 / 7/17以降 %d行 / 対象外(開業前・日付欠落) %d行' % (len(rows), len(IN), len(OUTSIDE)))
+for _k, _why in sorted(SHEET_SKIP.items()):
+    print(u'  突合から外した行 %s #%s: %s' % (_k[0], _k[1], _why))
 print(u'取込データ %d注文(テスト・無効伝票を除く)' % len(orders))
 print('結びついた注文 %d  |  シート側の未結合 %d行  |  注文側の未結合 %d件'
       % (len(REG), len(un_sheet), len(un_ord)))
