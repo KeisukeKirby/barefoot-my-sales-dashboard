@@ -1,7 +1,7 @@
 {
  "meta": {
   "source": "Sales record for Malaysia.xlsx (Google Drive)",
-  "built": "2026-11-09",
+  "built": "2026-11-13",
   "note": "シートの From 欄(来店客の自己申告)。国籍ではない",
   "order": [
    "シンガポール",
@@ -72,6 +72,65 @@
    "en": "Selangor",
    "src": "Oct2026#48",
    "raw": "Selangor"
+  },
+  "268": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#10",
+   "raw": "Selangor"
+  },
+  "269": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#11",
+   "raw": "Selangor"
+  },
+  "270": {
+   "grp": "クアラルンプール",
+   "en": "Kuala Lumpur",
+   "src": "Nov2026#12",
+   "raw": "KL"
+  },
+  "271": {
+   "grp": "シンガポール",
+   "en": "Singapore",
+   "src": "Nov2026#13",
+   "raw": "SG"
+  },
+  "273": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#14",
+   "raw": "Selangor"
+  },
+  "281": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#20",
+   "raw": "Selangor"
+  },
+  "282": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#21",
+   "raw": "Selangor"
+  },
+  "283": {
+   "grp": "ジョホール(地元)",
+   "en": "Johor (local)",
+   "src": "Nov2026#22",
+   "raw": "JB"
+  },
+  "284": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#23",
+   "raw": "Selangor"
+  },
+  "285": {
+   "grp": "不明",
+   "en": "Unknown",
+   "src": "Nov2026#24"
   },
   "88": {
    "grp": "関係者",
@@ -1096,12 +1155,6 @@
    "src": "Oct2026#4",
    "raw": "KL"
   },
-  "271": {
-   "grp": "シンガポール",
-   "en": "Singapore",
-   "src": "Nov2026#12",
-   "raw": "SG"
-  },
   "27": {
    "grp": "クアラルンプール",
    "en": "Kuala Lumpur",
@@ -1348,24 +1401,6 @@
    "src": "Nov2026#8",
    "raw": "Penang"
   },
-  "268": {
-   "grp": "セランゴール",
-   "en": "Selangor",
-   "src": "Nov2026#10",
-   "raw": "Selangor"
-  },
-  "269": {
-   "grp": "セランゴール",
-   "en": "Selangor",
-   "src": "Nov2026#11",
-   "raw": "Selangor"
-  },
-  "273": {
-   "grp": "セランゴール",
-   "en": "Selangor",
-   "src": "Nov2026#13",
-   "raw": "Selangor"
-  },
   "261": {
    "grp": "クアラルンプール",
    "en": "Kuala Lumpur",
@@ -1377,6 +1412,18 @@
    "en": "Kuala Lumpur",
    "src": "Nov2026#5",
    "raw": "KL"
+  },
+  "274": {
+   "grp": "その他マレーシア",
+   "en": "Other Malaysia",
+   "src": "Nov2026#15",
+   "raw": "Sarawak"
+  },
+  "276": {
+   "grp": "セランゴール",
+   "en": "Selangor",
+   "src": "Nov2026#16",
+   "raw": "Selangor"
   }
  }
 }

@@ -12,13 +12,24 @@
 import csv, io, json, os, re
 
 HERE = os.environ.get('SHEET_WORKDIR', os.path.dirname(os.path.abspath(__file__)))
-COLS = ['no', 'date', 'ch', 'cust', 'frm', 'pay', 'addr', 'prod', 'price',
+COLS = ['no', 'oid', 'date', 'ch', 'cust', 'frm', 'pay', 'addr', 'prod', 'price',
         'walkin', 'online', 'courier', 'track', 'contact', 'last']
+# 見出しの文言 -> 内部キー。位置ではなく名前で引く。
+# Nov2026 で 2列目に SiteGiant Order \# が挿され、位置固定だと全部ずれたため。
+HEAD2KEY = {
+    'No.': 'no', 'SiteGiant Order #': 'oid', 'Date': 'date', 'Channel': 'ch',
+    'Customer Name': 'cust', 'From': 'frm', 'Payment Details': 'pay', 'Address': 'addr',
+    'Product': 'prod', 'Price(RM)': 'price', 'Walk in': 'walkin', 'Walk In': 'walkin',
+    'Online sales': 'online', 'Courier': 'courier',
+    'Tracking No.': 'track', 'Tracking No/Remarks': 'track',
+    'Contact #': 'contact', 'Note': 'last', 'Number of Vibram sold': 'last',
+}
 TITLE = 'Johor Bahru Sale record 2026'
 
 
 def split_boundary(b, nx2):
-    if nx2 == 'Date':
+    # 次がヘッダ行。2列目は 'Date' とは限らない(Nov2026 から 'SiteGiant Order #')
+    if b.strip().endswith('No.') and nx2 in HEAD2KEY:
         return b[:-3].strip(), 'No.'
     if nx2 == 'TOTAL':
         return b, ''
@@ -62,11 +73,6 @@ def main():
     strides = sheet_strides(F)
     assert strides and strides[0][0] == 0, strides
 
-    def mkrow(vals):
-        # 16列目以降(備考)は捨てる。足りない分は空で埋める
-        vals = (list(vals) + [''] * len(COLS))[:len(COLS)]
-        return dict(zip(COLS, vals))
-
     rows, carry, i, si = [], F[0], 0, 0
     while i + 1 < len(F):
         while si + 1 < len(strides) and i >= strides[si + 1][0]:
@@ -75,25 +81,39 @@ def main():
         end = i + step
         if end >= len(F) - 1:
             # 最終行。次の行がないので境界の割り直しはしない
-            rows.append(mkrow([carry] + F[i + 1:]))
+            rows.append([carry] + F[i + 1:])
             break
         last, nxt = split_boundary(F[end], F[end + 1])
-        rows.append(mkrow([carry] + F[i + 1: end] + [last]))
+        rows.append([carry] + F[i + 1: end] + [last])
         carry = nxt
         i = end
     R = len(rows)
 
-    out, sheet, tot = [], None, {}
-    for d in rows:
-        if d['no'].endswith(TITLE):
-            sheet = d['no'].split()[0]
+    out, sheet, hmap, tot = [], None, None, {}
+    for cells in rows:
+        first = cells[0] if cells else ''
+        if first.endswith(TITLE):
+            sheet, hmap = first.split()[0], None
             continue
-        if d['no'] == 'No.':
+        if first == 'No.':
+            # そのシートの列位置を見出しから読む。知らない見出しは無視する
+            hmap = {}
+            for j, h in enumerate(cells):
+                k = HEAD2KEY.get(h.strip())
+                if k and k not in hmap:
+                    hmap[k] = j
+            miss = [k for k in ('no', 'date', 'ch', 'frm', 'prod') if k not in hmap]
+            assert not miss, (sheet, miss, cells[:6])
             continue
+        if sheet is None or hmap is None:
+            continue
+        d = {k: (cells[j] if j < len(cells) else '') for k, j in hmap.items()}
+        for k in COLS:
+            d.setdefault(k, '')
         if d['date'] == 'TOTAL':
             tot[sheet] = (money(d['ch']), money(d['walkin']), money(d['online']))
             continue
-        if not any(v for k, v in d.items() if k != 'no'):
+        if not any(v for k, v in d.items() if k not in ('no', 'oid')):
             continue
         d['sheet'] = sheet
         out.append(d)

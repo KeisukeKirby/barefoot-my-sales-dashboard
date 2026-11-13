@@ -59,6 +59,11 @@ MANUAL_EXTRA = {('July2026', '12'): '14'}   # 1行が2注文に分かれるケ�
 # 売上の行ではないので突合から外す行。付け先の注文が VOID に入っているもの。
 SHEET_SKIP = {
     ('Nov2026', '2'): u'order 258 の行。253 の交換伝票で、地域(Penang)は 253 側に入っている',
+    # 11/11 の記入途中とみられる3行。From も金額も空で、
+    # サイズの W31-W33 は実在しない。放っておくと別の注文を拾ってしまう。
+    ('Nov2026', '17'): u'11/11 の記入途中の行(V-Soul BK W31)。地域も金額も無い',
+    ('Nov2026', '18'): u'11/11 の記入途中の行(V-Soul BK W32)。地域も金額も無い',
+    ('Nov2026', '19'): u'11/11 の記入途中の行(V-Soul BK W33)。地域も金額も無い',
 }
 
 
@@ -201,6 +206,22 @@ for r in IN:
     if key in MANUAL_EXTRA:
         used.add(MANUAL_EXTRA[key])
         pairs.append((r, BY[MANUAL_EXTRA[key]], None, '手当て(2注文に分割): ' + why))
+
+# Nov2026 からシートに SiteGiant の注文番号が入るようになった。
+# 書いてあるならそれが正解なので、金額や日付で推さずにそのまま使う。
+_oid_hit = 0
+for r in IN:
+    _oid = (r.get('oid') or '').strip()
+    if not _oid.isdigit() or r.get('_m') or _oid in used:
+        continue
+    if _oid not in BY:
+        print(u'!! シートの注文番号が取込データにありません: %s #%s -> %s'
+              % (r['sheet'], r['no'], _oid))
+        continue
+    r['_m'] = _oid
+    used.add(_oid)
+    pairs.append((r, BY[_oid], None, u'シートの SiteGiant 注文番号'))
+    _oid_hit += 1
 
 for r in IN:
     for o in orders:
