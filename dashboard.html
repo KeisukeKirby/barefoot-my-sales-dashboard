@@ -256,29 +256,6 @@ svg{display:block;width:100%;height:auto}
 .monthtabs{margin:0;flex-wrap:wrap}
 .monthtabs button{padding:.45rem .95rem;font-size:.85rem}
 /* 在庫のサイズマトリクス。table-layout:fixed だとモデル名とカラーが重なるので自動幅 */
-.stockgrid th,.stockgrid td{padding:.55rem .7rem}
-/* ラベル2列は幅を固め、長い名前は折り返す。nowrap のままだと隣の列にかぶる */
-.stockgrid td:first-child,.stockgrid th:first-child{width:168px;min-width:168px;white-space:normal;line-height:1.3}
-.stockgrid td:nth-child(2),.stockgrid th:nth-child(2){width:132px;min-width:132px;white-space:normal;line-height:1.3}
-.stockgrid td.n,.stockgrid th.n{width:52px;text-align:center}
-/* 用途別サイズ在庫の横棒。SVG にせず CSS 幅で描く(幅に追従させるため) */
-.usegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1.2rem}
-.usebox{background-color:var(--bg-card);border:1px solid var(--border-color);
-  border-radius:var(--radius);padding:1.3rem 1.4rem}
-.usebox h3{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;margin:0 0 .9rem}
-.usebox h3 small{font-family:var(--font-body);font-weight:400;font-size:.78rem;color:var(--text-secondary)}
-.usebox .mdl{font-size:.74rem;color:var(--text-muted);margin:-.5rem 0 .9rem}
-.bars{display:grid;grid-template-columns:auto 1fr auto;gap:.3rem .6rem;align-items:center}
-.bars .sz{font-family:var(--font-heading);font-size:.8rem;color:var(--text-secondary);
-  text-align:right;font-variant-numeric:tabular-nums}
-.bars .tr{background:rgba(255,255,255,.05);border-radius:4px;height:16px;position:relative;overflow:hidden}
-.bars .tr i{display:block;height:100%;border-radius:4px;background:var(--ghost)}
-.bars .tr i.hot{background:var(--accent-orange)}
-.bars .tr i.out{background:repeating-linear-gradient(45deg,rgba(255,90,77,.5) 0 3px,transparent 3px 6px)}
-.bars .qt{font-family:var(--font-heading);font-size:.82rem;font-weight:600;
-  font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
-.bars .qt.zero{color:var(--crit)}
-.bars .qt.low{color:var(--warn)}
 
 /* ── Tables ───────────────────────────────────────────── */
 .tablebox{overflow-x:auto;margin-bottom:.4rem}
@@ -666,50 +643,14 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   <!-- ══ 在庫 ══ -->
   <section id="s-stock" data-pane="stock">
     <p class="eyebrow" data-i18n="Stock">Stock</p>
-    <h2 data-i18n="在庫の全体像">在庫の全体像</h2>
+    <h2 data-i18n="在庫">在庫</h2>
     <p class="lede" id="stock-lede"></p>
-    <div class="split" id="stock-kpi"></div>
-    <div class="tablebox" style="margin-top:1.4rem"><table id="t-stock-model"></table></div>
-  </section>
-
-  <section id="s-stock-use" data-pane="stock">
-    <p class="eyebrow" data-i18n="By Use">By Use</p>
-    <h2 data-i18n="用途別のサイズ在庫">用途別のサイズ在庫</h2>
-    <p class="lede">棒の長さが在庫数。<b style="color:var(--accent-orange)">オレンジは直近4週に売れているサイズ</b>、
-       灰色は動いていないサイズです。斜線は在庫切れ。</p>
-    <div class="usegrid" id="stock-use"></div>
-  </section>
-
-  <section id="s-stock-grid" data-pane="stock">
-    <p class="eyebrow" data-i18n="Size Grid">Size Grid</p>
-    <h2 data-i18n="カラー別の内訳">カラー別の内訳</h2>
-    <p class="lede">縦がモデル×カラー、横がサイズ。数字は売れる在庫数です。
-       <b style="color:var(--crit)">赤は在庫切れ</b>、<b style="color:var(--warn)">黄色は残り2足以下</b>。
-       白抜きのセルは<b>直近4週に売れている</b>組み合わせです。</p>
-    <div id="stock-grid"></div>
-  </section>
-
-  <section id="s-stock-act" data-pane="stock">
-    <p class="eyebrow" data-i18n="Action">Action</p>
-    <h2 data-i18n="打つ手があるもの">打つ手があるもの</h2>
-    <h3 style="margin:1.2rem 0 .6rem" data-i18n="補充が迫っている">補充が迫っている</h3>
-    <p class="lede" data-i18n="直近4週の売れ方で、あ何週で切れるか。短い順。">直近4週の売れ方で、あ何週で切れるか。短い順。</p>
-    <div class="tablebox"><table id="t-stock-low"></table></div>
-
-    <h3 style="margin:2rem 0 .6rem" data-i18n="動いていない在庫">動いていない在庫</h3>
-    <p class="lede" data-i18n="在庫はあるが直近4週で1足も出ていないもの。在庫の多い順。">在庫はあるが直近4週で1足も出ていないもの。在庫の多い順。</p>
-    <div class="tablebox"><table id="t-stock-dead"></table></div>
-  </section>
-
-  <section id="s-stock-sku" data-pane="stock">
-    <p class="eyebrow" data-i18n="Detail">Detail</p>
-    <h2 data-i18n="SKU別の在庫">SKU別の在庫</h2>
     <div class="filterrow">
       <label for="f-stock-model" data-i18n="モデル">モデル</label>
       <select id="f-stock-model"></select>
       <span class="count" id="f-stock-count"></span>
     </div>
-    <div class="tablebox" style="max-height:620px;overflow-y:auto"><table id="t-stock-sku"></table></div>
+    <div class="tablebox"><table id="t-stock-sku"></table></div>
     <p class="note" id="stock-note"></p>
   </section>
 
@@ -2009,69 +1950,18 @@ document.querySelectorAll('.togslot').forEach(slot=>{
 
 /* ═══ 10b. 在庫 ══════════════════════════ */
 // 在庫には「卸売を除く」の区別が無いので DA 固定。
-// stock 無しでビルドしたときは在庫タブごと消す。
+// モデル > カラー > サイズ の並びで、繰り返しは伏せて階層に見せる。
 (function(){
   const ST = DA.stock;
   const secs = [...document.querySelectorAll('section[data-pane="stock"]')];
-  if (!ST || !ST.items || !ST.items.length){ secs.forEach(x=>x.hidden = true); return; }
+  if (!ST || !ST.items || !ST.items.length){ secs.forEach(x => x.hidden = true); return; }
   const I = ST.items, M = ST.meta;
   const sum = (a, k) => a.reduce((x, r) => x + (r[k] || 0), 0);
-  const dead = I.filter(r => r.sellable > 0 && r.sold_recent === 0)
-                .sort((a, b) => b.sellable - a.sellable);
-  const low = I.filter(r => r.weeks !== null).sort((a, b) => a.weeks - b.weeks);
-  const totSell = sum(I, 'sellable');
-  const wk = sum(I, 'sold_recent') / M.weeks;
 
   $('#stock-lede').innerHTML =
-    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>\u306e\u6570\u5b57\u3067\u3059\u3002`
-    + `\u300c\u5728\u5eab\u300d\u306f\u58f2\u308c\u308b\u6570\u3001\u300c\u5f15\u5f53\u300d\u306f\u53d7\u6ce8\u6e08\u307f\u3067\u672a\u51fa\u8377\u306e\u5206\u3002`
-    + `\u9031\u8ca9\u306f\u76f4\u8fd1${M.weeks}\u9031\u306e\u5b9f\u7e3e\u304b\u3089\u3067\u3059\u3002`;
+    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>\u306e\u5728\u5eab\u3067\u3059\u3002`
+    + `\u6708\u5e73\u5747\u306f\u7d2f\u8a08\u8ca9\u58f2\u3092\u958b\u696d\u304b\u3089\u306e ${M.months} \u304b\u6708\u3067\u5272\u3063\u305f\u6570\u5b57\u3067\u3059\u3002`;
 
-  const card = (lab, big, sub, tone) =>
-    `<div class="panel${tone ? ' tone-' + tone : ''}"><div class="ptitle"><b>${lab}</b></div>`
-    + `<div class="big">${big}</div>`
-    + `<div class="metarow"><div><span style="font-size:.85rem;color:var(--text-secondary)">${sub}</span></div></div></div>`;
-  $('#stock-kpi').innerHTML =
-      card(TR('\u5728\u5eab\u5408\u8a08'), `${n0(totSell)}<small>\u8db3</small>`,
-           `${I.length} SKU \u30fb \u5f15\u5f53 ${n0(sum(I, 'reserved'))}\u8db3`, 'off')
-    + card(TR('\u76f4\u8fd1\u306e\u9031\u8ca9'), `${wk.toFixed(1)}<small>\u8db3/\u9031</small>`,
-           `\u3053\u306e\u30da\u30fc\u30b9\u306a\u3089 ${wk > 0 ? (totSell / wk / 4.33).toFixed(0) : '\u2014'} \u304b\u6708\u5206`, 'on')
-    + card(TR('\u5728\u5eab\u5207\u308c'), `${n0(I.filter(r => r.sellable === 0).length)}<small>SKU</small>`,
-           `\u5168 ${I.length} SKU \u4e2d`)
-    + card(TR('\u52d5\u3044\u3066\u3044\u306a\u3044\u5728\u5eab'), `${n0(sum(dead, 'sellable'))}<small>\u8db3</small>`,
-           `${dead.length} SKU \u30fb \u5728\u5eab\u306e ${pct(sum(dead, 'sellable'), totSell)}`);
-
-  const byModel = {};
-  I.forEach(r => {
-    const m = byModel[r.model] || (byModel[r.model] = {sku:0, sellable:0, reserved:0, recent:0, all:0});
-    m.sku++; m.sellable += r.sellable; m.reserved += r.reserved;
-    m.recent += r.sold_recent; m.all += r.sold_all;
-  });
-  const ms = Object.entries(byModel).sort((a, b) => b[1].sellable - a[1].sellable);
-  const weeksOf = (st, rec) => rec > 0 ? (st / (rec / M.weeks)) : null;
-  const wcell = w => w === null
-    ? '<span style="color:var(--text-muted)">\u2014</span>'
-    : `<b style="color:${w < 4 ? 'var(--crit)' : w < 12 ? 'var(--warn)' : 'inherit'}">${w.toFixed(0)}</b>`;
-
-  $('#t-stock-model').innerHTML =
-   `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th class="n">SKU</th><th class="n">${TR('\u5728\u5eab')}</th>
-     <th class="n">${TR('\u5f15\u5f53')}</th><th class="n">${TR('\u76f4\u8fd1')}${M.weeks}${TR('\u9031')}</th>
-     <th class="n">${TR('\u9031\u8ca9')}</th><th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th>
-     <th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th></tr></thead>
-    <tbody>${ms.map(([k, v]) => `<tr>
-      <td><b>${esc(k)}</b></td><td class="n">${v.sku}</td>
-      <td class="n"><b>${n0(v.sellable)}</b></td><td class="n">${v.reserved || '\u2014'}</td>
-      <td class="n">${v.recent || '\u2014'}</td>
-      <td class="n">${v.recent ? (v.recent / M.weeks).toFixed(1) : '\u2014'}</td>
-      <td class="n">${wcell(weeksOf(v.sellable, v.recent))}</td>
-      <td class="n">${v.all || '\u2014'}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td class="n">${I.length}</td>
-      <td class="n">${n0(totSell)}</td><td class="n">${n0(sum(I, 'reserved'))}</td>
-      <td class="n">${n0(sum(I, 'sold_recent'))}</td><td class="n">${wk.toFixed(1)}</td>
-      <td class="n">${wcell(weeksOf(totSell, sum(I, 'sold_recent')))}</td>
-      <td class="n">${n0(sum(I, 'sold_all'))}</td></tr></tfoot>`;
-
-  /* --- 用途別のサイズ在庫(棒) と カラー別マトリクス ------- */
   const SOCK = {XS:1, S:2, M:3, L:4, XL:5};
   const skey = v => {
     if (SOCK[v]) return [1, SOCK[v]];
@@ -2080,121 +1970,48 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   };
   const scmp = (a, b) => { const x = skey(a), y = skey(b); return x[0] - y[0] || x[1] - y[1]; };
 
-  // 用途の並びは stock.json の use_order。そこに無いものは最後。
-  const USES = (M.use_order || []).concat(
-    [...new Set(I.map(r => r.use))].filter(u => !(M.use_order || []).includes(u)))
-    .filter(u => I.some(r => r.use === u));
-
-  // 用途別のサイズ在庫。サイズで丸め、棒の長さはその用途内の最大を100%とする
-  $('#stock-use').innerHTML = USES.map(u => {
-    const sub = I.filter(r => r.use === u);
-    const bySize = {};
-    sub.forEach(r => {
-      const b = bySize[r.size] || (bySize[r.size] = {st:0, rec:0});
-      b.st += r.sellable; b.rec += r.sold_recent;
-    });
-    const sizes = Object.keys(bySize).sort(scmp);
-    const mx = Math.max(1, ...sizes.map(z => bySize[z].st));
-    const mdl = [...new Set(sub.map(r => r.model))];
-    return `<div class="usebox"><h3>${esc(u)}
-        <small>\u8a08 ${n0(sum(sub, 'sellable'))}\u8db3 \u30fb \u76f4\u8fd1${M.weeks}\u9031 ${sum(sub, 'sold_recent')}\u8db3</small></h3>
-      <p class="mdl">${esc(mdl.join(' / '))}</p>
-      <div class="bars">${sizes.map(z => {
-        const b = bySize[z], w = Math.round(b.st / mx * 100);
-        const cls = b.st === 0 ? 'out' : b.rec > 0 ? 'hot' : '';
-        const q = b.st === 0 ? 'zero' : b.st <= 2 ? 'low' : '';
-        return `<span class="sz">${esc(String(z))}</span>
-          <span class="tr" title="${esc(String(z))} \uff1a\u5728\u5eab ${b.st}\u8db3 / \u76f4\u8fd1${M.weeks}\u9031 ${b.rec}\u8db3">
-            <i class="${cls}" style="width:${b.st === 0 ? 100 : Math.max(w, 2)}%"></i></span>
-          <span class="qt ${q}">${b.st}</span>`;
-      }).join('')}</div></div>`;
-  }).join('');
-
-  $('#stock-grid').innerHTML = USES.map(g => {
-    const sub = I.filter(r => r.use === g);
-    if (!sub.length) return '';
-    const cols = [...new Set(sub.map(r => r.size))].sort(scmp);
-    const keys = [...new Set(sub.map(r => r.model + '\u0000' + r.color))]
-      .sort((a, b) => {
-        const [ma, ca] = a.split('\u0000'), [mb, cb] = b.split('\u0000');
-        return (byModel[mb].sellable - byModel[ma].sellable) || ma.localeCompare(mb) || ca.localeCompare(cb);
-      });
-    const at = {};
-    sub.forEach(r => { at[r.model + '\u0000' + r.color + '\u0000' + r.size] = r; });
-    const cell = r => {
-      if (!r) return '<td></td>';
-      const hot = r.sold_recent > 0;
-      const col = r.sellable === 0 ? 'var(--crit)' : r.sellable <= 2 ? 'var(--warn)'
-                : hot ? 'var(--text-primary)' : 'var(--text-muted)';
-      const bg = hot ? 'background:rgba(255,255,255,.05);' : '';
-      return `<td class="n" style="${bg}color:${col};${hot ? 'font-weight:700' : ''}"
-               title="${esc(r.model)} ${esc(r.color)} ${esc(r.size)} / \u76f4\u8fd1${M.weeks}\u9031 ${r.sold_recent}\u8db3">${r.sellable}</td>`;
-    };
-    const tot = c => sub.filter(r => r.size === c).reduce((a, r) => a + r.sellable, 0);
-    return `<h3 style="margin:1.6rem 0 .6rem">${esc(g)}
-        <span style="font-weight:400;color:var(--text-secondary);font-size:.85rem">
-        \u8a08 ${n0(sum(sub, 'sellable'))}\u8db3</span></h3>
-      <div class="tablebox"><table class="stockgrid" style="min-width:${330 + cols.length * 52}px">
-      <thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th>
-        ${cols.map(c => `<th class="n">${esc(String(c).replace(/^[WM]/, ''))}</th>`).join('')}
-        <th class="n">${TR('\u8a08')}</th></tr></thead>
-      <tbody>${keys.map(k => {
-        const [m, c] = k.split('\u0000');
-        const row = cols.map(sz => at[k + '\u0000' + sz]);
-        const t = row.reduce((a, r) => a + (r ? r.sellable : 0), 0);
-        return `<tr><td><b>${esc(m)}</b></td><td>${esc(c)}</td>
-          ${row.map(cell).join('')}<td class="n"><b>${t}</b></td></tr>`;
-      }).join('')}</tbody>
-      <tfoot><tr><td>${TR('\u8a08')}</td><td></td>
-        ${cols.map(c => `<td class="n">${tot(c)}</td>`).join('')}
-        <td class="n">${n0(sum(sub, 'sellable'))}</td></tr></tfoot></table></div>`;
-  }).join('');
-
-  const miniTable = (list, empty) => list.length
-    ? `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
-        <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u9031\u8ca9')}</th>
-        <th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th><th>${TR('\u6700\u7d42\u8ca9\u58f2\u65e5')}</th></tr></thead>
-       <tbody>${list.map(r => `<tr>
-         <td><b>${esc(r.model)}</b></td><td>${esc(r.color)}</td><td class="num">${esc(r.size)}</td>
-         <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"' : ''}>${r.sellable}</b></td>
-         <td class="n">${r.per_week ? r.per_week.toFixed(1) : '\u2014'}</td>
-         <td class="n">${wcell(r.weeks)}</td>
-         <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '\u2014'}</td>
-         </tr>`).join('')}</tbody>`
-    : `<thead><tr><th>${empty}</th></tr></thead>`;
-
-  $('#t-stock-low').innerHTML = miniTable(low.slice(0, 15), TR('\u8a72\u5f53\u306a\u3057'));
-  $('#t-stock-dead').innerHTML = miniTable(dead.slice(0, 20), TR('\u8a72\u5f53\u306a\u3057'));
+  // モデルの並びは在庫の多い順
+  const mstock = {};
+  I.forEach(r => { mstock[r.model] = (mstock[r.model] || 0) + r.sellable; });
+  const models = Object.keys(mstock).sort((a, b) => mstock[b] - mstock[a] || a.localeCompare(b));
+  const mi = Object.fromEntries(models.map((m, k) => [m, k]));
 
   const sel = $('#f-stock-model'), cnt = $('#f-stock-count');
   sel.innerHTML = '';
-  [['all', TR('\u3059\u3079\u3066')], ...ms.map(([k]) => [k, k])].forEach(([v, l]) => {
+  [['all', TR('\u3059\u3079\u3066')], ...models.map(m => [m, m])].forEach(([v, l]) => {
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
-  function drawSku(){
+
+  function draw(){
     const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
-    const list = [...f].sort((a, b) => b.sellable - a.sellable || a.model.localeCompare(b.model));
+    const list = [...f].sort((a, b) =>
+      mi[a.model] - mi[b.model] || a.color.localeCompare(b.color) || scmp(a.size, b.size));
     cnt.textContent = `${list.length} SKU \u00b7 ${n0(sum(list, 'sellable'))}\u8db3`;
+    let pm = '', pc = '';
     $('#t-stock-sku').innerHTML =
      `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
-       <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u5f15\u5f53')}</th>
-       <th class="n">${TR('\u76f4\u8fd1')}${M.weeks}${TR('\u9031')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
-       <th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th><th>${TR('\u6700\u7d42\u8ca9\u58f2\u65e5')}</th></tr></thead>
-      <tbody>${list.map(r => `<tr>
-        <td><b>${esc(r.model)}</b></td><td>${esc(r.color)}</td><td class="num">${esc(r.size)}</td>
-        <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"' : ''}>${r.sellable}</b></td>
-        <td class="n">${r.reserved || '\u2014'}</td>
-        <td class="n">${r.sold_recent || '\u2014'}</td><td class="n">${r.sold_all || '\u2014'}</td>
-        <td class="n">${wcell(r.weeks)}</td>
-        <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '\u2014'}</td>
-        </tr>`).join('')}</tbody>
+       <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
+       <th class="n">${TR('\u6708\u5e73\u5747')}</th></tr></thead>
+      <tbody>${list.map(r => {
+        const nm = r.model !== pm, nc = nm || r.color !== pc;
+        if (nm) pc = '';
+        pm = r.model; pc = r.color;
+        return `<tr${nm ? ' style="border-top:1px solid rgba(255,255,255,.1)"' : ''}>
+          <td>${nm ? '<b>' + esc(r.model) + '</b>' : ''}</td>
+          <td>${nc ? esc(r.color) : ''}</td>
+          <td class="num">${esc(r.size)}</td>
+          <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"'
+                          : r.sellable <= 2 ? ' style="color:var(--warn)"' : ''}>${r.sellable}</b></td>
+          <td class="n">${r.sold_all || '—'}</td>
+          <td class="n">${r.per_month ? r.per_month.toFixed(2) : '—'}</td></tr>`;
+      }).join('')}</tbody>
       <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td></td><td></td>
-        <td class="n">${n0(sum(list, 'sellable'))}</td><td class="n">${n0(sum(list, 'reserved'))}</td>
-        <td class="n">${n0(sum(list, 'sold_recent'))}</td><td class="n">${n0(sum(list, 'sold_all'))}</td>
-        <td></td><td></td></tr></tfoot>`;
+        <td class="n">${n0(sum(list, 'sellable'))}</td>
+        <td class="n">${n0(sum(list, 'sold_all'))}</td>
+        <td class="n">${(sum(list, 'sold_all') / M.months).toFixed(2)}</td></tr></tfoot>`;
   }
-  sel.onchange = drawSku;
-  drawSku();
+  sel.onchange = draw;
+  draw();
 
   $('#stock-note').textContent =
     `\u5728\u5eab\u306e\u51fa\u6240: ${M.src.join(' + ')}\u3002`

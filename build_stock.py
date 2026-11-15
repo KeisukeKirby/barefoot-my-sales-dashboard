@@ -99,6 +99,11 @@ def main():
     dmax = max(o['date'] for o in S)
     cut = (datetime.date(*map(int, dmax.split('-')))
            - datetime.timedelta(days=7 * WEEKS)).isoformat()
+    # 月平均は開業からの月数で割る。商品ごとの取扱い開始日で割ると
+    # 昨日入荷したものが巨大に見えるので、全商品同じ分母にそろえる。
+    d0 = min(o['date'] for o in S)
+    months = max(1.0, (datetime.date(*map(int, dmax.split('-')))
+                       - datetime.date(*map(int, d0.split('-')))).days / 30.44)
     # SKU ではなく モデル×カラー×サイズ で突き合わせる。
     # Marugo は注文エクスポートが Marugo Tab-2119、在庫が MTB0001(DN,24) と
     # 型番体系が違うため、SKU で結ぶと Marugo が丸ごと落ちる。
@@ -128,6 +133,7 @@ def main():
             use=USE_OF.get(model, u'その他'),
             sellable=sell, onhand=onhand, reserved=q(s, 'Non Sellable Stock'),
             sold_all=sold_all.get(key, 0), sold_recent=rec,
+            per_month=round(sold_all.get(key, 0) / months, 2),
             per_week=round(per_week, 2),
             # 在庫週数。売れていない商品は「何週もつか」が無限になるので None にする
             weeks=round(sell / per_week, 1) if per_week > 0 else None,
@@ -142,7 +148,8 @@ def main():
     out = dict(
         meta=dict(asof=asof, src=[os.path.basename(p) for p in paths],
                   skus=len(items), weeks=WEEKS, sales_until=dmax,
-                  use_order=USE_ORDER, unmatched_sku=unmatched),
+                  use_order=USE_ORDER, months=round(months, 2), since=d0,
+                  unmatched_sku=unmatched),
         items=items)
     json.dump(out, io.open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
 
