@@ -29,6 +29,9 @@ from skumeta import COLORNAME, MODEL, USE_OF, USE_ORDER
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'stock.json')
 QTY = ('Stock On Hand', 'Sellable Stock', 'Non Sellable Stock')
+# レディースは W43 まで。W44 以降は SiteGiant側に枠だけあるサイズで、
+# 在庫も販売も無い(2026-11-15 Keisuke)。万が一中身が入ったら警告を出す。
+WMAX = 43
 # 直近の販売ペースを測る窓。短すぎると1件の売れ方に振られ、長すぎると今の勢いが出ない
 WEEKS = 4
 
@@ -145,8 +148,26 @@ def main():
     have = {(i['model'], i['color'], nsize(i['size'])) for i in items}
     unmatched = sorted(u'%s / %s / %s' % k for k in sold_all if k not in have)
 
+    def over(it):
+        if not it['size'].startswith('W'):
+            return False
+        try:
+            return float(it['size'][1:]) > WMAX
+        except ValueError:
+            return False
+
+    drop = [i for i in items if over(i)]
+    items = [i for i in items if not over(i)]
+    live = [i for i in drop if i['sellable'] or i['sold_all']]
+    if live:
+        print(u'!! W%d を超えるレディースサイズに中身があります。WMAX を見直してください:' % WMAX)
+        for i in live:
+            print(u'   %s %s %s 在庫%d 累計%d'
+                  % (i['model'], i['color'], i['size'], i['sellable'], i['sold_all']))
+
     out = dict(
         meta=dict(asof=asof, src=[os.path.basename(p) for p in paths],
+                  dropped=len(drop), wmax=WMAX,
                   skus=len(items), weeks=WEEKS, sales_until=dmax,
                   use_order=USE_ORDER, months=round(months, 2), since=d0,
                   unmatched_sku=unmatched),
@@ -154,8 +175,8 @@ def main():
     json.dump(out, io.open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
 
     tot_sell = sum(i['sellable'] for i in items)
-    print(u'在庫基準日 %s / SKU %d / 販売可 %d足 / 実在庫 %d足'
-          % (asof, len(items), tot_sell, sum(i['onhand'] for i in items)))
+    print(u'在庫基準日 %s / SKU %d / 販売可 %d足 / 実在庫 %d足 (W%d 超を %d SKU 除外)'
+          % (asof, len(items), tot_sell, sum(i['onhand'] for i in items), WMAX, len(drop)))
     print(u'  在庫ゼロ %d SKU / 引当中 %d足'
           % (sum(1 for i in items if i['sellable'] == 0),
              sum(i['reserved'] for i in items)))
