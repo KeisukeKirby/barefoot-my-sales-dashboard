@@ -291,6 +291,22 @@ tr.sub{display:none;background:rgba(255,255,255,.015)}
 tr.sub.open{display:table-row}
 tr.sub td{font-size:.82rem}
 
+/* 在庫一覧のモデル > カラー > サイズ。
+   表示の有無は .shown、開いているかどうかは .open と分ける。
+   カラー行は「見えているが閉じている」状態を取るため。 */
+tr.lvsub{display:none}
+tr.lvsub.shown{display:table-row}
+tr.lv1{cursor:pointer}
+tr.lv2{cursor:pointer;background:rgba(255,255,255,.02)}
+tr.lv3{background:rgba(255,255,255,.045)}
+tr.lv3 td{font-size:.84rem;color:var(--text-secondary)}
+tr.lv1:hover,tr.lv2:hover{background:rgba(255,255,255,.06)}
+.twbtn{display:inline-flex;align-items:center;gap:.35rem;color:var(--text-secondary);
+  font-size:.82rem;user-select:none}
+tr:hover .twbtn{color:var(--accent-orange)}
+.tw2{display:inline-block;transition:transform .2s;font-size:.75em}
+tr.open .tw2{transform:rotate(90deg);color:var(--accent-orange)}
+
 /* ── Callouts ─────────────────────────────────────────── */
 .callout{
   background:linear-gradient(135deg,rgba(22,22,29,.9),rgba(30,30,40,.9));
@@ -1990,29 +2006,68 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
 
+  // モデル > カラー > サイズの3階層。最初はモデル行だけ見せる。
+  const agg = a => [sum(a, 'sellable'), sum(a, 'sold_all')];
+  const qty = (st, sold) =>
+    `<td class="n"><b${st === 0 ? ' style="color:var(--crit)"'
+                     : st <= 2 ? ' style="color:var(--warn)"' : ''}>${n0(st)}</b></td>
+     <td class="n">${sold || '—'}</td>
+     <td class="n">${sold ? (sold / M.months).toFixed(2) : '—'}</td>`;
+  const tw = lab => `<span class="twbtn"><span class="tw2">▶</span>${lab}</span>`;
+
   function table(elId, list){
-    let pm = '', pc = '';
-    $(elId).innerHTML =
+    const byM = new Map();
+    list.forEach(r => {
+      if (!byM.has(r.model)) byM.set(r.model, new Map());
+      const c = byM.get(r.model);
+      if (!c.has(r.color)) c.set(r.color, []);
+      c.get(r.color).push(r);
+    });
+    const body = [];
+    let k = 0;
+    for (const [m, cols] of byM){
+      const mk = 'm' + (k++);
+      const all = [...cols.values()].flat();
+      const [ms, md] = agg(all);
+      body.push(`<tr class="grow lv1" data-key="${mk}" data-lvl="1">
+        <td><b>${esc(m)}</b></td><td>${tw(TR('\u30ab\u30e9\u30fc'))}</td><td></td>${qty(ms, md)}</tr>`);
+      let j = 0;
+      for (const [c, items] of cols){
+        const ck = mk + '_' + (j++);
+        const [cs, cd] = agg(items);
+        body.push(`<tr class="grow lvsub lv2" data-key="${ck}" data-parent="${mk}" data-lvl="2">
+          <td></td><td>${esc(c)}</td><td>${tw(TR('\u30b5\u30a4\u30ba'))}</td>${qty(cs, cd)}</tr>`);
+        items.sort((a, b) => scmp(a.size, b.size)).forEach(r => {
+          body.push(`<tr class="lvsub lv3" data-parent="${ck}" data-gp="${mk}">
+            <td></td><td></td><td class="num">${esc(r.size)}</td>${qty(r.sellable, r.sold_all)}</tr>`);
+        });
+      }
+    }
+    const el = $(elId);
+    el.innerHTML =
      `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
        <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
        <th class="n">${TR('\u6708\u5e73\u5747')}</th></tr></thead>
-      <tbody>${list.map(r => {
-        const nm = r.model !== pm, nc = nm || r.color !== pc;
-        if (nm) pc = '';
-        pm = r.model; pc = r.color;
-        return `<tr${nm ? ' style="border-top:1px solid rgba(255,255,255,.1)"' : ''}>
-          <td>${nm ? '<b>' + esc(r.model) + '</b>' : ''}</td>
-          <td>${nc ? esc(r.color) : ''}</td>
-          <td class="num">${esc(r.size)}</td>
-          <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"'
-                          : r.sellable <= 2 ? ' style="color:var(--warn)"' : ''}>${r.sellable}</b></td>
-          <td class="n">${r.sold_all || '—'}</td>
-          <td class="n">${r.per_month ? r.per_month.toFixed(2) : '—'}</td></tr>`;
-      }).join('')}</tbody>
+      <tbody>${body.join('')}</tbody>
       <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td></td><td></td>
         <td class="n">${n0(sum(list, 'sellable'))}</td>
         <td class="n">${n0(sum(list, 'sold_all'))}</td>
         <td class="n">${(sum(list, 'sold_all') / M.months).toFixed(2)}</td></tr></tfoot>`;
+
+    el.onclick = e => {
+      const tr = e.target.closest('tr.grow');
+      if (!tr || !el.contains(tr)) return;
+      const key = tr.dataset.key;
+      const open = tr.classList.toggle('open');
+      el.querySelectorAll(`tr[data-parent="${key}"]`)
+        .forEach(x => x.classList.toggle('shown', open));
+      if (!open){
+        // モデルを閉じたら、下のカラーもサイズもたたむ
+        el.querySelectorAll(`tr[data-parent="${key}"]`).forEach(x => x.classList.remove('open'));
+        el.querySelectorAll(`tr[data-gp="${key}"]`)
+          .forEach(x => x.classList.remove('shown', 'open'));
+      }
+    };
   }
 
   // シューズとソックスは桁が違うので表も合計も別々にする。
