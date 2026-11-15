@@ -640,24 +640,38 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
   </section>
 
   <!-- ══ 在庫 ══ -->
-  <section id="s-stock" data-pane="product">
+  <section id="s-stock" data-pane="stock">
     <p class="eyebrow" data-i18n="Stock">Stock</p>
-    <h2 data-i18n="在庫">在庫</h2>
+    <h2 data-i18n="在庫の全体像">在庫の全体像</h2>
     <p class="lede" id="stock-lede"></p>
     <div class="split" id="stock-kpi"></div>
+    <div class="tablebox" style="margin-top:1.4rem"><table id="t-stock-model"></table></div>
+  </section>
 
-    <h3 style="margin:1.8rem 0 .6rem" data-i18n="モデル別の在庫と回転">モデル別の在庫と回転</h3>
-    <div class="tablebox"><table id="t-stock-model"></table></div>
+  <section id="s-stock-grid" data-pane="stock">
+    <p class="eyebrow" data-i18n="Size Grid">Size Grid</p>
+    <h2 data-i18n="サイズ別の在庫">サイズ別の在庫</h2>
+    <p class="lede">縦がモデル×カラー、横がサイズ。数字は売れる在庫数です。
+       <b style="color:var(--crit)">赤は在庫切れ</b>、<b style="color:var(--warn)">黄色は残り2足以下</b>。
+       白抜きのセルは<b>直近4週に売れている</b>組み合わせです。</p>
+    <div id="stock-grid"></div>
+  </section>
 
-    <h3 style="margin:1.8rem 0 .6rem" data-i18n="補充が迫っているもの">補充が迫っているもの</h3>
-    <p class="lede" data-i18n="在庫週数が短い順。直近4週の販売ペースで何週もつか。">在庫週数が短い順。直近4週の販売ペースで何週もつか。</p>
+  <section id="s-stock-act" data-pane="stock">
+    <p class="eyebrow" data-i18n="Action">Action</p>
+    <h2 data-i18n="打つ手があるもの">打つ手があるもの</h2>
+    <h3 style="margin:1.2rem 0 .6rem" data-i18n="補充が迫っている">補充が迫っている</h3>
+    <p class="lede" data-i18n="直近4週の売れ方で、あ何週で切れるか。短い順。">直近4週の売れ方で、あ何週で切れるか。短い順。</p>
     <div class="tablebox"><table id="t-stock-low"></table></div>
 
-    <h3 style="margin:1.8rem 0 .6rem" data-i18n="動いていない在庫">動いていない在庫</h3>
+    <h3 style="margin:2rem 0 .6rem" data-i18n="動いていない在庫">動いていない在庫</h3>
     <p class="lede" data-i18n="在庫はあるが直近4週で1足も出ていないもの。在庫の多い順。">在庫はあるが直近4週で1足も出ていないもの。在庫の多い順。</p>
     <div class="tablebox"><table id="t-stock-dead"></table></div>
+  </section>
 
-    <h3 style="margin:1.8rem 0 .6rem" data-i18n="SKU別の在庫">SKU別の在庫</h3>
+  <section id="s-stock-sku" data-pane="stock">
+    <p class="eyebrow" data-i18n="Detail">Detail</p>
+    <h2 data-i18n="SKU別の在庫">SKU別の在庫</h2>
     <div class="filterrow">
       <label for="f-stock-model" data-i18n="モデル">モデル</label>
       <select id="f-stock-model"></select>
@@ -1000,6 +1014,7 @@ const IC = {
   trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   share:'<circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.6 10.7l6.8-3.4M8.6 13.3l6.8 3.4"/>',
   box:'<path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+  layers:'<path d="M12 2l9 5-9 5-9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/>',
   book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M8 8h7M8 12h7"/>',
   bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6h5.4c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>'
 };
@@ -1960,39 +1975,39 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   slot.appendChild(lab);
 });
 
-/* ═══ 10b. 在庫 ════════════════════════════ */
+/* ═══ 10b. 在庫 ══════════════════════════ */
 // 在庫には「卸売を除く」の区別が無いので DA 固定。
-// stock 無しでビルドしたときは節ごと隠す。
+// stock 無しでビルドしたときは在庫タブごと消す。
 (function(){
   const ST = DA.stock;
-  const sec = $('#s-stock');
-  if (!ST || !ST.items || !ST.items.length){ sec.hidden = true; return; }
+  const secs = [...document.querySelectorAll('section[data-pane="stock"]')];
+  if (!ST || !ST.items || !ST.items.length){ secs.forEach(x=>x.hidden = true); return; }
   const I = ST.items, M = ST.meta;
   const sum = (a, k) => a.reduce((x, r) => x + (r[k] || 0), 0);
-  const nz = I.filter(r => r.sellable > 0);
-  const dead = nz.filter(r => r.sold_recent === 0).sort((a, b) => b.sellable - a.sellable);
+  const dead = I.filter(r => r.sellable > 0 && r.sold_recent === 0)
+                .sort((a, b) => b.sellable - a.sellable);
   const low = I.filter(r => r.weeks !== null).sort((a, b) => a.weeks - b.weeks);
   const totSell = sum(I, 'sellable');
   const wk = sum(I, 'sold_recent') / M.weeks;
 
   $('#stock-lede').innerHTML =
-    `SiteGiant の在庫履歴から起こした<b>${esc(M.asof)} 時点</b>の数字です。`
-    + `「在庫」は売れる数、「引当」は受注済みで未出荷の分。`
-    + `週販は直近${M.weeks}週の実績から計算しています。`;
+    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>\u306e\u6570\u5b57\u3067\u3059\u3002`
+    + `\u300c\u5728\u5eab\u300d\u306f\u58f2\u308c\u308b\u6570\u3001\u300c\u5f15\u5f53\u300d\u306f\u53d7\u6ce8\u6e08\u307f\u3067\u672a\u51fa\u8377\u306e\u5206\u3002`
+    + `\u9031\u8ca9\u306f\u76f4\u8fd1${M.weeks}\u9031\u306e\u5b9f\u7e3e\u304b\u3089\u3067\u3059\u3002`;
 
   const card = (lab, big, sub, tone) =>
     `<div class="panel${tone ? ' tone-' + tone : ''}"><div class="ptitle"><b>${lab}</b></div>`
     + `<div class="big">${big}</div>`
     + `<div class="metarow"><div><span style="font-size:.85rem;color:var(--text-secondary)">${sub}</span></div></div></div>`;
   $('#stock-kpi').innerHTML =
-      card(TR('在庫合計'), `${n0(totSell)}<small>足</small>`,
-           `${I.length} SKU ・ 引当 ${n0(sum(I, 'reserved'))}足`, 'off')
-    + card(TR('直近の週販'), `${wk.toFixed(1)}<small>足/週</small>`,
-           `このペースなら ${wk > 0 ? (totSell / wk / 4.33).toFixed(1) : '—'} か月分`, 'on')
-    + card(TR('在庫切れ'), `${n0(I.filter(r => r.sellable === 0).length)}<small>SKU</small>`,
-           `全 ${I.length} SKU 中`)
-    + card(TR('動いていない在庫'), `${n0(sum(dead, 'sellable'))}<small>足</small>`,
-           `${dead.length} SKU ・ 在庫の ${pct(sum(dead, 'sellable'), totSell)}`);
+      card(TR('\u5728\u5eab\u5408\u8a08'), `${n0(totSell)}<small>\u8db3</small>`,
+           `${I.length} SKU \u30fb \u5f15\u5f53 ${n0(sum(I, 'reserved'))}\u8db3`, 'off')
+    + card(TR('\u76f4\u8fd1\u306e\u9031\u8ca9'), `${wk.toFixed(1)}<small>\u8db3/\u9031</small>`,
+           `\u3053\u306e\u30da\u30fc\u30b9\u306a\u3089 ${wk > 0 ? (totSell / wk / 4.33).toFixed(0) : '\u2014'} \u304b\u6708\u5206`, 'on')
+    + card(TR('\u5728\u5eab\u5207\u308c'), `${n0(I.filter(r => r.sellable === 0).length)}<small>SKU</small>`,
+           `\u5168 ${I.length} SKU \u4e2d`)
+    + card(TR('\u52d5\u3044\u3066\u3044\u306a\u3044\u5728\u5eab'), `${n0(sum(dead, 'sellable'))}<small>\u8db3</small>`,
+           `${dead.length} SKU \u30fb \u5728\u5eab\u306e ${pct(sum(dead, 'sellable'), totSell)}`);
 
   const byModel = {};
   I.forEach(r => {
@@ -2002,68 +2017,120 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   });
   const ms = Object.entries(byModel).sort((a, b) => b[1].sellable - a[1].sellable);
   const weeksOf = (st, rec) => rec > 0 ? (st / (rec / M.weeks)) : null;
-  // 在庫週数は短いほど危うい。4週未満を赤、8ー12週を黄色
   const wcell = w => w === null
-    ? '<span style="color:var(--text-muted)">—</span>'
-    : `<b style="color:${w < 4 ? 'var(--crit)' : w < 12 ? 'var(--warn)' : 'inherit'}">${w.toFixed(1)}</b>`;
+    ? '<span style="color:var(--text-muted)">\u2014</span>'
+    : `<b style="color:${w < 4 ? 'var(--crit)' : w < 12 ? 'var(--warn)' : 'inherit'}">${w.toFixed(0)}</b>`;
 
   $('#t-stock-model').innerHTML =
-   `<thead><tr><th>${TR('モデル')}</th><th class="n">SKU</th><th class="n">${TR('在庫')}</th>
-     <th class="n">${TR('引当')}</th><th class="n">${TR('直近')}${M.weeks}${TR('週')}</th>
-     <th class="n">${TR('週販')}</th><th class="n">${TR('在庫週数')}</th>
-     <th class="n">${TR('累計販売')}</th></tr></thead>
+   `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th class="n">SKU</th><th class="n">${TR('\u5728\u5eab')}</th>
+     <th class="n">${TR('\u5f15\u5f53')}</th><th class="n">${TR('\u76f4\u8fd1')}${M.weeks}${TR('\u9031')}</th>
+     <th class="n">${TR('\u9031\u8ca9')}</th><th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th>
+     <th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th></tr></thead>
     <tbody>${ms.map(([k, v]) => `<tr>
       <td><b>${esc(k)}</b></td><td class="n">${v.sku}</td>
-      <td class="n"><b>${n0(v.sellable)}</b></td><td class="n">${v.reserved || '—'}</td>
-      <td class="n">${v.recent || '—'}</td>
-      <td class="n">${v.recent ? (v.recent / M.weeks).toFixed(2) : '—'}</td>
+      <td class="n"><b>${n0(v.sellable)}</b></td><td class="n">${v.reserved || '\u2014'}</td>
+      <td class="n">${v.recent || '\u2014'}</td>
+      <td class="n">${v.recent ? (v.recent / M.weeks).toFixed(1) : '\u2014'}</td>
       <td class="n">${wcell(weeksOf(v.sellable, v.recent))}</td>
-      <td class="n">${v.all || '—'}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>${TR('合計')}</td><td class="n">${I.length}</td>
+      <td class="n">${v.all || '\u2014'}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td class="n">${I.length}</td>
       <td class="n">${n0(totSell)}</td><td class="n">${n0(sum(I, 'reserved'))}</td>
-      <td class="n">${n0(sum(I, 'sold_recent'))}</td><td class="n">${wk.toFixed(2)}</td>
+      <td class="n">${n0(sum(I, 'sold_recent'))}</td><td class="n">${wk.toFixed(1)}</td>
       <td class="n">${wcell(weeksOf(totSell, sum(I, 'sold_recent')))}</td>
       <td class="n">${n0(sum(I, 'sold_all'))}</td></tr></tfoot>`;
 
+  /* --- サイズ別マトリクス --------------------------------- */
+  const SOCK = {XS:1, S:2, M:3, L:4, XL:5};
+  const grp = r => r.cat === 'socks' ? 'sock'
+    : /^W/.test(r.size) ? 'W' : /^M/.test(r.size) ? 'M' : 'tabi';
+  const GNAME = {W:TR('\u30ec\u30c7\u30a3\u30fc\u30b9(\u30b7\u30e5\u30fc\u30ba)'), M:TR('\u30e1\u30f3\u30ba(\u30b7\u30e5\u30fc\u30ba)'),
+                 tabi:TR('\u8db3\u888b(cm)'), sock:TR('\u30bd\u30c3\u30af\u30b9')};
+  const skey = v => {
+    if (SOCK[v]) return [1, SOCK[v]];
+    const n = parseFloat(String(v).replace(/^[WM]/, '').replace('cm', ''));
+    return isNaN(n) ? [2, 999] : [0, n];
+  };
+  const scmp = (a, b) => { const x = skey(a), y = skey(b); return x[0] - y[0] || x[1] - y[1]; };
+
+  $('#stock-grid').innerHTML = ['W', 'M', 'tabi', 'sock'].map(g => {
+    const sub = I.filter(r => grp(r) === g);
+    if (!sub.length) return '';
+    const cols = [...new Set(sub.map(r => r.size))].sort(scmp);
+    const keys = [...new Set(sub.map(r => r.model + '\u0000' + r.color))]
+      .sort((a, b) => {
+        const [ma, ca] = a.split('\u0000'), [mb, cb] = b.split('\u0000');
+        return (byModel[mb].sellable - byModel[ma].sellable) || ma.localeCompare(mb) || ca.localeCompare(cb);
+      });
+    const at = {};
+    sub.forEach(r => { at[r.model + '\u0000' + r.color + '\u0000' + r.size] = r; });
+    const cell = r => {
+      if (!r) return '<td></td>';
+      const hot = r.sold_recent > 0;
+      const col = r.sellable === 0 ? 'var(--crit)' : r.sellable <= 2 ? 'var(--warn)'
+                : hot ? 'var(--text-primary)' : 'var(--text-muted)';
+      const bg = hot ? 'background:rgba(255,255,255,.05);' : '';
+      return `<td class="n" style="${bg}color:${col};${hot ? 'font-weight:700' : ''}"
+               title="${esc(r.model)} ${esc(r.color)} ${esc(r.size)} / \u76f4\u8fd1${M.weeks}\u9031 ${r.sold_recent}\u8db3">${r.sellable}</td>`;
+    };
+    const tot = c => sub.filter(r => r.size === c).reduce((a, r) => a + r.sellable, 0);
+    return `<h3 style="margin:1.6rem 0 .6rem">${GNAME[g]}
+        <span style="font-weight:400;color:var(--text-secondary);font-size:.85rem">
+        \u8a08 ${n0(sum(sub, 'sellable'))}\u8db3</span></h3>
+      <div class="tablebox"><table class="fixed" style="min-width:${260 + cols.length * 56}px">
+      <thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th>
+        ${cols.map(c => `<th class="n">${esc(String(c).replace(/^[WM]/, ''))}</th>`).join('')}
+        <th class="n">${TR('\u8a08')}</th></tr></thead>
+      <tbody>${keys.map(k => {
+        const [m, c] = k.split('\u0000');
+        const row = cols.map(sz => at[k + '\u0000' + sz]);
+        const t = row.reduce((a, r) => a + (r ? r.sellable : 0), 0);
+        return `<tr><td><b>${esc(m)}</b></td><td>${esc(c)}</td>
+          ${row.map(cell).join('')}<td class="n"><b>${t}</b></td></tr>`;
+      }).join('')}</tbody>
+      <tfoot><tr><td>${TR('\u8a08')}</td><td></td>
+        ${cols.map(c => `<td class="n">${tot(c)}</td>`).join('')}
+        <td class="n">${n0(sum(sub, 'sellable'))}</td></tr></tfoot></table></div>`;
+  }).join('');
+
   const miniTable = (list, empty) => list.length
-    ? `<thead><tr><th>${TR('モデル')}</th><th>${TR('カラー')}</th><th>${TR('サイズ')}</th>
-        <th class="n">${TR('在庫')}</th><th class="n">${TR('週販')}</th>
-        <th class="n">${TR('在庫週数')}</th><th>${TR('最終販売日')}</th></tr></thead>
+    ? `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
+        <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u9031\u8ca9')}</th>
+        <th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th><th>${TR('\u6700\u7d42\u8ca9\u58f2\u65e5')}</th></tr></thead>
        <tbody>${list.map(r => `<tr>
          <td><b>${esc(r.model)}</b></td><td>${esc(r.color)}</td><td class="num">${esc(r.size)}</td>
          <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"' : ''}>${r.sellable}</b></td>
-         <td class="n">${r.per_week ? r.per_week.toFixed(2) : '—'}</td>
+         <td class="n">${r.per_week ? r.per_week.toFixed(1) : '\u2014'}</td>
          <td class="n">${wcell(r.weeks)}</td>
-         <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '—'}</td>
+         <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '\u2014'}</td>
          </tr>`).join('')}</tbody>`
     : `<thead><tr><th>${empty}</th></tr></thead>`;
 
-  $('#t-stock-low').innerHTML = miniTable(low.slice(0, 15), TR('該当なし'));
-  $('#t-stock-dead').innerHTML = miniTable(dead.slice(0, 15), TR('該当なし'));
+  $('#t-stock-low').innerHTML = miniTable(low.slice(0, 15), TR('\u8a72\u5f53\u306a\u3057'));
+  $('#t-stock-dead').innerHTML = miniTable(dead.slice(0, 20), TR('\u8a72\u5f53\u306a\u3057'));
 
   const sel = $('#f-stock-model'), cnt = $('#f-stock-count');
   sel.innerHTML = '';
-  [['all', TR('すべて')], ...ms.map(([k]) => [k, k])].forEach(([v, l]) => {
+  [['all', TR('\u3059\u3079\u3066')], ...ms.map(([k]) => [k, k])].forEach(([v, l]) => {
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
   function drawSku(){
     const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
     const list = [...f].sort((a, b) => b.sellable - a.sellable || a.model.localeCompare(b.model));
-    cnt.textContent = `${list.length} SKU · ${n0(sum(list, 'sellable'))}足`;
+    cnt.textContent = `${list.length} SKU \u00b7 ${n0(sum(list, 'sellable'))}\u8db3`;
     $('#t-stock-sku').innerHTML =
-     `<thead><tr><th>${TR('モデル')}</th><th>${TR('カラー')}</th><th>${TR('サイズ')}</th>
-       <th class="n">${TR('在庫')}</th><th class="n">${TR('引当')}</th>
-       <th class="n">${TR('直近')}${M.weeks}${TR('週')}</th><th class="n">${TR('累計販売')}</th>
-       <th class="n">${TR('在庫週数')}</th><th>${TR('最終販売日')}</th></tr></thead>
+     `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
+       <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u5f15\u5f53')}</th>
+       <th class="n">${TR('\u76f4\u8fd1')}${M.weeks}${TR('\u9031')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
+       <th class="n">${TR('\u3042\u3068\u4f55\u9031')}</th><th>${TR('\u6700\u7d42\u8ca9\u58f2\u65e5')}</th></tr></thead>
       <tbody>${list.map(r => `<tr>
         <td><b>${esc(r.model)}</b></td><td>${esc(r.color)}</td><td class="num">${esc(r.size)}</td>
         <td class="n"><b${r.sellable === 0 ? ' style="color:var(--crit)"' : ''}>${r.sellable}</b></td>
-        <td class="n">${r.reserved || '—'}</td>
-        <td class="n">${r.sold_recent || '—'}</td><td class="n">${r.sold_all || '—'}</td>
+        <td class="n">${r.reserved || '\u2014'}</td>
+        <td class="n">${r.sold_recent || '\u2014'}</td><td class="n">${r.sold_all || '\u2014'}</td>
         <td class="n">${wcell(r.weeks)}</td>
-        <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '—'}</td>
+        <td class="num" style="color:var(--text-secondary)">${r.last_sold ? esc(r.last_sold) : '\u2014'}</td>
         </tr>`).join('')}</tbody>
-      <tfoot><tr><td>${TR('合計')}</td><td></td><td></td>
+      <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td></td><td></td>
         <td class="n">${n0(sum(list, 'sellable'))}</td><td class="n">${n0(sum(list, 'reserved'))}</td>
         <td class="n">${n0(sum(list, 'sold_recent'))}</td><td class="n">${n0(sum(list, 'sold_all'))}</td>
         <td></td><td></td></tr></tfoot>`;
@@ -2072,10 +2139,9 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   drawSku();
 
   $('#stock-note').textContent =
-    `在庫の出所: ${M.src.join(' + ')}。`
+    `\u5728\u5eab\u306e\u51fa\u6240: ${M.src.join(' + ')}\u3002`
     + (M.unmatched_sku && M.unmatched_sku.length
-       ? ` 販売実績にあるが在庫表に無い組み合わせ: `
-         + M.unmatched_sku.join(' / ')
+       ? ` \u8ca9\u58f2\u5b9f\u7e3e\u306b\u3042\u308b\u304c\u5728\u5eab\u8868\u306b\u7121\u3044\u7d44\u307f\u5408\u308f\u305b: ` + M.unmatched_sku.join(' / ')
        : '');
 })();
 
@@ -2171,6 +2237,7 @@ $('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].
     ['overview', TR('概要'), 'chart'],
     ['store',    TR('店舗'), 'store'],
     ['product',  TR('商品'), 'box'],
+    ['stock',    TR('在庫'), 'layers'],
     ['notes',    TR('備考'), 'book'],
   ];
   const main = document.querySelector('main');
