@@ -458,11 +458,74 @@ wh = [o for o in sales if iswh(o)]
 loff = [o for o in lost if o['channel'] == CH_POS]
 lon = [o for o in lost if o['channel'] != CH_POS]
 
-# 在庫。build_stock.py が書く。無ければ在庫ブロックを出さないだけ。
+# --- 在庫 -------------------------------------------------------------
+# build_stock.py は「在庫エクスポート時点の土台」だけを持っている。
+# 販売は毎週更新されるが在庫エクスポートは毎回もらえるとは限らないので、
+# 基準日より後に売れた分をここで引く。販売だけ更新しても在庫がその分減る。
+STOCK_WEEKS = 4            # 「直近」の窓
+
+
+def _nsz(x):
+    return (x or '').replace('cm', '').replace('CM', '').strip()
+
+
 try:
     STOCK = json.load(open('stock.json', encoding='utf-8'))
 except (IOError, OSError, ValueError):
     STOCK = None
+
+if STOCK:
+    _sm = STOCK['meta']
+    _asof = _sm['asof']
+    _dmax = max(o['date'] for o in sales)
+    _d0 = min(o['date'] for o in sales)
+    _months = max(1.0, (datetime.date(*map(int, _dmax.split('-')))
+                        - datetime.date(*map(int, _d0.split('-')))).days / 30.44)
+    _cut = (datetime.date(*map(int, _dmax.split('-')))
+            - datetime.timedelta(days=7 * STOCK_WEEKS)).isoformat()
+    # SKU ではなく モデル×カラー×サイズ で結ぶ。Marugo は注文エクスポートが
+    # Marugo Tab-2119、在庫が MTB0001(DN,24) と型番体系が違うため。
+    _all, _rec, _aft, _lastsold = (collections.Counter(), collections.Counter(),
+                                   collections.Counter(), {})
+    for _o in sales:
+        for _it in _o['items']:
+            if _it['cat'] not in ('shoes', 'socks'):
+                continue
+            _k = (_it['model'], _it['color'] or u'(色の記録なし)',
+                  _nsz(_it['size']) or u'(サイズなし)')
+            _all[_k] += _it['qty']
+            if _o['date'] > _cut:
+                _rec[_k] += _it['qty']
+            if _o['date'] > _asof:          # 在庫基準日より後に売れた分
+                _aft[_k] += _it['qty']
+            if _k not in _lastsold or _o['date'] > _lastsold[_k]:
+                _lastsold[_k] = _o['date']
+
+    _neg = []
+    for _i in STOCK['items']:
+        _k = (_i['model'], _i['color'], _nsz(_i['size']))
+        _a = _aft.get(_k, 0)
+        _i['sold_after'] = _a
+        _i['base'] = _i['sellable']
+        if _i['sellable'] - _a < 0:
+            _neg.append((_i['sku'], _i['sellable'], _a))
+        _i['sellable'] = max(0, _i['sellable'] - _a)
+        _i['onhand'] = max(0, _i['onhand'] - _a)
+        _i['sold_all'] = _all.get(_k, 0)
+        _i['sold_recent'] = _rec.get(_k, 0)
+        _i['per_month'] = round(_all.get(_k, 0) / _months, 2)
+        _i['last_sold'] = _lastsold.get(_k)
+    _have = {(i['model'], i['color'], _nsz(i['size'])) for i in STOCK['items']}
+    _sm.update(weeks=STOCK_WEEKS, months=round(_months, 2), since=_d0,
+               sales_until=_dmax, deducted=sum(_aft.values()),
+               unmatched_sku=sorted(u'%s / %s / %s' % k for k in _all if k not in _have))
+    print(u'在庫: 基準日 %s の %d足 から、それ以降の販売 %d足 を引いて %d足 (販売実績は %s まで)'
+          % (_asof, sum(i['base'] for i in STOCK['items']), sum(_aft.values()),
+             sum(i['sellable'] for i in STOCK['items']), _dmax))
+    if _neg:
+        print(u'!! 引きすぎてマイナスになる SKU があります。0 に丸めました。在庫を再エクスポートしてください:')
+        for _sk, _b, _a in _neg:
+            print(u'   %s  基準%d - 販売%d' % (_sk, _b, _a))
 
 P = dict(
     stock=STOCK,
