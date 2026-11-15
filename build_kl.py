@@ -59,6 +59,19 @@ MAP = {
     (u'5-toes Socks', u'Gray'):               (u'Barefootinc.Jp Socks', u'Gray'),
 }
 
+# KL の会場で売れた分。(model, color, size, 数, 売れた日)
+#
+# SiteGiant の販売実績に出てくるまでの「つなぎ」として手で書く。会場の売上が
+# 注文エクスポートに乗ったら build_payload.py が自動でこちらを止めるので、
+# 二重に引かれることはない(日付以降に同じ SKU が同数以上売れていたら止まる)。
+# 戻ってくる分ではないので、引いた数は JB には足さない。
+KL_SOLD = [
+    (u'Trailope', u'Black', u'M39', 1, '2026-11-13'),
+    (u'Trailope', u'Black', u'M42', 1, '2026-11-13'),
+    (u'V-Run', u'Total Black', u'M43', 1, '2026-11-13'),
+    (u'V-Run', u'Total Black', u'W37', 1, '2026-11-13'),
+]
+
 # ソックスのサイズ列 -> こちらのサイズ。モデルごとに呼び方が違う。
 SOCKSIZE = {
     u'Oleno Ultimate':        {'S': u'25', 'M': u'27', 'L': u'29'},
@@ -181,12 +194,31 @@ def main():
 
     items = [dict(model=m, color=c, size=s, qty=q)
              for (m, c, s), q in sorted(out.items())]
+
+    sold = []
+    for m, c, z, q, d in KL_SOLD:
+        have = out.get((m, c, z))
+        if have is None:
+            warn.append(u'KL販売: 持ち出していない組み合わせです %s %s %s' % (m, c, z))
+            continue
+        if q > have:
+            warn.append(u'KL販売: 持ち出した数を超えています %s %s %s 販売%d > 持ち出し%d'
+                        % (m, c, z, q, have))
+            continue
+        sold.append(dict(model=m, color=c, size=z, qty=q, date=d))
+
     json.dump(dict(meta=dict(src=os.path.basename(path), rows=len(items),
-                             total=sum(i['qty'] for i in items), warn=warn),
-                   items=items),
+                             total=sum(i['qty'] for i in items),
+                             sold_total=sum(s['qty'] for s in sold), warn=warn),
+                   items=items, sold=sold),
               io.open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
 
     print(u'KL 持ち出し %d 行 / %d足' % (len(items), sum(i['qty'] for i in items)))
+    if sold:
+        print(u'  会場で売れた分(手入力) %d足: %s'
+              % (sum(s['qty'] for s in sold),
+                 u' / '.join(u'%s %s %s ×%d' % (s['model'], s['color'], s['size'], s['qty'])
+                             for s in sold)))
     for w in warn:
         print(u'  !! ' + w)
     print(u'  続けて build_payload.py を回すと在庫表に反映されます。')

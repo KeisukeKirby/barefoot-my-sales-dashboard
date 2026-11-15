@@ -673,6 +673,7 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="keepbar">
       <button class="kbtn" id="k-save" data-i18n="保存">保存</button>
       <button class="kbtn pri" id="k-fix" data-i18n="確定">確定</button>
+      <button class="kbtn" id="k-xls" hidden>Excelで出力</button>
       <button class="kbtn" id="k-reset">KLの数に戻す</button>
       <span class="kstat" id="k-stat"></span>
     </div>
@@ -2169,37 +2170,149 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     save(); draw();
   };
 
-  // 確定 = 保存した上で、棚移動の指示として使える CSV を落とす。
-  $('#k-fix').onclick = async () => {
-    if (!save()) return;
-    const at = new Date().toLocaleString('ja-JP', {hour12:false}).replace(/\//g, '-');
-    FIXED = {at, keep: JSON.parse(JSON.stringify(KEEP))};
-    try { localStorage.setItem(FKEY, JSON.stringify(FIXED)); } catch (e) {}
-    const rows = [['モデル', 'カラー', 'サイズ', 'SKU', '総在庫', 'KL持ち出し', '残す', 'JB', 'JBへ戻す']];
-    [...I].sort((a, b) => (a.cat === b.cat ? 0 : a.cat === 'shoes' ? -1 : 1)
+  // 確定 = 保存した上で表を引き直し、Excel ボタンを出す。
+  // 出力は押した時だけ。確定しないまま配ると、途中の数字が出回るため。
+  function fixedRows(){
+    return [...I].sort((a, b) => (a.cat === b.cat ? 0 : a.cat === 'shoes' ? -1 : 1)
       || mi[a.model] - mi[b.model]
       || a.color.localeCompare(b.color) || scmp(a.size, b.size))
-      .forEach(r => {
-        const k = keepOf(r);
-        if (!r.kl && !k) return;
-        rows.push([r.model, r.color, r.size, r.sku, r.sellable, r.kl || 0, k, jbOf(r), (r.kl || 0) - k]);
-      });
-    const csv = '\ufeff' + rows.map(r => r.map(v =>
-      /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\r\n');
-    await offer(`kl-keep-${at.replace(/[^0-9]/g, '').slice(0, 12)}.csv`, csv);
+      .filter(r => r.kl || keepOf(r) || r.kl_sold);
+  }
+
+  $('#k-fix').onclick = () => {
+    if (!save()) return;
+    FIXED = {at: new Date().toLocaleString('ja-JP', {hour12:false}).replace(/\//g, '-'),
+             keep: JSON.parse(JSON.stringify(KEEP))};
+    try { localStorage.setItem(FKEY, JSON.stringify(FIXED)); } catch (e) {}
+    draw();
+    $('#k-xls').hidden = false;
     say(); flash($('#k-fix'), '確定しました');
   };
 
+  $('#k-xls').onclick = async () => {
+    const rows = fixedRows().map(r => [r.cat === 'shoes' ? 'シューズ' : 'ソックス',
+      r.model, r.color, r.size, r.sku, r.sellable, r.kl || 0, keepOf(r), jbOf(r),
+      (r.kl || 0) - keepOf(r), r.kl_sold || 0]);
+    const head = ['区分', 'モデル', 'カラー', 'サイズ', 'SKU',
+                  '総在庫', 'KL', '残す', 'JB', 'JBへ戻す', 'KLで販売済'];
+    const tot = ['合計', '', '', '', '',
+      ...[5, 6, 7, 8, 9, 10].map(c => rows.reduce((a, r) => a + r[c], 0))];
+    const name = `kl-zaiko-${(FIXED ? FIXED.at : '').replace(/[^0-9]/g, '').slice(0, 12)}.xlsx`;
+    await offer(name, xlsx([{name: 'KL在庫', rows: [head, ...rows, tot]}]));
+  };
+
+  /* --- xlsx を自前で書く。CDN は使わない方針なので、無圧縮(store)の
+         zip を組み立てる。Excel も Numbers も無圧縮で問題なく開く。 --- */
+  const XE = new TextEncoder();
+  const xesc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const colref = n => { let x = ''; n++; while (n > 0){ const m = (n - 1) % 26;
+    x = String.fromCharCode(65 + m) + x; n = (n - m - 1) / 26; } return x; };
+
+  function sheetxml(rows){
+    const body = rows.map((r, y) => `<row r="${y + 1}">` + r.map((v, x) => {
+      const ref = colref(x) + (y + 1), st = y === 0 ? ' s="1"' : '';
+      if (typeof v === 'number' && isFinite(v))
+        return `<c r="${ref}"${st}><v>${v}</v></c>`;
+      if (v === '' || v === null || v === undefined) return '';
+      return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+    }).join('') + '</row>').join('');
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+      + `<sheetData>${body}</sheetData></worksheet>`;
+  }
+
+  function xlsx(sheets){
+    const F = [];
+    const rel = sheets.map((_, k) => `<Relationship Id="rId${k + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${k + 1}.xml"/>`).join('')
+      + `<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+    F.push(['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`
+      + `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`
+      + `<Default Extension="xml" ContentType="application/xml"/>`
+      + `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`
+      + sheets.map((_, k) => `<Override PartName="/xl/worksheets/sheet${k + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')
+      + `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`]);
+    F.push(['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+      + `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`]);
+    F.push(['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rel}</Relationships>`]);
+    F.push(['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`
+      + sheets.map((sh, k) => `<sheet name="${xesc(sh.name)}" sheetId="${k + 1}" r:id="rId${k + 1}"/>`).join('')
+      + `</sheets></workbook>`]);
+    F.push(['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`
+      + `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+      + `<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font>`
+      + `<font><b/><sz val="11"/><name val="Calibri"/></font></fonts>`
+      + `<fills count="2"><fill><patternFill patternType="none"/></fill>`
+      + `<fill><patternFill patternType="gray125"/></fill></fills>`
+      + `<borders count="1"><border/></borders>`
+      + `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>`
+      + `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`
+      + `<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>`
+      + `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>`
+      + `</styleSheet>`]);
+    sheets.forEach((sh, k) => F.push([`xl/worksheets/sheet${k + 1}.xml`, sheetxml(sh.rows)]));
+    return zipstore(F.map(([n, t]) => [n, XE.encode(t)]));
+  }
+
+  let CRCT = null;
+  function crc32(u){
+    if (!CRCT){
+      CRCT = new Uint32Array(256);
+      for (let n = 0; n < 256; n++){
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        CRCT[n] = c >>> 0;
+      }
+    }
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < u.length; i++) c = CRCT[(c ^ u[i]) & 255] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function zipstore(files){
+    const parts = [], cen = [];
+    let off = 0;
+    files.forEach(([name, d]) => {
+      const nm = XE.encode(name), c = crc32(d);
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true);
+      lh.setUint16(6, 0x800, true);
+      lh.setUint32(14, c, true); lh.setUint32(18, d.length, true);
+      lh.setUint32(22, d.length, true); lh.setUint16(26, nm.length, true);
+      parts.push(new Uint8Array(lh.buffer), nm, d);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true);
+      ch.setUint16(6, 20, true); ch.setUint16(8, 0x800, true);
+      ch.setUint32(16, c, true); ch.setUint32(20, d.length, true);
+      ch.setUint32(24, d.length, true); ch.setUint16(28, nm.length, true);
+      ch.setUint32(42, off, true);
+      cen.push(new Uint8Array(ch.buffer), nm);
+      off += 30 + nm.length + d.length;
+    });
+    const csize = cen.reduce((a, b) => a + b.length, 0);
+    const e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true);
+    e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+    e.setUint32(12, csize, true); e.setUint32(16, off, true);
+    return new Blob([...parts, ...cen, new Uint8Array(e.buffer)],
+      {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+
   // Artifact として開かれている時は普通の download リンクが効かないので、
   // claude.use('downloads') がある場合はそちらに渡す。Vercel 側は従来どおり。
-  async function offer(name, csv){
+  async function offer(name, blob){
     let dl = null;
     try { dl = window.claude && await claude.use('downloads'); } catch (e) { dl = null; }
-    if (dl){ try { await dl.save({filename: name, data: csv}); } catch (e) {} return; }
+    if (dl){ try { await dl.save({filename: name, data: blob}); } catch (e) {} return; }
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.href = URL.createObjectURL(blob);
     a.download = name;
-    document.body.appendChild(a); a.click(); a.remove();
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
 
   function flash(btn, msg){
@@ -2210,6 +2323,7 @@ document.querySelectorAll('.togslot').forEach(slot=>{
 
   draw();
   say();
+  if (FIXED) $('#k-xls').hidden = false;
 
   $('#stock-note').textContent =
     `在庫の出所: ${M.src.join(' + ')}。`

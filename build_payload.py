@@ -529,7 +529,34 @@ if STOCK:
             _i['kl'] = _klq.pop(_k, 0)
             if _i['kl'] > _i['sellable']:
                 _klbad.append((_i['sku'], _i['kl'], _i['sellable']))
-        _sm.update(kl_src=_kl['meta']['src'],
+        # 会場で売れた分の手入力。注文エクスポートに同じ販売が出てきたら
+        # 二重に引かないよう、その日以降の実績で足りている行は自動で止める。
+        _byk = {(i['model'], i['color'], _nsz(i['size'])): i for i in STOCK['items']}
+        _ksold, _kskip = 0, []
+        for _s in _kl.get('sold', []):
+            _k = (_s['model'], _s['color'], _nsz(_s['size']))
+            _it = _byk.get(_k)
+            if _it is None:
+                print(u'!! KL販売: 在庫表に無い組み合わせ %s %s %s' % _k)
+                continue
+            _already = sum(_i2['qty'] for _o in sales if _o['date'] >= _s['date']
+                           for _i2 in _o['items']
+                           if (_i2['model'], _i2['color'] or u'(色の記録なし)',
+                               _nsz(_i2['size'])) == _k)
+            if _already >= _s['qty']:
+                _kskip.append(u'%s %s %s' % _k)
+                continue
+            _it['kl'] = max(0, _it['kl'] - _s['qty'])
+            _it['sellable'] = max(0, _it['sellable'] - _s['qty'])
+            _it['onhand'] = max(0, _it['onhand'] - _s['qty'])
+            _it['kl_sold'] = _it.get('kl_sold', 0) + _s['qty']
+            _ksold += _s['qty']
+        if _ksold:
+            print(u'在庫: KL会場で売れた %d足 を手入力で差し引きました(JB には戻していません)' % _ksold)
+        if _kskip:
+            print(u'在庫: 販売実績に出てきたので手入力を止めた行: ' + u' / '.join(_kskip))
+
+        _sm.update(kl_src=_kl['meta']['src'], kl_sold=_ksold, kl_sold_auto=_kskip,
                    kl_total=sum(i.get('kl', 0) for i in STOCK['items']))
         print(u'在庫: うち KL 持ち出し %d足 (%s)' % (_sm['kl_total'], _sm['kl_src']))
         if _klq:
