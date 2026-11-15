@@ -255,6 +255,11 @@ svg{display:block;width:100%;height:auto}
 /* 日次グラフの月選択。フィルタ行の中に置くので下余白を落とし、月が増えたら折り返す */
 .monthtabs{margin:0;flex-wrap:wrap}
 .monthtabs button{padding:.45rem .95rem;font-size:.85rem}
+/* 在庫のサイズマトリクス。table-layout:fixed だとモデル名とカラーが重なるので自動幅 */
+.stockgrid th,.stockgrid td{padding:.55rem .7rem}
+.stockgrid td:first-child,.stockgrid th:first-child{min-width:150px}
+.stockgrid td:nth-child(2),.stockgrid th:nth-child(2){min-width:120px}
+.stockgrid td.n,.stockgrid th.n{width:52px;text-align:center}
 
 /* ── Tables ───────────────────────────────────────────── */
 .tablebox{overflow-x:auto;margin-bottom:.4rem}
@@ -2076,7 +2081,7 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     return `<h3 style="margin:1.6rem 0 .6rem">${GNAME[g]}
         <span style="font-weight:400;color:var(--text-secondary);font-size:.85rem">
         \u8a08 ${n0(sum(sub, 'sellable'))}\u8db3</span></h3>
-      <div class="tablebox"><table class="fixed" style="min-width:${260 + cols.length * 56}px">
+      <div class="tablebox"><table class="stockgrid" style="min-width:${300 + cols.length * 52}px">
       <thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th>
         ${cols.map(c => `<th class="n">${esc(String(c).replace(/^[WM]/, ''))}</th>`).join('')}
         <th class="n">${TR('\u8a08')}</th></tr></thead>
