@@ -291,21 +291,26 @@ tr.sub{display:none;background:rgba(255,255,255,.015)}
 tr.sub.open{display:table-row}
 tr.sub td{font-size:.82rem}
 
-/* 在庫一覧のモデル > カラー > サイズ。
-   表示の有無は .shown、開いているかどうかは .open と分ける。
-   カラー行は「見えているが閉じている」状態を取るため。 */
-tr.lvsub{display:none}
-tr.lvsub.shown{display:table-row}
-tr.lv1{cursor:pointer}
-tr.lv2{cursor:pointer;background:rgba(255,255,255,.02)}
-tr.lv3{background:rgba(255,255,255,.045)}
-tr.lv3 td{font-size:.84rem;color:var(--text-secondary)}
-tr.lv1:hover,tr.lv2:hover{background:rgba(255,255,255,.06)}
-.twbtn{display:inline-flex;align-items:center;gap:.35rem;color:var(--text-secondary);
-  font-size:.82rem;user-select:none}
-tr:hover .twbtn{color:var(--accent-orange)}
-.tw2{display:inline-block;transition:transform .2s;font-size:.75em}
-tr.open .tw2{transform:rotate(90deg);color:var(--accent-orange)}
+/* 在庫一覧。SKU 1行ずつで、モデルが変わる所に区切り線を引く。
+   「残す」は手入力なので、入力欄とボタンの見た目もここで決める。 */
+tr.newm td{border-top:1px solid rgba(255,255,255,.12)}
+tr.mtot{background:rgba(255,255,255,.04);font-weight:600}
+tr.mtot td{color:var(--text-secondary)}
+.keepin{width:4.2em;padding:.25rem .35rem;text-align:right;
+  font-family:var(--font-heading);font-size:.85rem;font-variant-numeric:tabular-nums;
+  color:var(--text-primary);background:rgba(255,255,255,.06);
+  border:1px solid var(--border-color);border-radius:4px}
+.keepin:focus{outline:none;border-color:var(--accent-orange);background:rgba(255,255,255,.1)}
+.keepin.chg{border-color:var(--accent-orange);color:var(--accent-orange)}
+.keepbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:1rem 0 .2rem}
+.kbtn{font-family:var(--font-heading);font-size:.82rem;padding:.45rem 1.1rem;
+  border-radius:6px;border:1px solid var(--border-color);cursor:pointer;
+  background:rgba(255,255,255,.06);color:var(--text-primary)}
+.kbtn:hover{border-color:var(--accent-orange);color:var(--accent-orange)}
+.kbtn.pri{background:var(--accent-orange);border-color:var(--accent-orange);color:#1a1a1a}
+.kbtn.pri:hover{filter:brightness(1.1);color:#1a1a1a}
+.kstat{font-size:.8rem;color:var(--text-secondary)}
+.kstat.dirty{color:var(--accent-orange)}
 
 /* ── Callouts ─────────────────────────────────────────── */
 .callout{
@@ -664,6 +669,12 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="filterrow">
       <label for="f-stock-model" data-i18n="モデル">モデル</label>
       <select id="f-stock-model"></select>
+    </div>
+    <div class="keepbar">
+      <button class="kbtn" id="k-save" data-i18n="保存">保存</button>
+      <button class="kbtn pri" id="k-fix" data-i18n="確定">確定</button>
+      <button class="kbtn" id="k-reset">KLの数に戻す</button>
+      <span class="kstat" id="k-stat"></span>
     </div>
 
     <h3 style="margin:1.4rem 0 .6rem" id="h-stock-shoes">
@@ -1974,102 +1985,136 @@ document.querySelectorAll('.togslot').forEach(slot=>{
 
 /* ═══ 10b. 在庫 ══════════════════════════ */
 // 在庫には「卸売を除く」の区別が無いので DA 固定。
-// モデル > カラー > サイズ の並びで、繰り返しは伏せて階層に見せる。
+// 総在庫(SiteGiant)の内訳として KL ポップアップへ持ち出した分を持っている。
+// JB = 総在庫 - 残す数。「残す」は手入力で、既定値は持ち出した数そのまま。
 (function(){
   const ST = DA.stock;
   const secs = [...document.querySelectorAll('section[data-pane="stock"]')];
   if (!ST || !ST.items || !ST.items.length){ secs.forEach(x => x.hidden = true); return; }
   const I = ST.items, M = ST.meta;
   const sum = (a, k) => a.reduce((x, r) => x + (r[k] || 0), 0);
+  const BY = Object.fromEntries(I.map(r => [r.sku, r]));
+  const KEY = 'bmsd-keep', FKEY = 'bmsd-keep-fixed';
+
+  let KEEP = {}, FIXED = null;
+  try { KEEP = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { KEEP = {}; }
+  try { FIXED = JSON.parse(localStorage.getItem(FKEY) || 'null'); } catch (e) { FIXED = null; }
+  const keepOf = r => {
+    const v = KEEP[r.sku];
+    return (v === undefined || v === null || v === '') ? (r.kl || 0) : v;
+  };
+  const jbOf = r => Math.max(0, r.sellable - keepOf(r));
 
   $('#stock-lede').innerHTML =
-    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>の在庫から、`
-    + (M.deducted ? `それ以降の販売 <b>${n0(M.deducted)}足</b> を引いた数字です(販売実績は ${esc(M.sales_until)} まで)。`
-       : `引くべき販売はありません(販売実績は ${esc(M.sales_until)} まで)。`)
-    + `\u6708\u5e73\u5747\u306f\u7d2f\u8a08\u8ca9\u58f2\u3092\u958b\u696d\u304b\u3089\u306e ${M.months} \u304b\u6708\u3067\u5272\u3063\u305f\u6570\u5b57\u3067\u3059\u3002`;
+    `SiteGiant の在庫履歴から起こした<b>${esc(M.asof)} 時点</b>の在庫`
+    + (M.deducted ? `から、それ以降の販売 <b>${n0(M.deducted)}足</b> を引いた数` : '')
+    + `を、<b>JB</b> と <b>KL</b>(ポップアップへ持ち出した ${n0(M.kl_total || 0)}足)に分けています。`
+    + `「残す」に KL へ置いていく数を入れると、その差が JB に戻ります。`
+    + `月平均は累計販売を開業からの ${M.months} か月で割った数字です。`;
 
   const SOCK = {XS:1, S:2, M:3, L:4, XL:5};
   const skey = v => {
     if (SOCK[v]) return [1, SOCK[v]];
-    const n = parseFloat(String(v).replace(/^[WM]/, '').replace('cm', ''));
+    const n = parseFloat(String(v).replace(/^[WMU]/, '').replace('cm', ''));
     return isNaN(n) ? [2, 999] : [0, n];
   };
   const scmp = (a, b) => { const x = skey(a), y = skey(b); return x[0] - y[0] || x[1] - y[1]; };
 
-  // モデルの並びは在庫の多い順
+  // モデルの並びは在庫の多い順。足袋(tabiRela / Hitoe+)だけは一番下に置く。
+  const LAST = ['tabiRela', 'Hitoe+'];
   const mstock = {};
   I.forEach(r => { mstock[r.model] = (mstock[r.model] || 0) + r.sellable; });
-  const models = Object.keys(mstock).sort((a, b) => mstock[b] - mstock[a] || a.localeCompare(b));
+  const models = Object.keys(mstock).sort((a, b) =>
+    (LAST.indexOf(a) + 1 ? LAST.indexOf(a) + 1 : 0) - (LAST.indexOf(b) + 1 ? LAST.indexOf(b) + 1 : 0)
+    || mstock[b] - mstock[a] || a.localeCompare(b));
   const mi = Object.fromEntries(models.map((m, k) => [m, k]));
 
   const sel = $('#f-stock-model');
   sel.innerHTML = '';
-  [['all', TR('\u3059\u3079\u3066')], ...models.map(m => [m, m])].forEach(([v, l]) => {
+  [['all', TR('すべて')], ...models.map(m => [m, m])].forEach(([v, l]) => {
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
 
-  // モデル > カラー > サイズの3階層。最初はモデル行だけ見せる。
-  const agg = a => [sum(a, 'sellable'), sum(a, 'sold_all')];
-  const qty = (st, sold) =>
-    `<td class="n"><b${st === 0 ? ' style="color:var(--crit)"'
-                     : st <= 2 ? ' style="color:var(--warn)"' : ''}>${n0(st)}</b></td>
-     <td class="n">${sold || '—'}</td>
-     <td class="n">${sold ? (sold / M.months).toFixed(2) : '—'}</td>`;
-  const tw = lab => `<span class="twbtn"><span class="tw2">▶</span>${lab}</span>`;
+  const col = st => st === 0 ? ' style="color:var(--crit)"'
+                  : st <= 2 ? ' style="color:var(--warn)"' : '';
 
   function table(elId, list){
-    const byM = new Map();
-    list.forEach(r => {
-      if (!byM.has(r.model)) byM.set(r.model, new Map());
-      const c = byM.get(r.model);
-      if (!c.has(r.color)) c.set(r.color, []);
-      c.get(r.color).push(r);
-    });
-    const body = [];
-    let k = 0;
-    for (const [m, cols] of byM){
-      const mk = 'm' + (k++);
-      const all = [...cols.values()].flat();
-      const [ms, md] = agg(all);
-      body.push(`<tr class="grow lv1" data-key="${mk}" data-lvl="1">
-        <td><b>${esc(m)}</b></td><td>${tw(TR('\u30ab\u30e9\u30fc'))}</td><td></td>${qty(ms, md)}</tr>`);
-      let j = 0;
-      for (const [c, items] of cols){
-        const ck = mk + '_' + (j++);
-        const [cs, cd] = agg(items);
-        body.push(`<tr class="grow lvsub lv2" data-key="${ck}" data-parent="${mk}" data-lvl="2">
-          <td></td><td>${esc(c)}</td><td>${tw(TR('\u30b5\u30a4\u30ba'))}</td>${qty(cs, cd)}</tr>`);
-        items.sort((a, b) => scmp(a.size, b.size)).forEach(r => {
-          body.push(`<tr class="lvsub lv3" data-parent="${ck}" data-gp="${mk}">
-            <td></td><td></td><td class="num">${esc(r.size)}</td>${qty(r.sellable, r.sold_all)}</tr>`);
-        });
-      }
-    }
     const el = $(elId);
+    // モデルごとに小計行を先に置き、その下に SKU を1行ずつ並べる
+    const body = [];
+    let pm = '', pc = '';
+    list.forEach(r => {
+      if (r.model !== pm){
+        body.push(`<tr class="mtot newm" data-mtot="${esc(r.model)}">
+          <td><b>${esc(r.model)}</b></td><td>${TR('モデル計')}</td><td></td>
+          <td class="n jb"></td><td class="n kl"></td><td class="n keep"></td>
+          <td class="n sold"></td><td class="n pm"></td></tr>`);
+        pm = r.model; pc = '';
+      }
+      const nc = r.color !== pc; pc = r.color;
+      body.push(`<tr data-sku="${esc(r.sku)}">
+        <td></td><td>${nc ? esc(r.color) : ''}</td><td class="num">${esc(r.size)}</td>
+        <td class="n jb"></td>
+        <td class="n">${r.kl ? n0(r.kl) : '—'}</td>
+        <td class="n"><input class="keepin" type="number" min="0" step="1"
+          data-sku="${esc(r.sku)}" value="${keepOf(r)}"></td>
+        <td class="n">${r.sold_all || '—'}</td>
+        <td class="n">${r.per_month ? r.per_month.toFixed(2) : '—'}</td></tr>`);
+    });
     el.innerHTML =
-     `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
-       <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
-       <th class="n">${TR('\u6708\u5e73\u5747')}</th></tr></thead>
+     `<thead><tr><th>${TR('モデル')}</th><th>${TR('カラー')}</th><th>${TR('サイズ')}</th>
+       <th class="n">JB</th><th class="n">KL</th><th class="n">${TR('残す')}</th>
+       <th class="n">${TR('累計販売')}</th><th class="n">${TR('月平均')}</th></tr></thead>
       <tbody>${body.join('')}</tbody>
-      <tfoot><tr><td>${TR('\u5408\u8a08')}</td><td></td><td></td>
-        <td class="n">${n0(sum(list, 'sellable'))}</td>
+      <tfoot><tr><td>${TR('合計')}</td><td></td><td></td>
+        <td class="n jb"></td><td class="n">${n0(sum(list, 'kl'))}</td>
+        <td class="n keep"></td>
         <td class="n">${n0(sum(list, 'sold_all'))}</td>
         <td class="n">${(sum(list, 'sold_all') / M.months).toFixed(2)}</td></tr></tfoot>`;
+  }
 
-    el.onclick = e => {
-      const tr = e.target.closest('tr.grow');
-      if (!tr || !el.contains(tr)) return;
-      const key = tr.dataset.key;
-      const open = tr.classList.toggle('open');
-      el.querySelectorAll(`tr[data-parent="${key}"]`)
-        .forEach(x => x.classList.toggle('shown', open));
-      if (!open){
-        // モデルを閉じたら、下のカラーもサイズもたたむ
-        el.querySelectorAll(`tr[data-parent="${key}"]`).forEach(x => x.classList.remove('open'));
-        el.querySelectorAll(`tr[data-gp="${key}"]`)
-          .forEach(x => x.classList.remove('shown', 'open'));
+  // 入力を変えたら、その行の JB・モデル小計・合計を引き直す。
+  function recalc(){
+    ['#t-stock-shoes', '#t-stock-socks'].forEach(id => {
+      const el = $(id);
+      if (!el || !el.tHead) return;
+      const agg = {};
+      let tj = 0, tk = 0;
+      el.querySelectorAll('tbody tr[data-sku]').forEach(tr => {
+        const r = BY[tr.dataset.sku];
+        if (!r) return;
+        const k = keepOf(r), j = jbOf(r);
+        const td = tr.querySelector('td.jb');
+        td.innerHTML = `<b${col(j)}>${n0(j)}</b>`;
+        const inp = tr.querySelector('input.keepin');
+        if (inp) inp.classList.toggle('chg', k !== (r.kl || 0));
+        const a = agg[r.model] || (agg[r.model] = {jb:0, kl:0, keep:0, sold:0, pm:0});
+        a.jb += j; a.kl += r.kl || 0; a.keep += k;
+        a.sold += r.sold_all || 0; a.pm += r.per_month || 0;
+        tj += j; tk += k;
+      });
+      el.querySelectorAll('tbody tr[data-mtot]').forEach(tr => {
+        const a = agg[tr.dataset.mtot];
+        if (!a) return;
+        tr.querySelector('td.jb').textContent = n0(a.jb);
+        tr.querySelector('td.kl').textContent = a.kl ? n0(a.kl) : '—';
+        tr.querySelector('td.keep').textContent = a.keep ? n0(a.keep) : '—';
+        tr.querySelector('td.sold').textContent = a.sold || '—';
+        tr.querySelector('td.pm').textContent = a.pm ? a.pm.toFixed(2) : '—';
+      });
+      const ft = el.tFoot;
+      if (ft){
+        ft.querySelector('td.jb').textContent = n0(tj);
+        ft.querySelector('td.keep').textContent = n0(tk);
       }
-    };
+    });
+    [['shoes', '#f-shoes-count'], ['socks', '#f-socks-count']].forEach(([cat, cn]) => {
+      const f = (sel.value === 'all' ? I : I.filter(r => r.model === sel.value))
+        .filter(r => r.cat === cat);
+      if (!f.length) return;
+      $(cn).textContent = `${f.length} SKU · JB ${n0(f.reduce((x, r) => x + jbOf(r), 0))}足`
+        + ` / KL ${n0(f.reduce((x, r) => x + keepOf(r), 0))}足`;
+    });
   }
 
   // シューズとソックスは桁が違うので表も合計も別々にする。
@@ -2077,24 +2122,92 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
     const ord = (a, b) =>
       mi[a.model] - mi[b.model] || a.color.localeCompare(b.color) || scmp(a.size, b.size);
-    [['shoes', '#t-stock-shoes', '#f-shoes-count', '#h-stock-shoes', '#box-stock-shoes'],
-     ['socks', '#t-stock-socks', '#f-socks-count', '#h-stock-socks', '#box-stock-socks']]
-    .forEach(([cat, tb, cn, hd, bx]) => {
+    [['shoes', '#t-stock-shoes', '#h-stock-shoes', '#box-stock-shoes'],
+     ['socks', '#t-stock-socks', '#h-stock-socks', '#box-stock-socks']]
+    .forEach(([cat, tb, hd, bx]) => {
       const list = f.filter(r => r.cat === cat).sort(ord);
       const on = list.length > 0;
       $(hd).hidden = !on; $(bx).hidden = !on;
-      if (!on) return;
-      $(cn).textContent = `${list.length} SKU \u00b7 ${n0(sum(list, 'sellable'))}\u8db3`;
-      table(tb, list);
+      if (on) table(tb, list);
     });
+    recalc();
   }
   sel.onchange = draw;
+
+  /* --- 残す数の入力・保存・確定 ------------------------------- */
+  let dirty = false;
+  const stat = $('#k-stat');
+  function say(){
+    if (dirty){ stat.className = 'kstat dirty'; stat.textContent = '未保存の変更があります'; return; }
+    stat.className = 'kstat';
+    stat.textContent = FIXED && FIXED.at
+      ? `確定済み: ${FIXED.at}` : (localStorage.getItem(KEY) ? '保存済み' : '');
+  }
+  document.addEventListener('input', e => {
+    const inp = e.target.closest && e.target.closest('input.keepin');
+    if (!inp) return;
+    const r = BY[inp.dataset.sku];
+    if (!r) return;
+    let v = inp.value === '' ? '' : Math.max(0, Math.round(+inp.value || 0));
+    if (v !== '' && v > r.sellable){ v = r.sellable; inp.value = v; }
+    KEEP[r.sku] = v;
+    dirty = true; say(); recalc();
+  });
+
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(KEEP)); } catch (e) {
+      alert('この端末では保存できませんでした'); return false;
+    }
+    dirty = false; say();
+    return true;
+  }
+  $('#k-save').onclick = () => { if (save()) flash($('#k-save'), '保存しました'); };
+
+  $('#k-reset').onclick = () => {
+    if (!confirm('「残す」をすべて KL 持ち出し数に戻します。よろしいですか?')) return;
+    KEEP = {};
+    save(); draw();
+  };
+
+  // 確定 = 保存した上で、棚移動の指示として使える CSV を落とす。
+  $('#k-fix').onclick = () => {
+    if (!save()) return;
+    const at = new Date().toLocaleString('ja-JP', {hour12:false}).replace(/\//g, '-');
+    FIXED = {at, keep: JSON.parse(JSON.stringify(KEEP))};
+    try { localStorage.setItem(FKEY, JSON.stringify(FIXED)); } catch (e) {}
+    const rows = [['モデル', 'カラー', 'サイズ', 'SKU', '総在庫', 'KL持ち出し', '残す', 'JB', 'JBへ戻す']];
+    [...I].sort((a, b) => (a.cat === b.cat ? 0 : a.cat === 'shoes' ? -1 : 1)
+      || mi[a.model] - mi[b.model]
+      || a.color.localeCompare(b.color) || scmp(a.size, b.size))
+      .forEach(r => {
+        const k = keepOf(r);
+        if (!r.kl && !k) return;
+        rows.push([r.model, r.color, r.size, r.sku, r.sellable, r.kl || 0, k, jbOf(r), (r.kl || 0) - k]);
+      });
+    const csv = '\ufeff' + rows.map(r => r.map(v =>
+      /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = `kl-keep-${at.replace(/[^0-9]/g, '').slice(0, 12)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    say(); flash($('#k-fix'), '確定しました');
+  };
+
+  function flash(btn, msg){
+    const old = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(() => { btn.textContent = old; }, 1600);
+  }
+
   draw();
+  say();
 
   $('#stock-note').textContent =
-    `\u5728\u5eab\u306e\u51fa\u6240: ${M.src.join(' + ')}\u3002`
+    `在庫の出所: ${M.src.join(' + ')}。`
+    + (M.kl_src ? ` KL の持ち出しは ${M.kl_src} から読んでいます。` : '')
+    + ` 「残す」はこの端末のブラウザに保存されます(他の端末とは共有されません)。`
     + (M.unmatched_sku && M.unmatched_sku.length
-       ? ` \u8ca9\u58f2\u5b9f\u7e3e\u306b\u3042\u308b\u304c\u5728\u5eab\u8868\u306b\u7121\u3044\u7d44\u307f\u5408\u308f\u305b: ` + M.unmatched_sku.join(' / ')
+       ? ` 販売実績にあるが在庫表に無い組み合わせ: ` + M.unmatched_sku.join(' / ')
        : '');
 })();
 

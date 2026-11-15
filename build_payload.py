@@ -515,6 +515,32 @@ if STOCK:
         _i['sold_recent'] = _rec.get(_k, 0)
         _i['per_month'] = round(_all.get(_k, 0) / _months, 2)
         _i['last_sold'] = _lastsold.get(_k)
+    # KL ポップアップに持ち出した分。総在庫の内訳なので引かずに別の列として持つ
+    # (ダッシュボード側で JB = 総在庫 - 残す数 を出す)。
+    try:
+        _kl = json.load(open('kl_stock.json', encoding='utf-8'))
+    except (IOError, OSError, ValueError):
+        _kl = None
+    if _kl:
+        _klq = {(i['model'], i['color'], _nsz(i['size'])): i['qty'] for i in _kl['items']}
+        _klbad = []
+        for _i in STOCK['items']:
+            _k = (_i['model'], _i['color'], _nsz(_i['size']))
+            _i['kl'] = _klq.pop(_k, 0)
+            if _i['kl'] > _i['sellable']:
+                _klbad.append((_i['sku'], _i['kl'], _i['sellable']))
+        _sm.update(kl_src=_kl['meta']['src'],
+                   kl_total=sum(i.get('kl', 0) for i in STOCK['items']))
+        print(u'在庫: うち KL 持ち出し %d足 (%s)' % (_sm['kl_total'], _sm['kl_src']))
+        if _klq:
+            print(u'!! KL 側にあって在庫表に無い組み合わせ: '
+                  + u' / '.join(u'%s %s %s' % k for k in sorted(_klq)))
+        for _sk, _q, _s in _klbad:
+            print(u'!! KL 持ち出しが総在庫を超えています: %s KL%d > 在庫%d' % (_sk, _q, _s))
+    else:
+        for _i in STOCK['items']:
+            _i['kl'] = 0
+
     _have = {(i['model'], i['color'], _nsz(i['size'])) for i in STOCK['items']}
     _sm.update(weeks=STOCK_WEEKS, months=round(_months, 2), since=_d0,
                sales_until=_dmax, deducted=sum(_aft.values()),
