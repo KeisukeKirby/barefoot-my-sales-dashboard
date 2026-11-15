@@ -458,7 +458,14 @@ wh = [o for o in sales if iswh(o)]
 loff = [o for o in lost if o['channel'] == CH_POS]
 lon = [o for o in lost if o['channel'] != CH_POS]
 
+# 在庫。build_stock.py が書く。無ければ在庫ブロックを出さないだけ。
+try:
+    STOCK = json.load(open('stock.json', encoding='utf-8'))
+except (IOError, OSError, ValueError):
+    STOCK = None
+
 P = dict(
+    stock=STOCK,
     meta=dict(source=J['meta'].get('src') or J['meta'].get('source'), asof=ASOF,
               period=[d0.isoformat(), d1.isoformat()], days=days,
               lines=J['meta']['rows'], n_orders_raw=J['meta']['n_orders'], n_orders=len(O)),
