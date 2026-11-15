@@ -43,10 +43,10 @@ USE = [
     (u'ヨガ・ピラティス', ['V-Soul']),
     (u'ランニング', ['V-Run']),
     (u'トレーニング', ['Groundsplay LS', 'KSO EVO']),
-    (u'トレイル・ハイキング', ['Trailope', 'Scramkey', 'V-Alpha']),
-    (u'ウォーター・アウトドア', ['Spidrwalk']),
-    (u'サンダル', ['Breezandal']),
-    (u'足袋', ['tabiRela', 'Hitoe+']),
+    # トレイル・水辺・サンダルは「外で使う」で一括。細かく割ると
+    # カードが増えすぎて形が読めなくなる(2026-11-15 Keisuke)。
+    (u'アウトドア', ['Trailope', 'Scramkey', 'V-Alpha', 'Spidrwalk', 'Breezandal']),
+    ('Tabi', ['tabiRela', 'Hitoe+']),
     (u'ソックス', ['Barefootinc.Jp Socks', 'Oleno Ultimate',
                                   'Oleno Ultimate Aso', 'Oleno Ultimate TNG']),
 ]
