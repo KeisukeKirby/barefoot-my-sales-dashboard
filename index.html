@@ -648,9 +648,17 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="filterrow">
       <label for="f-stock-model" data-i18n="モデル">モデル</label>
       <select id="f-stock-model"></select>
-      <span class="count" id="f-stock-count"></span>
     </div>
-    <div class="tablebox"><table id="t-stock-sku"></table></div>
+
+    <h3 style="margin:1.4rem 0 .6rem" id="h-stock-shoes">
+      <span data-i18n="シューズ">シューズ</span>
+      <span class="count" id="f-shoes-count" style="font-weight:400;font-size:.8rem"></span></h3>
+    <div class="tablebox" id="box-stock-shoes"><table id="t-stock-shoes"></table></div>
+
+    <h3 style="margin:2rem 0 .6rem" id="h-stock-socks">
+      <span data-i18n="ソックス">ソックス</span>
+      <span class="count" id="f-socks-count" style="font-weight:400;font-size:.8rem"></span></h3>
+    <div class="tablebox" id="box-stock-socks"><table id="t-stock-socks"></table></div>
     <p class="note" id="stock-note"></p>
   </section>
 
@@ -1976,19 +1984,15 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   const models = Object.keys(mstock).sort((a, b) => mstock[b] - mstock[a] || a.localeCompare(b));
   const mi = Object.fromEntries(models.map((m, k) => [m, k]));
 
-  const sel = $('#f-stock-model'), cnt = $('#f-stock-count');
+  const sel = $('#f-stock-model');
   sel.innerHTML = '';
   [['all', TR('\u3059\u3079\u3066')], ...models.map(m => [m, m])].forEach(([v, l]) => {
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
 
-  function draw(){
-    const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
-    const list = [...f].sort((a, b) =>
-      mi[a.model] - mi[b.model] || a.color.localeCompare(b.color) || scmp(a.size, b.size));
-    cnt.textContent = `${list.length} SKU \u00b7 ${n0(sum(list, 'sellable'))}\u8db3`;
+  function table(elId, list){
     let pm = '', pc = '';
-    $('#t-stock-sku').innerHTML =
+    $(elId).innerHTML =
      `<thead><tr><th>${TR('\u30e2\u30c7\u30eb')}</th><th>${TR('\u30ab\u30e9\u30fc')}</th><th>${TR('\u30b5\u30a4\u30ba')}</th>
        <th class="n">${TR('\u5728\u5eab')}</th><th class="n">${TR('\u7d2f\u8a08\u8ca9\u58f2')}</th>
        <th class="n">${TR('\u6708\u5e73\u5747')}</th></tr></thead>
@@ -2009,6 +2013,23 @@ document.querySelectorAll('.togslot').forEach(slot=>{
         <td class="n">${n0(sum(list, 'sellable'))}</td>
         <td class="n">${n0(sum(list, 'sold_all'))}</td>
         <td class="n">${(sum(list, 'sold_all') / M.months).toFixed(2)}</td></tr></tfoot>`;
+  }
+
+  // シューズとソックスは桁が違うので表も合計も別々にする。
+  function draw(){
+    const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
+    const ord = (a, b) =>
+      mi[a.model] - mi[b.model] || a.color.localeCompare(b.color) || scmp(a.size, b.size);
+    [['shoes', '#t-stock-shoes', '#f-shoes-count', '#h-stock-shoes', '#box-stock-shoes'],
+     ['socks', '#t-stock-socks', '#f-socks-count', '#h-stock-socks', '#box-stock-socks']]
+    .forEach(([cat, tb, cn, hd, bx]) => {
+      const list = f.filter(r => r.cat === cat).sort(ord);
+      const on = list.length > 0;
+      $(hd).hidden = !on; $(bx).hidden = !on;
+      if (!on) return;
+      $(cn).textContent = `${list.length} SKU \u00b7 ${n0(sum(list, 'sellable'))}\u8db3`;
+      table(tb, list);
+    });
   }
   sel.onchange = draw;
   draw();
