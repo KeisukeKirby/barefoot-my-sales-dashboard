@@ -294,8 +294,10 @@ tr.sub td{font-size:.82rem}
 /* 在庫一覧。SKU 1行ずつで、モデルが変わる所に区切り線を引く。
    「残す」は手入力なので、入力欄とボタンの見た目もここで決める。 */
 tr.newm td{border-top:1px solid rgba(255,255,255,.12)}
-tr.mtot{background:rgba(255,255,255,.04);font-weight:600}
-tr.mtot td{color:var(--text-secondary)}
+tr.mtot{background:rgba(255,255,255,.06);font-weight:600}
+tr.mtot td{border-top:2px solid rgba(255,107,43,.35)}
+td.mdl{color:var(--text-muted);font-size:.8rem}
+tr.mtot td{color:var(--text-primary)}
 .keepin{width:4.2em;padding:.25rem .35rem;text-align:right;
   font-family:var(--font-heading);font-size:.85rem;font-variant-numeric:tabular-nums;
   color:var(--text-primary);background:rgba(255,255,255,.06);
@@ -2053,8 +2055,11 @@ document.querySelectorAll('.togslot').forEach(slot=>{
         pm = r.model; pc = '';
       }
       const nc = r.color !== pc; pc = r.color;
+      // モデル名は全行に出す。小計行にしか出さないと、次のモデルの行が
+      // 前のモデルの続きに見える(V-Soul の下に Groundsplay LS の M サイズ)。
       body.push(`<tr data-sku="${esc(r.sku)}">
-        <td></td><td>${nc ? esc(r.color) : ''}</td><td class="num">${esc(r.size)}</td>
+        <td class="mdl">${esc(r.model)}</td><td>${nc ? esc(r.color) : ''}</td>
+        <td class="num">${esc(r.size)}</td>
         <td class="n jb"></td>
         <td class="n">${r.kl ? n0(r.kl) : '—'}</td>
         <td class="n"><input class="keepin" type="number" min="0" step="1"
