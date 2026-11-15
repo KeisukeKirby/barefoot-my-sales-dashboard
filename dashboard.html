@@ -2170,7 +2170,7 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   };
 
   // 確定 = 保存した上で、棚移動の指示として使える CSV を落とす。
-  $('#k-fix').onclick = () => {
+  $('#k-fix').onclick = async () => {
     if (!save()) return;
     const at = new Date().toLocaleString('ja-JP', {hour12:false}).replace(/\//g, '-');
     FIXED = {at, keep: JSON.parse(JSON.stringify(KEEP))};
@@ -2186,12 +2186,21 @@ document.querySelectorAll('.togslot').forEach(slot=>{
       });
     const csv = '\ufeff' + rows.map(r => r.map(v =>
       /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\r\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-    a.download = `kl-keep-${at.replace(/[^0-9]/g, '').slice(0, 12)}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
+    await offer(`kl-keep-${at.replace(/[^0-9]/g, '').slice(0, 12)}.csv`, csv);
     say(); flash($('#k-fix'), '確定しました');
   };
+
+  // Artifact として開かれている時は普通の download リンクが効かないので、
+  // claude.use('downloads') がある場合はそちらに渡す。Vercel 側は従来どおり。
+  async function offer(name, csv){
+    let dl = null;
+    try { dl = window.claude && await claude.use('downloads'); } catch (e) { dl = null; }
+    if (dl){ try { await dl.save({filename: name, data: csv}); } catch (e) {} return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
 
   function flash(btn, msg){
     const old = btn.textContent;
