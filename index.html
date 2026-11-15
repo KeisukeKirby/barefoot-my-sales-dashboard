@@ -261,6 +261,24 @@ svg{display:block;width:100%;height:auto}
 .stockgrid td:first-child,.stockgrid th:first-child{width:168px;min-width:168px;white-space:normal;line-height:1.3}
 .stockgrid td:nth-child(2),.stockgrid th:nth-child(2){width:132px;min-width:132px;white-space:normal;line-height:1.3}
 .stockgrid td.n,.stockgrid th.n{width:52px;text-align:center}
+/* 用途別サイズ在庫の横棒。SVG にせず CSS 幅で描く(幅に追従させるため) */
+.usegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1.2rem}
+.usebox{background-color:var(--bg-card);border:1px solid var(--border-color);
+  border-radius:var(--radius);padding:1.3rem 1.4rem}
+.usebox h3{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;margin:0 0 .9rem}
+.usebox h3 small{font-family:var(--font-body);font-weight:400;font-size:.78rem;color:var(--text-secondary)}
+.usebox .mdl{font-size:.74rem;color:var(--text-muted);margin:-.5rem 0 .9rem}
+.bars{display:grid;grid-template-columns:auto 1fr auto;gap:.3rem .6rem;align-items:center}
+.bars .sz{font-family:var(--font-heading);font-size:.8rem;color:var(--text-secondary);
+  text-align:right;font-variant-numeric:tabular-nums}
+.bars .tr{background:rgba(255,255,255,.05);border-radius:4px;height:16px;position:relative;overflow:hidden}
+.bars .tr i{display:block;height:100%;border-radius:4px;background:var(--ghost)}
+.bars .tr i.hot{background:var(--accent-orange)}
+.bars .tr i.out{background:repeating-linear-gradient(45deg,rgba(255,90,77,.5) 0 3px,transparent 3px 6px)}
+.bars .qt{font-family:var(--font-heading);font-size:.82rem;font-weight:600;
+  font-variant-numeric:tabular-nums;min-width:2.6em;text-align:right}
+.bars .qt.zero{color:var(--crit)}
+.bars .qt.low{color:var(--warn)}
 
 /* ── Tables ───────────────────────────────────────────── */
 .tablebox{overflow-x:auto;margin-bottom:.4rem}
@@ -654,9 +672,17 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <div class="tablebox" style="margin-top:1.4rem"><table id="t-stock-model"></table></div>
   </section>
 
+  <section id="s-stock-use" data-pane="stock">
+    <p class="eyebrow" data-i18n="By Use">By Use</p>
+    <h2 data-i18n="用途別のサイズ在庫">用途別のサイズ在庫</h2>
+    <p class="lede">棒の長さが在庫数。<b style="color:var(--accent-orange)">オレンジは直近4週に売れているサイズ</b>、
+       灰色は動いていないサイズです。斜線は在庫切れ。</p>
+    <div class="usegrid" id="stock-use"></div>
+  </section>
+
   <section id="s-stock-grid" data-pane="stock">
     <p class="eyebrow" data-i18n="Size Grid">Size Grid</p>
-    <h2 data-i18n="サイズ別の在庫">サイズ別の在庫</h2>
+    <h2 data-i18n="カラー別の内訳">カラー別の内訳</h2>
     <p class="lede">縦がモデル×カラー、横がサイズ。数字は売れる在庫数です。
        <b style="color:var(--crit)">赤は在庫切れ</b>、<b style="color:var(--warn)">黄色は残り2足以下</b>。
        白抜きのセルは<b>直近4週に売れている</b>組み合わせです。</p>
@@ -2045,12 +2071,8 @@ document.querySelectorAll('.togslot').forEach(slot=>{
       <td class="n">${wcell(weeksOf(totSell, sum(I, 'sold_recent')))}</td>
       <td class="n">${n0(sum(I, 'sold_all'))}</td></tr></tfoot>`;
 
-  /* --- サイズ別マトリクス --------------------------------- */
+  /* --- 用途別のサイズ在庫(棒) と カラー別マトリクス ------- */
   const SOCK = {XS:1, S:2, M:3, L:4, XL:5};
-  const grp = r => r.cat === 'socks' ? 'sock'
-    : /^W/.test(r.size) ? 'W' : /^M/.test(r.size) ? 'M' : 'tabi';
-  const GNAME = {W:TR('\u30ec\u30c7\u30a3\u30fc\u30b9(\u30b7\u30e5\u30fc\u30ba)'), M:TR('\u30e1\u30f3\u30ba(\u30b7\u30e5\u30fc\u30ba)'),
-                 tabi:TR('\u8db3\u888b(cm)'), sock:TR('\u30bd\u30c3\u30af\u30b9')};
   const skey = v => {
     if (SOCK[v]) return [1, SOCK[v]];
     const n = parseFloat(String(v).replace(/^[WM]/, '').replace('cm', ''));
@@ -2058,8 +2080,38 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   };
   const scmp = (a, b) => { const x = skey(a), y = skey(b); return x[0] - y[0] || x[1] - y[1]; };
 
-  $('#stock-grid').innerHTML = ['W', 'M', 'tabi', 'sock'].map(g => {
-    const sub = I.filter(r => grp(r) === g);
+  // 用途の並びは stock.json の use_order。そこに無いものは最後。
+  const USES = (M.use_order || []).concat(
+    [...new Set(I.map(r => r.use))].filter(u => !(M.use_order || []).includes(u)))
+    .filter(u => I.some(r => r.use === u));
+
+  // 用途別のサイズ在庫。サイズで丸め、棒の長さはその用途内の最大を100%とする
+  $('#stock-use').innerHTML = USES.map(u => {
+    const sub = I.filter(r => r.use === u);
+    const bySize = {};
+    sub.forEach(r => {
+      const b = bySize[r.size] || (bySize[r.size] = {st:0, rec:0});
+      b.st += r.sellable; b.rec += r.sold_recent;
+    });
+    const sizes = Object.keys(bySize).sort(scmp);
+    const mx = Math.max(1, ...sizes.map(z => bySize[z].st));
+    const mdl = [...new Set(sub.map(r => r.model))];
+    return `<div class="usebox"><h3>${esc(u)}
+        <small>\u8a08 ${n0(sum(sub, 'sellable'))}\u8db3 \u30fb \u76f4\u8fd1${M.weeks}\u9031 ${sum(sub, 'sold_recent')}\u8db3</small></h3>
+      <p class="mdl">${esc(mdl.join(' / '))}</p>
+      <div class="bars">${sizes.map(z => {
+        const b = bySize[z], w = Math.round(b.st / mx * 100);
+        const cls = b.st === 0 ? 'out' : b.rec > 0 ? 'hot' : '';
+        const q = b.st === 0 ? 'zero' : b.st <= 2 ? 'low' : '';
+        return `<span class="sz">${esc(String(z))}</span>
+          <span class="tr" title="${esc(String(z))} \uff1a\u5728\u5eab ${b.st}\u8db3 / \u76f4\u8fd1${M.weeks}\u9031 ${b.rec}\u8db3">
+            <i class="${cls}" style="width:${b.st === 0 ? 100 : Math.max(w, 2)}%"></i></span>
+          <span class="qt ${q}">${b.st}</span>`;
+      }).join('')}</div></div>`;
+  }).join('');
+
+  $('#stock-grid').innerHTML = USES.map(g => {
+    const sub = I.filter(r => r.use === g);
     if (!sub.length) return '';
     const cols = [...new Set(sub.map(r => r.size))].sort(scmp);
     const keys = [...new Set(sub.map(r => r.model + '\u0000' + r.color))]
@@ -2079,7 +2131,7 @@ document.querySelectorAll('.togslot').forEach(slot=>{
                title="${esc(r.model)} ${esc(r.color)} ${esc(r.size)} / \u76f4\u8fd1${M.weeks}\u9031 ${r.sold_recent}\u8db3">${r.sellable}</td>`;
     };
     const tot = c => sub.filter(r => r.size === c).reduce((a, r) => a + r.sellable, 0);
-    return `<h3 style="margin:1.6rem 0 .6rem">${GNAME[g]}
+    return `<h3 style="margin:1.6rem 0 .6rem">${esc(g)}
         <span style="font-weight:400;color:var(--text-secondary);font-size:.85rem">
         \u8a08 ${n0(sum(sub, 'sellable'))}\u8db3</span></h3>
       <div class="tablebox"><table class="stockgrid" style="min-width:${330 + cols.length * 52}px">

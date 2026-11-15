@@ -30,3 +30,25 @@ COLORNAME = {'BK':'Black','BR':'Brown','BB/BL':'Baby Blue','BK/LI/BK':'Black-Lim
              'TK/M':'Tsuki/Moon','UM/O':'Umi/Ocean','IV/GR':'Ivory/Green',
              'IV/DL':'Ivory/Deep Lake','BK/GR':'Black/Gray',
              'BK/BL':'Black/Blue','ZB/NV':'Zebra Navy','DN':'Denim'}
+
+# 用途。すべて SiteGiant の商品名に書かれている記述から。
+#   V-Run      Running Shoes Training Shoes
+#   Trailope   Trail Running Shoes Hiking Shoes
+#   V-Soul     Pilates/Yoga Shoes Training Shoes
+#   KSO EVO    Training Shoes / Groundsplay LS  Indoor Training Shoes
+#   V-Alpha    Hiking, Training, and Casual / Scramkey  Mid-Cut Hiking Shoes
+#   Spidrwalk  Water and Outdoor Shoes
+# 並び順が画面の順番になる。
+USE = [
+    (u'ヨガ・ピラティス', ['V-Soul']),
+    (u'ランニング', ['V-Run']),
+    (u'トレーニング', ['Groundsplay LS', 'KSO EVO']),
+    (u'トレイル・ハイキング', ['Trailope', 'Scramkey', 'V-Alpha']),
+    (u'ウォーター・アウトドア', ['Spidrwalk']),
+    (u'サンダル', ['Breezandal']),
+    (u'足袋', ['tabiRela', 'Hitoe+']),
+    (u'ソックス', ['Barefootinc.Jp Socks', 'Oleno Ultimate',
+                                  'Oleno Ultimate Aso', 'Oleno Ultimate TNG']),
+]
+USE_OF = {m: u for u, ms in USE for m in ms}
+USE_ORDER = [u for u, _ in USE]

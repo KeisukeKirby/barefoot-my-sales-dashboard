@@ -24,7 +24,7 @@ import os
 import sys
 
 import xlsxread
-from skumeta import COLORNAME, MODEL
+from skumeta import COLORNAME, MODEL, USE_OF, USE_ORDER
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'stock.json')
@@ -125,6 +125,7 @@ def main():
         per_week = rec / float(WEEKS)
         items.append(dict(
             sku=s, model=model, brand=brand, cat=cat, color=color, size=size,
+            use=USE_OF.get(model, u'その他'),
             sellable=sell, onhand=onhand, reserved=q(s, 'Non Sellable Stock'),
             sold_all=sold_all.get(key, 0), sold_recent=rec,
             per_week=round(per_week, 2),
@@ -141,7 +142,7 @@ def main():
     out = dict(
         meta=dict(asof=asof, src=[os.path.basename(p) for p in paths],
                   skus=len(items), weeks=WEEKS, sales_until=dmax,
-                  unmatched_sku=unmatched),
+                  use_order=USE_ORDER, unmatched_sku=unmatched),
         items=items)
     json.dump(out, io.open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
 
