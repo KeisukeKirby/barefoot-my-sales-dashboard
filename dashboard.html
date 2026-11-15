@@ -1983,7 +1983,9 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   const sum = (a, k) => a.reduce((x, r) => x + (r[k] || 0), 0);
 
   $('#stock-lede').innerHTML =
-    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>\u306e\u5728\u5eab\u3067\u3059\u3002`
+    `SiteGiant \u306e\u5728\u5eab\u5c65\u6b74\u304b\u3089\u8d77\u3053\u3057\u305f<b>${esc(M.asof)} \u6642\u70b9</b>の在庫から、`
+    + (M.deducted ? `それ以降の販売 <b>${n0(M.deducted)}足</b> を引いた数字です(販売実績は ${esc(M.sales_until)} まで)。`
+       : `引くべき販売はありません(販売実績は ${esc(M.sales_until)} まで)。`)
     + `\u6708\u5e73\u5747\u306f\u7d2f\u8a08\u8ca9\u58f2\u3092\u958b\u696d\u304b\u3089\u306e ${M.months} \u304b\u6708\u3067\u5272\u3063\u305f\u6570\u5b57\u3067\u3059\u3002`;
 
   const SOCK = {XS:1, S:2, M:3, L:4, XL:5};
