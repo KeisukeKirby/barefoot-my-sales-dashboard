@@ -2038,6 +2038,19 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     const o = document.createElement('option'); o.value = v; o.textContent = l; sel.appendChild(o);
   });
 
+  // 同じモデル・カラーでメンズとレディースが混ざるもの(V-Run Total Black など)は
+  // 別のまとまりとして並べる。ソックスの M はメンズの M41 とは別物なので、
+  // 数字が続く W/M/U だけを性別として読む。
+  const GN = {W: 'レディース', M: 'メンズ', U: 'ユニセックス'};
+  const gof = r => { const m = /^([WMU])\d/.exec(r.size); return m ? m[1] : ''; };
+  const gkey = g => ({W:0, M:1, U:2}[g] !== undefined ? {W:0, M:1, U:2}[g] : 3);
+  const MIX = {};
+  I.forEach(r => { (MIX[r.model + '|' + r.color] ||= new Set()).add(gof(r)); });
+  const clabel = r => {
+    const g = gof(r);
+    return (g && MIX[r.model + '|' + r.color].size > 1) ? `${r.color}(${GN[g]})` : r.color;
+  };
+
   const col = st => st === 0 ? ' style="color:var(--crit)"'
                   : st <= 2 ? ' style="color:var(--warn)"' : '';
 
@@ -2054,11 +2067,11 @@ document.querySelectorAll('.togslot').forEach(slot=>{
           <td class="n sold"></td><td class="n pm"></td></tr>`);
         pm = r.model; pc = '';
       }
-      const nc = r.color !== pc; pc = r.color;
+      const cl = clabel(r), nc = cl !== pc; pc = cl;
       // モデル名は全行に出す。小計行にしか出さないと、次のモデルの行が
       // 前のモデルの続きに見える(V-Soul の下に Groundsplay LS の M サイズ)。
       body.push(`<tr data-sku="${esc(r.sku)}">
-        <td class="mdl">${esc(r.model)}</td><td>${nc ? esc(r.color) : ''}</td>
+        <td class="mdl">${esc(r.model)}</td><td>${nc ? esc(cl) : ''}</td>
         <td class="num">${esc(r.size)}</td>
         <td class="n jb"></td>
         <td class="n">${r.kl ? n0(r.kl) : '—'}</td>
@@ -2127,7 +2140,8 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   function draw(){
     const f = sel.value === 'all' ? I : I.filter(r => r.model === sel.value);
     const ord = (a, b) =>
-      mi[a.model] - mi[b.model] || a.color.localeCompare(b.color) || scmp(a.size, b.size);
+      mi[a.model] - mi[b.model] || a.color.localeCompare(b.color)
+      || gkey(gof(a)) - gkey(gof(b)) || scmp(a.size, b.size);
     [['shoes', '#t-stock-shoes', '#h-stock-shoes', '#box-stock-shoes'],
      ['socks', '#t-stock-socks', '#h-stock-socks', '#box-stock-socks']]
     .forEach(([cat, tb, hd, bx]) => {
@@ -2179,8 +2193,8 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   // 出力は押した時だけ。確定しないまま配ると、途中の数字が出回るため。
   function fixedRows(){
     return [...I].sort((a, b) => (a.cat === b.cat ? 0 : a.cat === 'shoes' ? -1 : 1)
-      || mi[a.model] - mi[b.model]
-      || a.color.localeCompare(b.color) || scmp(a.size, b.size))
+      || mi[a.model] - mi[b.model] || a.color.localeCompare(b.color)
+      || gkey(gof(a)) - gkey(gof(b)) || scmp(a.size, b.size))
       .filter(r => r.kl || keepOf(r) || r.kl_sold);
   }
 
@@ -2196,7 +2210,7 @@ document.querySelectorAll('.togslot').forEach(slot=>{
 
   $('#k-xls').onclick = async () => {
     const rows = fixedRows().map(r => [r.cat === 'shoes' ? 'シューズ' : 'ソックス',
-      r.model, r.color, r.size, r.sku, r.sellable, r.kl || 0, keepOf(r), jbOf(r),
+      r.model, clabel(r), r.size, r.sku, r.sellable, r.kl || 0, keepOf(r), jbOf(r),
       (r.kl || 0) - keepOf(r), r.kl_sold || 0]);
     const head = ['区分', 'モデル', 'カラー', 'サイズ', 'SKU',
                   '総在庫', 'KL', '残す', 'JB', 'JBへ戻す', 'KLで販売済'];
