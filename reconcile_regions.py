@@ -209,8 +209,13 @@ for r in IN:
 
 # Nov2026 からシートに SiteGiant の注文番号が入るようになった。
 # 書いてあるならそれが正解なので、金額や日付で推さずにそのまま使う。
+# 日付が空の行もここだけは拾う。注文番号さえ書いてあれば日付は要らないし、
+# 会期中のようにシートの記入が追いついていない時は日付が後回しになる。
 _oid_hit = 0
-for r in IN:
+OIDROWS = [r for r in rows
+           if (r.get('oid') or '').strip().isdigit()
+           and (r['sheet'], r['no']) not in SHEET_SKIP]
+for r in OIDROWS:
     _oid = (r.get('oid') or '').strip()
     if not _oid.isdigit() or r.get('_m') or _oid in used:
         continue

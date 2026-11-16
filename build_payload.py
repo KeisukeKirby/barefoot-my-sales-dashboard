@@ -70,7 +70,7 @@ def iswh(o):
 # データ基準日。エクスポートは注文のあった日しか教えてくれないので、
 # 「この日まで確認済み(売上ゼロの日を含む)」をここに置く。
 # データの最終日がこれより後ならデータ側を採るので、更新を忘れても短くはならない。
-ASOF = os.environ.get('ASOF', '2026-11-12')      # 11/13 のエクスポートで 11/12 まで確認済み
+ASOF = os.environ.get('ASOF', '2026-11-15')      # 11/16 のエクスポートで 11/15 まで確認済み
 
 d0 = datetime.date(*map(int, min(o['date'] for o in O).split('-')))
 d1 = max(datetime.date(*map(int, max(o['date'] for o in O).split('-'))),
@@ -366,6 +366,8 @@ PAYGRP = [
      ['Credit/Debit Card', 'Credit / Debit Card', 'Credit Card Installment',
       'Credit Card payments', 'MIXEDCARD', 'Apple Pay']),
     (u'現金', 'Cash', ['cash', 'Cash', 'CASH']),
+    # マーケットプレイスのウォレット残高払い
+    (u'電子ウォレット', 'E-wallet', ['ShopeePay Balance', 'ShopeePay', 'Touch n Go eWallet']),
     (u'銀行振込・ネットバンキング', 'Bank transfer / online banking',
      ['RHB bank transfer', 'Online Banking', 'MOLPAY_MAYBANK_ONLINE',
       'MOLPAY_CIMB_BANK_ONLINE']),
@@ -476,7 +478,10 @@ except (IOError, OSError, ValueError):
 
 if STOCK:
     _sm = STOCK['meta']
+    # 在庫の基準は日付ではなく「エクスポートした時刻」。KL の会場販売のように
+    # 同じ日の中でエクスポート前後に売れたものを取り違えないため。
     _asof = _sm['asof']
+    _asof_ts = _sm.get('asof_ts') or (_asof + ' 23:59')
     _dmax = max(o['date'] for o in sales)
     _d0 = min(o['date'] for o in sales)
     _months = max(1.0, (datetime.date(*map(int, _dmax.split('-')))
@@ -496,7 +501,7 @@ if STOCK:
             _all[_k] += _it['qty']
             if _o['date'] > _cut:
                 _rec[_k] += _it['qty']
-            if _o['date'] > _asof:          # 在庫基準日より後に売れた分
+            if (_o.get('dt') or _o['date']) > _asof_ts:   # 在庫エクスポートより後に売れた分
                 _aft[_k] += _it['qty']
             if _k not in _lastsold or _o['date'] > _lastsold[_k]:
                 _lastsold[_k] = _o['date']
@@ -528,7 +533,10 @@ if STOCK:
             _k = (_i['model'], _i['color'], _nsz(_i['size']))
             _i['kl'] = _klq.pop(_k, 0)
             if _i['kl'] > _i['sellable']:
+                # 在庫エクスポート後に売れて総在庫が KL 持ち出しを下回った。
+                # その SKU は KL にしか無かったということなので KL を減らす。
                 _klbad.append((_i['sku'], _i['kl'], _i['sellable']))
+                _i['kl'] = _i['sellable']
         # 会場で売れた分の手入力。注文エクスポートに同じ販売が出てきたら
         # 二重に引かないよう、その日以降の実績で足りている行は自動で止める。
         _byk = {(i['model'], i['color'], _nsz(i['size'])): i for i in STOCK['items']}
@@ -563,7 +571,7 @@ if STOCK:
             print(u'!! KL 側にあって在庫表に無い組み合わせ: '
                   + u' / '.join(u'%s %s %s' % k for k in sorted(_klq)))
         for _sk, _q, _s in _klbad:
-            print(u'!! KL 持ち出しが総在庫を超えています: %s KL%d > 在庫%d' % (_sk, _q, _s))
+            print(u'在庫: KL 持ち出しを総在庫に合わせました: %s KL%d -> %d' % (_sk, _q, _s))
     else:
         for _i in STOCK['items']:
             _i['kl'] = 0
@@ -572,8 +580,8 @@ if STOCK:
     _sm.update(weeks=STOCK_WEEKS, months=round(_months, 2), since=_d0,
                sales_until=_dmax, deducted=sum(_aft.values()),
                unmatched_sku=sorted(u'%s / %s / %s' % k for k in _all if k not in _have))
-    print(u'在庫: 基準日 %s の %d足 から、それ以降の販売 %d足 を引いて %d足 (販売実績は %s まで)'
-          % (_asof, sum(i['base'] for i in STOCK['items']), sum(_aft.values()),
+    print(u'在庫: 基準 %s の %d足 から、それ以降の販売 %d足 を引いて %d足 (販売実績は %s まで)'
+          % (_asof_ts, sum(i['base'] for i in STOCK['items']), sum(_aft.values()),
              sum(i['sellable'] for i in STOCK['items']), _dmax))
     if _neg:
         print(u'!! 引きすぎてマイナスになる SKU があります。0 に丸めました。在庫を再エクスポートしてください:')

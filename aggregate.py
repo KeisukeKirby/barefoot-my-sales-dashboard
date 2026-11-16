@@ -206,7 +206,12 @@ def classify(d):
     sku, name = d['product_sku'].strip(), d['product_name'].strip()
     # POS の動作確認伝票。test / test3 / test4 と左右しているので test+数字で拾う
     if re.fullmatch(r'test\d*', name, re.I):  return ('TEST', 'TEST', 'test', None, None)
-    if 'courier fee' in name.lower():     return ('配送料', 'その他', 'fee', None, None)
+    # 配送料の行。SKU が空で名前に fee が入るものも拾う
+    # (2026-11-15 の INV-261 は 'Grab Express fees to JW Marriott KL' RM17.80)。
+    # 金額は注文合計に残るが、足数には数えない。
+    low = name.lower()
+    if 'courier fee' in low or (not sku and 'fee' in low):
+        return ('配送料', 'その他', 'fee', None, None)
     for pre, model, brand, cat in MODEL:
         if sku.startswith(pre): break
     else:

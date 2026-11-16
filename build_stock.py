@@ -87,7 +87,8 @@ def main():
         if k not in last or r['date'] > last[k]['date']:
             last[k] = r
     skus = sorted({r['isku'] for r in rows})
-    asof = max(r['date'] for r in rows)[:10]
+    asof_ts = max(r['date'] for r in rows)[:16]   # 'YYYY-MM-DD HH:MM'
+    asof = asof_ts[:10]
 
     def q(sku, t):
         r = last.get((sku, t))
@@ -125,7 +126,7 @@ def main():
             print(u'   %s %s %s 在庫%d' % (i['model'], i['color'], i['size'], i['sellable']))
 
     out = dict(
-        meta=dict(asof=asof, src=[os.path.basename(p) for p in paths],
+        meta=dict(asof=asof, asof_ts=asof_ts, src=[os.path.basename(p) for p in paths],
                   skus=len(items), dropped=len(drop), wmax=WMAX,
                   use_order=USE_ORDER),
         items=items)
