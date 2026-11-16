@@ -167,6 +167,12 @@ h3{font-family:var(--font-heading);font-size:1.15rem;font-weight:700;margin:0 0 
 .hero .v{font-family:var(--font-heading);font-size:clamp(2.4rem,5vw,3.4rem);font-weight:700;
   line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em;display:block;margin-top:.2rem}
 .hero .v small{font-size:.36em;font-weight:500;color:var(--text-secondary);margin-right:.25em}
+/* 前月比。▲がプラス、▼がマイナスで赤(2026-11-16 Keisuke)。
+   ▲を「減」で読む会計の慣習と逆なので、符号を必ず添える。 */
+.hero .mom{font-family:var(--font-heading);font-weight:600;font-size:.9rem;
+  margin-top:.35rem;font-variant-numeric:tabular-nums}
+.hero .mom.up{color:var(--accent-lime)}
+.hero .mom.down{color:var(--crit)}
 
 /* ── Filter row ───────────────────────────────────────── */
 .whx{display:inline-flex;align-items:center;gap:.45rem;margin:.15rem 0 .9rem;padding:.3rem .8rem;
@@ -1039,7 +1045,7 @@ $('#hero').innerHTML =
   `<div class="hero-main">
      <span class="l">${esc(tl(cur.label))}${TR('の売上')}${cur.ongoing?` (${TR('進行中')})`:''}</span>
      <span class="v"><small>RM</small>${n1(cur.rev)}</span>
-     ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">${TR('前月比')} ${mom>=0?'▲':'▼'} ${Math.abs(mom*100).toFixed(1)}%</span>`}
+     ${mom===null?'' : `<span class="mom ${mom>=0?'up':'down'}">${TR('前月比')} ${mom>=0?'▲ +':'▼ -'}${Math.abs(mom*100).toFixed(1)}%</span>`}
    </div>
    <div class="hero-stats">
      ${[[TR('店舗'), rm(cur.off), pct(cur.off,cur.rev) + ' · ' + cur.off_orders + ' ' + TR('注文')],

@@ -322,6 +322,9 @@ def bucket(v):
 O = []
 for oid, v in orders.items():
     a = v[0]
+    # 配送料は商品ではないので明細から落とす(2026-11-16 Keisuke)。
+    # 金額は注文合計 total に残るので純売上は変わらない。
+    v = [L for L in v if L['cat'] != 'fee'] or v
     O.append(dict(order_id=oid, invoice=a['invoice'], dt=a['dt'], date=a['date'],
                   status=a['status'], pay=a['pay'], channel=a['channel'], seg=seg_of(a['channel']),
                   pay_method=a['pay_method'], state=a['state'], city=a['city'],
