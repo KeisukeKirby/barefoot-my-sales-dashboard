@@ -669,6 +669,14 @@ footer{border-top:1px solid var(--border-color);margin-top:1.5rem;padding:1.5rem
     <p class="note" id="size-note"></p>
   </section>
 
+  <!-- ══ イベント ══ -->
+  <section id="s-event" data-pane="event">
+    <p class="eyebrow" data-i18n="Event">Event</p>
+    <h2 data-i18n="イベントの実績">イベントの実績</h2>
+    <p class="lede" id="ev-lede"></p>
+    <div id="ev-body"></div>
+  </section>
+
   <!-- ══ 在庫 ══ -->
   <section id="s-stock" data-pane="stock">
     <p class="eyebrow" data-i18n="Stock">Stock</p>
@@ -875,6 +883,9 @@ const STR = {
   'ユニセックス(足袋)':['ユニセックス(足袋)','Unisex (tabi)'],
   '店舗休業日':['店舗休業日','store closed'],
   'の売上':['の売上',' Sales'], '前月比':['前月比','vs prev month'],
+  'イベント':['イベント','Event'], '会期':['会期','Dates'],
+  'モデル別':['モデル別','By model'], 'カラー・サイズ別':['カラー・サイズ別','By colour & size'],
+  '日商':['日商','Sales per day'], '点/伝票':['点/伝票','items per receipt'],
   '注文の平均':['注文の平均',' orders avg'],
   '点数(シューズのみ)':['点数(シューズのみ)','Units (shoes only)'],
   'うち靴':['うち靴','shoes'],
@@ -1992,6 +2003,96 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   slot.appendChild(lab);
 });
 
+/* ═══ 10a. イベント ══════════════════════ */
+// ポップアップの会期だけを切り出した数字。会期中のオフライン伝票が
+// すべて会場のもの、という前提は build_payload.py の EVENTS 側に書いてある。
+(function(){
+  const EV = DA.events || [];
+  if (!EV.length){
+    document.querySelectorAll('section[data-pane="event"]').forEach(x => x.hidden = true);
+    return;
+  }
+  const CAT = {shoes: TR('シューズ'), socks: TR('ソックス')};
+  const md = d => d.slice(5).replace('-', '/');
+
+  $('#ev-lede').textContent = EV.length === 1
+    ? EV[0].note
+    : `${EV.length} 件のイベントを会期ごとにまとめています。`;
+
+  $('#ev-body').innerHTML = EV.map((e, k) => {
+    const cmp = e.base && e.base.per_day
+      ? `<p class="note">会期の日商 <b>${rm2(e.rev / e.days.length)}</b> に対し、
+           直前4週の同じ曜日(${[...new Set(e.days.map(d => d.dow))].join('・')})の
+           JB 店は ${e.base.days}日で 1日平均 <b>${rm2(e.base.per_day)}</b>。
+           <b>${(e.rev / e.days.length / e.base.per_day).toFixed(1)}倍</b>のペースでした。</p>`
+      : '';
+    const cat = c => e.models.filter(m => m.cat === c);
+    return `
+    <h3 style="margin:${k ? '2.4rem' : '0'} 0 .2rem">${esc(e.label)}</h3>
+    <p class="note" style="margin:0 0 1rem">${esc(e.place)} ・
+       ${TR('会期')} ${md(e.start)}〜${md(e.end)}(${e.days.length}日間)</p>
+
+    <div class="hero" style="margin-bottom:1.2rem">
+      <div class="hero-main">
+        <span class="l">${esc(e.label)}${TR('の売上')}</span>
+        <span class="v"><small>RM</small>${n1(e.rev)}</span>
+      </div>
+      <div class="hero-stats">
+        ${[[TR('伝票'), e.orders + TR('件'), rm2(e.aov) + ' / ' + TR('件')],
+           [TR('点数'), e.units + TR('点'), e.upo + TR('点/伝票')],
+           [TR('シューズ'), e.shoe_units + TR('足'), pct(e.shoe_units, e.units)],
+           [TR('ソックス'), e.sock_units + TR('足'), pct(e.sock_units, e.units)]]
+          .map(([l, v, sm]) => `<div class="st"><span class="l">${l}</span>
+             <span class="v">${v}</span><span class="s">${sm}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="tablebox"><table>
+      <thead><tr><th>${TR('日付')}</th><th class="n">${TR('売上')}</th>
+        <th class="n">${TR('伝票')}</th><th class="n">${TR('点数')}</th>
+        <th class="n">${TR('シューズ')}</th><th class="n">${TR('ソックス')}</th></tr></thead>
+      <tbody>${e.days.map(d => `<tr><td class="num">${md(d.date)}(${d.dow})</td>
+        <td class="n">${rm2(d.rev)}</td><td class="n">${d.orders}</td>
+        <td class="n">${d.units}</td><td class="n">${d.shoe_units}</td>
+        <td class="n">${d.sock_units || '—'}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>${TR('合計')}</td><td class="n">${rm2(e.rev)}</td>
+        <td class="n">${e.orders}</td><td class="n">${e.units}</td>
+        <td class="n">${e.shoe_units}</td><td class="n">${e.sock_units}</td></tr></tfoot>
+    </table></div>
+    ${cmp}
+
+    <h4 style="margin:1.6rem 0 .6rem;font-family:var(--font-heading)">${TR('モデル別')}</h4>
+    <div class="tablebox"><table>
+      <thead><tr><th>${TR('区分')}</th><th>${TR('モデル')}</th>
+        <th class="n">${TR('足数')}</th><th class="n">${TR('売上')}</th>
+        <th class="n">${TR('構成比')}</th></tr></thead>
+      <tbody>${['shoes', 'socks'].map(c => cat(c).map((m, i) => `<tr${i ? '' : ' class="newm"'}>
+        <td>${i ? '' : CAT[c]}</td><td><b>${esc(m.model)}</b></td>
+        <td class="n">${m.units}</td><td class="n">${rm2(m.rev)}</td>
+        <td class="n">${pct(m.rev, e.rev)}</td></tr>`).join('')).join('')}</tbody>
+    </table></div>
+
+    <h4 style="margin:1.6rem 0 .6rem;font-family:var(--font-heading)">${TR('カラー・サイズ別')}</h4>
+    <div class="tablebox"><table>
+      <thead><tr><th>${TR('モデル')}</th><th>${TR('カラー')}</th><th>${TR('サイズ')}</th>
+        <th class="n">${TR('足数')}</th><th class="n">${TR('売上')}</th></tr></thead>
+      <tbody>${(() => {
+        let pm = '', pc = '';
+        return e.variants.map(v => {
+          const nm = v.model !== pm; if (nm) pc = '';
+          const nc = nm || v.color !== pc; pm = v.model; pc = v.color;
+          return `<tr${nm ? ' class="newm"' : ''}>
+            <td>${nm ? '<b>' + esc(v.model) + '</b>' : ''}</td>
+            <td>${nc ? esc(v.color) : ''}</td><td class="num">${esc(v.size)}</td>
+            <td class="n">${v.units}</td><td class="n">${rm2(v.rev)}</td></tr>`;
+        }).join('');
+      })()}</tbody>
+      <tfoot><tr><td>${TR('合計')}</td><td></td><td></td>
+        <td class="n">${e.units}</td><td class="n">${rm2(e.rev)}</td></tr></tfoot>
+    </table></div>`;
+  }).join('');
+})();
+
 /* ═══ 10b. 在庫 ══════════════════════════ */
 // 在庫には「卸売を除く」の区別が無いので DA 固定。
 // 総在庫(SiteGiant)の内訳として KL ポップアップへ持ち出した分を持っている。
@@ -2450,6 +2551,7 @@ $('#side-foot').innerHTML = `${M.period[0].replace(/-/g,'.')} – ${M.period[1].
   const TABS = [
     ['overview', TR('概要'), 'chart'],
     ['store',    TR('店舗'), 'store'],
+    ['event',    TR('イベント'), 'tag'],
     ['product',  TR('商品'), 'box'],
     ['stock',    TR('在庫'), 'layers'],
     ['notes',    TR('備考'), 'book'],

@@ -588,8 +588,88 @@ if STOCK:
         for _sk, _b, _a in _neg:
             print(u'   %s  基準%d - 販売%d' % (_sk, _b, _a))
 
+
+# --- イベント(ポップアップ) ------------------------------------------
+# 会期中は店にスタッフが居らず、オンライン以外の伝票は全部会場のもの
+# (2026-11-16 Keisuke)。SiteGiant には会場を示す欄が無いので、
+# 「この日付のオフライン伝票」でしか切り出せない。会場と店を同じ日に
+# 動かした時はこの定義では分けられないので、その時は別の手を考えること。
+EVENTS = [
+    dict(id='kl2', label=u'KL ポップアップ #2',
+         place=u'クアラルンプール', start='2026-11-13', end='2026-11-15',
+         note=u'会期中のオフライン伝票はすべて会場。JB 店の営業分は含みません'),
+]
+
+
+def event_block(ev):
+    es = [o for o in sales if ev['start'] <= o['date'] <= ev['end'] and isoff(o)]
+    days = []
+    _d = datetime.date(*map(int, ev['start'].split('-')))
+    _end = datetime.date(*map(int, ev['end'].split('-')))
+    while _d <= _end:
+        _k = _d.isoformat()
+        x = [o for o in es if o['date'] == _k]
+        days.append(dict(date=_k, dow=WD[_d.weekday()], rev=R2(sum(o['total'] for o in x)),
+                         orders=len(x), units=sum(o['units'] for o in x),
+                         shoe_units=sum(o['shoe_units'] for o in x),
+                         sock_units=sum(o['units'] - o['shoe_units'] for o in x)))
+        _d += datetime.timedelta(days=1)
+
+    # 商品の内訳。モデル単位と、カラー・サイズまで割った明細の2本立て
+    bym, byv = {}, {}
+    for o in es:
+        for it in o['items']:
+            if it['cat'] not in ('shoes', 'socks'):
+                continue
+            m = bym.setdefault((it['cat'], it['model']), dict(cat=it['cat'], model=it['model'],
+                                                              units=0, rev=0.0))
+            m['units'] += it['qty']; m['rev'] += it['total']
+            k = (it['cat'], it['model'], it['color'] or u'-', it['size'] or u'-')
+            v = byv.setdefault(k, dict(cat=it['cat'], model=it['model'], color=k[2], size=k[3],
+                                       units=0, rev=0.0))
+            v['units'] += it['qty']; v['rev'] += it['total']
+    for d in list(bym.values()) + list(byv.values()):
+        d['rev'] = R2(d['rev'])
+
+    # 比較の物差し。会期と同じ曜日・同じ日数を、会期前の4週分で平均する
+    _ws = set(datetime.date(*map(int, d['date'].split('-'))).weekday() for d in days)
+    _base = [o for o in sales if isoff(o) and o['date'] < ev['start']
+             and datetime.date(*map(int, o['date'].split('-'))).weekday() in _ws
+             and o['date'] >= (datetime.date(*map(int, ev['start'].split('-')))
+                               - datetime.timedelta(days=28)).isoformat()]
+    # 分母は「売れた日」ではなく営業日。売上ゼロの日を外すと平均が実態より高く出る
+    _bd, _dd = 0, (datetime.date(*map(int, ev['start'].split('-')))
+                   - datetime.timedelta(days=28))
+    while _dd < datetime.date(*map(int, ev['start'].split('-'))):
+        if _dd.weekday() in _ws and _dd.isoformat() not in closed_days:
+            _bd += 1
+        _dd += datetime.timedelta(days=1)
+    base = dict(days=_bd, rev=R2(sum(o['total'] for o in _base)), orders=len(_base),
+                units=sum(o['units'] for o in _base),
+                per_day=R2(sum(o['total'] for o in _base) / _bd) if _bd else None)
+
+    rev = R2(sum(o['total'] for o in es))
+    units = sum(o['units'] for o in es)
+    return dict(ev, days=days, rev=rev, orders=len(es), units=units,
+                shoe_units=sum(o['shoe_units'] for o in es),
+                sock_units=units - sum(o['shoe_units'] for o in es),
+                aov=R2(rev / len(es)) if es else 0,
+                upo=round(units / len(es), 2) if es else 0,
+                models=sorted(bym.values(), key=lambda x: (x['cat'] != 'shoes', -x['units'], x['model'])),
+                variants=sorted(byv.values(), key=lambda x: (x['cat'] != 'shoes', x['model'],
+                                                             x['color'], x['size'])),
+                base=base)
+
+
+events = [event_block(e) for e in EVENTS]
+if events:
+    _e = events[0]
+    print(u'イベント %s: RM%s / %d伝票 / %d点 (シューズ%d・ソックス%d)'
+          % (_e['label'], '{:,.2f}'.format(_e['rev']), _e['orders'], _e['units'],
+             _e['shoe_units'], _e['sock_units']))
+
 P = dict(
-    stock=STOCK,
+    stock=STOCK, events=events,
     meta=dict(source=J['meta'].get('src') or J['meta'].get('source'), asof=ASOF,
               period=[d0.isoformat(), d1.isoformat()], days=days,
               lines=J['meta']['rows'], n_orders_raw=J['meta']['n_orders'], n_orders=len(O)),
