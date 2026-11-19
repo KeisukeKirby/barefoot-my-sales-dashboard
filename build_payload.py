@@ -594,7 +594,13 @@ if STOCK:
 # (2026-11-16 Keisuke)。SiteGiant には会場を示す欄が無いので、
 # 「この日付のオフライン伝票」でしか切り出せない。会場と店を同じ日に
 # 動かした時はこの定義では分けられないので、その時は別の手を考えること。
+# exclude: 会期中でも会場ではない伝票。#1 は同じ日に JB 店も開けていたので、
+# 店で売れた3伝票をオーナーが特定して除いている(2026-11-19 Keisuke)。
 EVENTS = [
+    dict(id='kl1', label=u'KL ポップアップ #1',
+         place=u'クアラルンプール', start='2026-08-27', end='2026-08-27',
+         exclude=['100', '101', '102'],
+         note=u'同日の JB 店の3伝票(#100 ソックス・#101 V-Soul・#102 Trailope)を除いた数字です'),
     dict(id='kl2', label=u'KL ポップアップ #2',
          place=u'クアラルンプール', start='2026-11-13', end='2026-11-15',
          note=u'会期中のオフライン伝票はすべて会場。JB 店の営業分は含みません'),
@@ -602,7 +608,9 @@ EVENTS = [
 
 
 def event_block(ev):
-    es = [o for o in sales if ev['start'] <= o['date'] <= ev['end'] and isoff(o)]
+    _ex = set(ev.get('exclude') or [])
+    es = [o for o in sales if ev['start'] <= o['date'] <= ev['end'] and isoff(o)
+          and o['order_id'] not in _ex]
     days = []
     _d = datetime.date(*map(int, ev['start'].split('-')))
     _end = datetime.date(*map(int, ev['end'].split('-')))
@@ -661,9 +669,8 @@ def event_block(ev):
                 base=base)
 
 
-events = [event_block(e) for e in EVENTS]
-if events:
-    _e = events[0]
+events = sorted((event_block(e) for e in EVENTS), key=lambda e: e['start'])
+for _e in events:
     print(u'イベント %s: RM%s / %d伝票 / %d点 (シューズ%d・ソックス%d)'
           % (_e['label'], '{:,.2f}'.format(_e['rev']), _e['orders'], _e['units'],
              _e['shoe_units'], _e['sock_units']))

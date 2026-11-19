@@ -2016,8 +2016,8 @@ document.querySelectorAll('.togslot').forEach(slot=>{
   const md = d => d.slice(5).replace('-', '/');
 
   $('#ev-lede').textContent = EV.length === 1
-    ? EV[0].note
-    : `${EV.length} 件のイベントを会期ごとにまとめています。`;
+    ? '会期中のオフライン伝票だけを切り出した数字です。オンラインは含みません。'
+    : `${EV.length} 件のイベントを会期ごとにまとめています。会期中のオフライン伝票だけを切り出した数字で、オンラインは含みません。`;
 
   $('#ev-body').innerHTML = EV.map((e, k) => {
     const cmp = e.base && e.base.per_day
@@ -2030,7 +2030,8 @@ document.querySelectorAll('.togslot').forEach(slot=>{
     return `
     <h3 style="margin:${k ? '2.4rem' : '0'} 0 .2rem">${esc(e.label)}</h3>
     <p class="note" style="margin:0 0 1rem">${esc(e.place)} ・
-       ${TR('会期')} ${md(e.start)}〜${md(e.end)}(${e.days.length}日間)</p>
+       ${TR('会期')} ${md(e.start)}〜${md(e.end)}(${e.days.length}日間)${
+         e.note ? '<br>' + esc(e.note) : ''}</p>
 
     <div class="hero" style="margin-bottom:1.2rem">
       <div class="hero-main">
@@ -2071,6 +2072,9 @@ document.querySelectorAll('.togslot').forEach(slot=>{
         <td class="n">${m.units}</td><td class="n">${rm2(m.rev)}</td>
         <td class="n">${pct(m.rev, e.rev)}</td></tr>`).join('')).join('')}</tbody>
     </table></div>
+
+    <p class="note" style="margin:.5rem 0 0">モデル別・カラー別の売上は明細行の定価合計です。
+       値引き後の総額(${rm2(e.rev)})とは一致しないので、構成比の目安として見てください。</p>
 
     <h4 style="margin:1.6rem 0 .6rem;font-family:var(--font-heading)">${TR('カラー・サイズ別')}</h4>
     <div class="tablebox"><table>
