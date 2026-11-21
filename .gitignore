@@ -26,3 +26,5 @@ unmatched.json
 
 # From 欄の人名判定リスト(公開しない)
 regions_staff.txt
+
+.vercel

@@ -65,7 +65,16 @@ order_id 103-110 の10行を実データと突き合わせて日時とも一致�
 見出し下にある「卸売を除く」チェックは、そのセクションだけ後者のデータで描き直す。チェック状態は
 ブラウザ(localStorage)に保存される。客単価はチェックに関係なく常に卸売を除いた値。
 
-`index.html` を commit して push すれば Vercel が自動で再デプロイする。
+配信は Vercel の **SHIMA チーム(shima-s-projects2)**。2026-11-21 に Barefootinc TH から移した
+(帯域超過でチームが Paused になり 402 を返すようになったため)。公開URLは
+**https://malaysia-sales-dashboard.vercel.app**。旧 barefoot-my-sales-dashboard.vercel.app は
+旧チームに残っていて停止中。
+
+Git の自動デプロイは繋がっていないので、本番反映は CLI で出す。
+
+```bash
+npx vercel deploy --prod --yes
+```
 
 ### 取りこぼしの検算
 
